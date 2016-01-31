@@ -9,14 +9,7 @@ return [
     'title'  => '后台管理',
 
     'auth' => [
-        'guard'  => [
-            'driver' => 'session',
-            'provider' => 'admin',
-        ],
-        'provider' => [
-            'driver' => 'eloquent',
-            'model' => \Encore\Admin\Auth\Database\Administrator::class,
-        ],
+        'model' => \Encore\Admin\Auth\Database\Administrator::class
     ],
 
     'upload'  => [
