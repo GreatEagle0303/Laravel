@@ -11,10 +11,20 @@
 + [font-awesome](http://fontawesome.io)
 + [moment](http://momentjs.com/)
 
+#Screenshot
+
+![grid](https://cloud.githubusercontent.com/assets/1479100/12708148/6c4aa9fe-c8d7-11e5-94e4-c8105375a564.png)
+
+![form](https://cloud.githubusercontent.com/assets/1479100/12708198/fc6725a8-c8d7-11e5-876f-5c4f00ded0ff.png)
+
 # 安装
 
 ```
-composer require encore/laravel-admin
+//laravel 5.1
+composer require encore/laravel-admin "1.1.*"
+
+//laravel 5.2
+composer require encore/laravel-admin "1.2.*"
 ```
 
 然后把`ServiceProvider`加入`config/app.php`中：
