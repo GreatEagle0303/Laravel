@@ -67,34 +67,6 @@ class Form {
     protected $builder;
 
     /**
-     * Saving callback.
-     *
-     * @var Closure
-     */
-    protected $saving;
-
-    /**
-     * Data for save to current model from input.
-     *
-     * @var array
-     */
-    protected $updates = [];
-
-    /**
-     * Data for save to model's relations from input.
-     *
-     * @var array
-     */
-    protected $relations = [];
-
-    /**
-     * Input data.
-     *
-     * @var array
-     */
-    protected $inputs = [];
-
-    /**
      * @param \$model
      * @param \Closure $callback
      */
@@ -185,11 +157,12 @@ class Form {
             return back()->withInput()->withErrors($this->validator->messages());
         }
 
-        $this->prepare($data, $this->saving);
+        $inserts    = array_filter($data, 'is_string');
+        $relations  = array_filter($data, 'is_array');
 
-        DB::transaction(function() {
+        DB::transaction(function() use ($inserts, $relations) {
 
-            $inserts = $this->prepareInsert($this->updates);
+            $inserts = $this->prepareInsert($inserts);
 
             foreach ($inserts as $column => $value) {
                 $this->model->setAttribute($column, $value);
@@ -197,62 +170,32 @@ class Form {
 
             $this->model->save();
 
-            $this->saveRelation($this->relations);
+            foreach ($relations as $name => $values) {
+
+                if( ! method_exists($this->model, $name)) {
+                    continue;
+                }
+
+                $values = $this->prepareInsert([$name => $values]);
+
+                $relation = $this->model->$name();
+
+                switch (get_class($relation)) {
+                    case \Illuminate\Database\Eloquent\Relations\BelongsToMany::class :
+                        $relation->attach($values[$name]);
+                        break;
+                    case \Illuminate\Database\Eloquent\Relations\HasOne::class :
+                        $related = $relation->getRelated();
+                        foreach($values[$name] as $column => $value) {
+                            $related->setAttribute($column, $value);
+                        }
+                        $relation->save($related);
+                        break;
+                }
+            }
         });
 
         return redirect($this->resource());
-    }
-
-    /**
-     * Prepare input data for insert or update.
-     *
-     * @param array $data
-     * @param callable $callback
-     */
-    protected function prepare($data = [], Closure $callback = null)
-    {
-        $this->inputs = $data;
-
-        if($callback instanceof Closure) {
-            $callback($this);
-        }
-
-        $this->updates = array_filter($this->inputs, 'is_string');
-        $this->relations = array_filter($this->inputs, 'is_array');
-    }
-
-    /**
-     * Save relations data.
-     *
-     * @param array $relations
-     * @return void
-     */
-    protected function saveRelation($relations)
-    {
-        foreach ($relations as $name => $values) {
-
-            if( ! method_exists($this->model, $name)) {
-                continue;
-            }
-
-            $values = $this->prepareInsert([$name => $values]);
-
-            $relation = $this->model->$name();
-
-            switch (get_class($relation)) {
-                case \Illuminate\Database\Eloquent\Relations\BelongsToMany::class :
-                    $relation->attach($values[$name]);
-                    break;
-                case \Illuminate\Database\Eloquent\Relations\HasOne::class :
-                    $related = $relation->getRelated();
-                    foreach($values[$name] as $column => $value) {
-                        $related->setAttribute($column, $value);
-                    }
-
-                    $relation->save($related);
-                    break;
-            }
-        }
     }
 
     /**
@@ -270,11 +213,12 @@ class Form {
 
         $this->setFieldOriginalValue();
 
-        $this->prepare($data, $this->saving);
+        $updates   = array_filter($data, 'is_string');
+        $relations = array_filter($data, 'is_array');
 
-        DB::transaction(function() {
+        DB::transaction(function() use ($updates, $relations) {
 
-            $updates = $this->prepareUpdate($this->updates);
+            $updates = $this->prepareUpdate($updates);
 
             foreach ($updates as $column => $value) {
                 $this->model->setAttribute($column, $value);
@@ -282,47 +226,36 @@ class Form {
 
             $this->model->save();
 
-            $this->updateRelation($this->relations);
+            foreach($relations as $name => $values) {
+
+                if( ! method_exists($this->model, $name)) {
+                    continue;
+                }
+
+                $prepared = $this->prepareUpdate([$name => $values]);
+
+                if(empty($prepared)) continue;
+
+                $relation = $this->model->$name();
+
+                switch (get_class($relation)) {
+                    case \Illuminate\Database\Eloquent\Relations\BelongsToMany::class :
+
+                        $relation->sync($prepared[$name]);
+                        break;
+                    case \Illuminate\Database\Eloquent\Relations\HasOne::class :
+
+                        foreach($prepared[$name] as $column => $value) {
+                            $this->model->$name->setAttribute($column, $value);
+                        }
+
+                        $this->model->$name->save();
+                        break;
+                }
+            }
         });
 
         return redirect($this->resource());
-    }
-
-    /**
-     * Update relation data.
-     *
-     * @param array $relations
-     * @return void
-     */
-    protected function updateRelation($relations)
-    {
-        foreach($relations as $name => $values) {
-
-            if( ! method_exists($this->model, $name)) {
-                continue;
-            }
-
-            $prepared = $this->prepareUpdate([$name => $values]);
-
-            if(empty($prepared)) continue;
-
-            $relation = $this->model->$name();
-
-            switch (get_class($relation)) {
-                case \Illuminate\Database\Eloquent\Relations\BelongsToMany::class :
-
-                    $relation->sync($prepared[$name]);
-                    break;
-                case \Illuminate\Database\Eloquent\Relations\HasOne::class :
-
-                    foreach($prepared[$name] as $column => $value) {
-                        $this->model->$name->setAttribute($column, $value);
-                    }
-
-                    $this->model->$name->save();
-                    break;
-            }
-        }
     }
 
     /**
@@ -366,7 +299,7 @@ class Form {
      * @param $inserts
      * @return array
      */
-    protected function prepareInsert($inserts)
+    public function prepareInsert($inserts)
     {
         $first = current($inserts);
 
@@ -393,17 +326,6 @@ class Form {
         }
 
         return $prepared;
-    }
-
-    /**
-     * Set saving callback.
-     *
-     * @param callable $callback
-     * @return void
-     */
-    public function saving(Closure $callback)
-    {
-        $this->saving = $callback;
     }
 
     /**
@@ -438,11 +360,6 @@ class Form {
     {
         return $this->builder->fields()->first(
             function ($index, $field) use ($column) {
-
-                if(is_array($field->column())) {
-                    return in_array($column, $field->column());
-                }
-
                 return $field->column() == $column;
             }
         );
@@ -556,57 +473,9 @@ class Form {
         $route = app('router')->current();
         $prefix = $route->getPrefix();
 
-        $resource = trim(preg_replace("/$prefix/", '', $route->getUri(), 1), '/') . '/';
+        $resource = trim(str_replace($prefix, '', $route->getUri()), '/') . '/';
 
         return Admin::url(substr($resource, 0, strpos($resource, '/')));
-    }
-
-    /**
-     * Render the form contents.
-     *
-     * @return string
-     */
-    public function render()
-    {
-        return $this->builder->build();
-    }
-
-    /**
-     * Get or set input data.
-     *
-     * @param string $key
-     * @param null $value
-     * @return array|mixed
-     */
-    public function input($key, $value = null)
-    {
-        if(is_null($value)) {
-            return Arr::get($this->inputs, $key);
-        }
-
-        return Arr::set($this->inputs, $key, $value);
-    }
-
-    /**
-     * Getter.
-     *
-     * @param string $name
-     * @return array|mixed
-     */
-    public function __get($name)
-    {
-        return $this->input($name);
-    }
-
-    /**
-     * Setter.
-     *
-     * @param string $name
-     * @param $value
-     */
-    public function __set($name, $value)
-    {
-        $this->input($name, $value);
     }
 
     /**
@@ -630,6 +499,16 @@ class Form {
 
             return $element;
         }
+    }
+
+    /**
+     * Render the form contents.
+     *
+     * @return string
+     */
+    public function render()
+    {
+        return $this->builder->build();
     }
 
     /**

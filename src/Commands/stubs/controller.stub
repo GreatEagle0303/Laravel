@@ -2,10 +2,9 @@
 
 namespace DummyNamespace;
 
-use DummyModelNamespace;
-
 use Encore\Admin\Form;
 use Encore\Admin\Grid;
+use DummyModelNamespace;
 use Encore\Admin\Facades\Admin;
 use Encore\Admin\Controllers\AdminController;
 
