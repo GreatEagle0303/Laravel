@@ -2,7 +2,6 @@
 
 namespace Encore\Admin\Form\Field;
 
-use Encore\Admin\Admin;
 use Encore\Admin\Form\Field;
 
 class Map extends Field
@@ -15,6 +14,8 @@ class Map extends Field
     {
         $this->column['lat']  = $column;
         $this->column['lng']  = $arguments[0];
+
+        array_shift($arguments);
 
         $this->label  = $this->formatLabel($arguments);
         $this->id     = $this->formatId($this->column);
