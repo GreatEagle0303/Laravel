@@ -73,13 +73,6 @@ class Form {
      * @var Closure
      */
     protected $saving;
-    
-    /**
-     * Saved callback.
-     *
-     * @var Closure
-     */
-    protected $saved;
 
     /**
      * Data for save to current model from input.
@@ -207,8 +200,6 @@ class Form {
 
             $this->saveRelation($this->relations);
         });
-        
-        $this->complete($this->saved);
 
         return redirect($this->resource());
     }
@@ -233,17 +224,6 @@ class Form {
         $this->relations = array_filter($this->inputs, 'is_array');
     }
 
-    /**
-     * Callback after saving a Model
-     * @param Closure|null $callback
-     */
-    protected function complete(Closure $callback = null)
-    {
-        if($callback instanceof Closure) {
-            $callback($this);
-        }
-    }
-    
     /**
      * Save relations data.
      *
@@ -308,8 +288,6 @@ class Form {
             $this->updateRelation($this->relations);
         });
 
-        $this->complete($this->saved);
-        
         return redirect($this->resource());
     }
 
@@ -429,17 +407,6 @@ class Form {
     public function saving(Closure $callback)
     {
         $this->saving = $callback;
-    }
-    
-    /**
-     * Set saved callback.
-     *
-     * @param callable $callback
-     * @return void
-     */
-    public function saved(Closure $callback)
-    {
-        $this->saved = $callback;
     }
 
     /**
