@@ -11,7 +11,7 @@ class DateTime
     ];
 
     protected $js = [
-        'moment/min/moment.min.js',
+        'moment/min/moment-with-locales.min.js',
         'eonasdan-bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js'
     ];
 
@@ -27,9 +27,9 @@ class DateTime
     public function prepare()
     {
         $options['format'] = 'YYYY-MM-DD HH:mm:ss';
-        $options['locale'] = config('app.locale');
+        $options['locale'] = 'zh-cn';
 
-        $this->js[] = "moment/locale/{$options['locale']}.js";
+        //$this->js[] = "moment/locale/{$options['locale']}.js";
 
         $script = "$('#{$this->filter->getId()}').datetimepicker(". json_encode($options) .");";
 

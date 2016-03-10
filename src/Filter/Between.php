@@ -87,12 +87,12 @@ class Between extends AbstractFilter
         ];
 
         $js = [
-            'moment/min/moment.min.js',
+            'moment/min/moment-with-locales.min.js',
             'eonasdan-bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js'
         ];
 
         $options['format'] = 'YYYY-MM-DD HH:mm:ss';
-        $options['locale'] = config('app.locale');
+        $options['locale'] = 'zh-cn';
 
         $startOptions = json_encode($options);
         $endOptions = json_encode($options + ['useCurrent' =>false]);
@@ -108,7 +108,7 @@ class Between extends AbstractFilter
             });
 EOT;
 
-        $js[] = "moment/locale/{$options['locale']}.js";
+        //$js[] = "moment/locale/{$options['locale']}.js";
 
         Admin::js($js);
         Admin::css($css);
