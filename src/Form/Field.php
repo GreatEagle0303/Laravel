@@ -3,7 +3,6 @@
 namespace Encore\Admin\Form;
 
 use Encore\Admin\Admin;
-use Encore\Admin\Form;
 use Illuminate\Support\Arr;
 use Illuminate\Contracts\Support\Arrayable;
 
@@ -34,8 +33,6 @@ class Field {
     protected $script   = '';
 
     protected $attributes = [];
-
-    protected $form = null;
 
     public function __construct($column, $arguments = [])
     {
@@ -140,18 +137,6 @@ class Field {
         }
 
         $this->original = Arr::get($data, $this->column);
-    }
-
-    /**
-     * @param Form $form
-     *
-     * @return $this
-     */
-    public function setForm(Form $form)
-    {
-        $this->form = $form;
-
-        return $this;
     }
 
     /**

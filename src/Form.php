@@ -9,7 +9,6 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -74,7 +73,7 @@ class Form {
      * @var Closure
      */
     protected $saving;
-
+    
     /**
      * Saved callback.
      *
@@ -114,28 +113,6 @@ class Form {
         $this->builder = new Builder($this);
 
         $callback($this);
-    }
-
-    /**
-     * @param Field $field
-     *
-     * @return $this
-     */
-    public function pushField(Field $field)
-    {
-        $field->setForm($this);
-
-        $this->builder->fields()->push($field);
-
-        return $this;
-    }
-
-    /**
-     * @return Model
-     */
-    public function model()
-    {
-        return $this->model;
     }
 
     /**
@@ -230,7 +207,7 @@ class Form {
 
             $this->saveRelation($this->relations);
         });
-
+        
         $this->complete($this->saved);
 
         return redirect($this->resource());
@@ -266,7 +243,7 @@ class Form {
             $callback($this);
         }
     }
-
+    
     /**
      * Save relations data.
      *
@@ -332,7 +309,7 @@ class Form {
         });
 
         $this->complete($this->saved);
-
+        
         return redirect($this->resource());
     }
 
@@ -453,7 +430,7 @@ class Form {
     {
         $this->saving = $callback;
     }
-
+    
     /**
      * Set saved callback.
      *
@@ -685,7 +662,7 @@ class Form {
 
             $element = new $className($column, array_slice($arguments, 1));
 
-            $this->pushField($element);
+            $this->builder->fields()->push($element);
 
             return $element;
         }
