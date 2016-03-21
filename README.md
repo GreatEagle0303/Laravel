@@ -24,10 +24,10 @@ Inspired by [SleepingOwlAdmin](https://github.com/sleeping-owl/admin) and [rapyd
 
 ```
 //laravel 5.1
-composer require encore/laravel-admin "1.1.*"
+composer require encore/laravel-admin "1.1.x-dev"
 
 //laravel 5.2
-composer require encore/laravel-admin "1.2.*"
+composer require encore/laravel-admin "dev-master"
 ```
 
 Add `ServiceProvider` to `config/app.php`:
@@ -226,8 +226,11 @@ return Admin::form(User::class, function(Form $form){
     $form->checkbox('roles')->values(Role::all()->lists('display_name', 'id'));
     
     // Add saving callback function.
-    $form->saving(function($form) {
-        $form->password = bcrypt($form->password);
+    $form->saving(function(Form $form) {
+        if($form->password && $form->model()->password != $form->password)
+        {
+            $form->password = bcrypt($form->password);
+        }
     });
 });
 ```
