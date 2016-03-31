@@ -8,7 +8,7 @@ use Encore\Admin\Widgets\Table;
 
 class Dashboard
 {
-    protected $infoBox;
+    protected $widgets = [];
 
     public function __construct(Closure $callback)
     {
@@ -17,34 +17,7 @@ class Dashboard
 
     public function infoBox()
     {
-        return $this->infoBox = new InfoBox();
-    }
-
-    protected $left;
-
-    public function left(Closure $callback)
-    {
-        $this->left = collect();
-
-        $callback($this->left);
-    }
-
-    protected $right;
-
-    public function right(Closure $callback)
-    {
-        $this->right = collect();
-
-        $callback($this->right);
-    }
-
-    protected $bottom;
-
-    public function bottom(Closure $callback)
-    {
-        $this->bottom = collect();
-
-        $callback($this->bottom);
+        return $this->widgets['infoBox'] = new InfoBox();
     }
 
     public function table()
@@ -56,14 +29,7 @@ class Dashboard
     {
         $variables = ['title' => 'Dashboard', 'description' => 'Control panel'];
 
-        $partials = [
-            'infoBox'   => $this->infoBox,
-            'left'      => $this->left,
-            'right'     => $this->right,
-            'bottom'    => $this->bottom,
-        ];
-
-        return array_merge($variables, $partials);
+        return array_merge($variables, $this->widgets);
     }
 
     public function render()
