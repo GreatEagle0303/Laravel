@@ -33,11 +33,6 @@ class Model
     protected $sort;
 
     /**
-     * @var array
-     */
-    protected $data = [];
-
-    /**
      * Create a new grid model instance.
      *
      * @param EloquentModel $model
@@ -64,11 +59,7 @@ class Model
      */
     public function buildData()
     {
-        if (empty($this->data)) {
-            $this->data = $this->get()->getCollection()->toArray();
-        }
-
-        return $this->data;
+        return $this->get()->getCollection()->toArray();
     }
 
     /**
@@ -191,14 +182,5 @@ class Model
         $this->queries[$method] = $arguments;
 
         return $this;
-    }
-
-    public function __get($key)
-    {
-        $data = $this->buildData();
-
-        if (array_key_exists($key, $data)) {
-            return $data[$key];
-        }
     }
 }

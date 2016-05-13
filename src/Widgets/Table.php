@@ -3,7 +3,6 @@
 namespace Encore\Admin\Widgets;
 
 use Illuminate\Contracts\Support\Renderable;
-use Illuminate\Support\Arr;
 
 class Table extends Widget implements Renderable
 {
@@ -29,14 +28,6 @@ class Table extends Widget implements Renderable
 
     public function setRows($rows = [])
     {
-        if (Arr::isAssoc($rows)) {
-            foreach($rows as $key => $item) {
-                $this->rows[] = [$key, $item];
-            }
-
-            return $this;
-        }
-
         $this->rows = $rows;
 
         return $this;

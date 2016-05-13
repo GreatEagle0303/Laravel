@@ -16,6 +16,8 @@ class Row
 
     protected $keyName = 'id';
 
+    protected $path;
+
     public function __construct($number, $data)
     {
         $this->number = $number;
@@ -26,6 +28,16 @@ class Row
     public function setKeyName($keyName)
     {
         $this->keyName = $keyName;
+    }
+
+    public function setPath($path)
+    {
+        $this->path = $path;
+    }
+
+    public function getPath()
+    {
+        return $this->path;
     }
 
     public function id()

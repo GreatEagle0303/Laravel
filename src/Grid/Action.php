@@ -59,6 +59,31 @@ class Action
                     });
                 }
             });
+
+            $('.grid-select-all').change(function() {
+                if (this.checked) {
+                    $('.grid-item').prop("checked", true);
+                } else {
+                    $('.grid-item').prop("checked", false);
+                }
+            });
+
+            $('.batch-delete').on('click', function() {
+                var selected = [];
+                $('.grid-item:checked').each(function(){
+                    selected.push($(this).data('id'));
+                });
+
+                if (selected.length == 0) {
+                    return;
+                }
+
+                if(confirm("{$confirm}")) {
+                    $.post('/{$this->path}/' + selected.join(), {_method:'delete','_token':'{$token}'}, function(data){
+                        $.pjax.reload('#pjax-container');
+                    });
+                }
+            });
 SCRIPT;
 
         Admin::script($script);
@@ -74,7 +99,7 @@ SCRIPT;
         foreach ($this->defaultActions as $action) {
             $actionEntities[] = str_replace(
                 ['{path}', '{id}'],
-                [$this->path, $this->row->id()],
+                [$this->path, $this->row->id],
                 $this->defaultActionViews[$action]
             );
         }
@@ -84,12 +109,6 @@ SCRIPT;
 
     public function __toString()
     {
-        try {
-            $this->render();
-        } catch (\Exception $e) {
-            dd($e);
-        }
-
         return $this->render();
     }
 }
