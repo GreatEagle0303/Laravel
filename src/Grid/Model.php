@@ -33,6 +33,11 @@ class Model
     protected $sort;
 
     /**
+     * @var array
+     */
+    protected $data = [];
+
+    /*
      * 20 items per page as default.
      *
      * @var int
@@ -68,7 +73,11 @@ class Model
      */
     public function buildData()
     {
-        return $this->get()->getCollection()->toArray();
+        if (empty($this->data)) {
+            $this->data = $this->get()->getCollection()->toArray();
+        }
+
+        return $this->data;
     }
 
     /**
@@ -224,5 +233,14 @@ class Model
         ]);
 
         return $this;
+    }
+
+    public function __get($key)
+    {
+        $data = $this->buildData();
+
+        if (array_key_exists($key, $data)) {
+            return $data[$key];
+        }
     }
 }
