@@ -1,6 +1,6 @@
 <?php
 
-namespace Encore\Admin\Grid\Filter;
+namespace Encore\Admin\Filter;
 
 use Encore\Admin\Admin;
 use Illuminate\Support\Arr;

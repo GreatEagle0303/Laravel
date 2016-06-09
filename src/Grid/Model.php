@@ -33,11 +33,6 @@ class Model
     protected $sort;
 
     /**
-     * @var array
-     */
-    protected $data = [];
-
-    /*
      * 20 items per page as default.
      *
      * @var int
@@ -73,11 +68,7 @@ class Model
      */
     public function buildData()
     {
-        if (empty($this->data)) {
-            $this->data = $this->get()->getCollection()->toArray();
-        }
-
-        return $this->data;
+        return $this->get()->getCollection()->toArray();
     }
 
     /**
@@ -189,8 +180,8 @@ class Model
     {
         list($relationName, $relationColumn) = explode('.', $column);
 
-        if ($this->queries->contains(function ($key, $query) use ($relationName) {
-            return $query['method'] == 'with' && in_array($relationName, $query['arguments']);
+        if ($this->queries->contains(function ($query) use ($relationName) {
+            $query['method'] == 'with' && in_array($relationName, $query['arguments']);
         })) {
             $relation = $this->model->$relationName();
 
@@ -233,14 +224,5 @@ class Model
         ]);
 
         return $this;
-    }
-
-    public function __get($key)
-    {
-        $data = $this->buildData();
-
-        if (array_key_exists($key, $data)) {
-            return $data[$key];
-        }
     }
 }

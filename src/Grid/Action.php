@@ -99,7 +99,7 @@ SCRIPT;
         foreach ($this->defaultActions as $action) {
             $actionEntities[] = str_replace(
                 ['{path}', '{id}'],
-                [$this->path, $this->row->id()],
+                [$this->path, $this->row->id],
                 $this->defaultActionViews[$action]
             );
         }
@@ -109,12 +109,6 @@ SCRIPT;
 
     public function __toString()
     {
-        try {
-            $this->render();
-        } catch (\Exception $e) {
-            dd($e);
-        }
-
         return $this->render();
     }
 }

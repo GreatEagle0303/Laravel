@@ -20,9 +20,9 @@ class HasMany extends Field
     {
         $this->relationName = $relation;
 
-        $this->builder = $arguments[1];
+        $this->builder = $arguments[0];
 
-        parent::__construct($relation, $arguments);
+        parent::__construct($relation);
     }
 
     public function render()

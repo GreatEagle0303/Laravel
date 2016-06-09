@@ -1,6 +1,6 @@
 <?php
 
-namespace Encore\Admin\Grid\Filter\Field;
+namespace Encore\Admin\Filter\Field;
 
 use Illuminate\Contracts\Support\Arrayable;
 

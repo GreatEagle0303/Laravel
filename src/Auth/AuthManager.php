@@ -1,7 +1,6 @@
 <?php namespace Encore\Admin\Auth;
 
 use Illuminate\Auth\AuthManager as Manager;
-use Illuminate\Auth\EloquentUserProvider;
 
 class AuthManager extends Manager
 {
@@ -13,7 +12,7 @@ class AuthManager extends Manager
      */
     protected function getConfig($name)
     {
-        return config('admin.auth');
+        return config('admin.auth.guard');
     }
 
     /**
@@ -21,11 +20,30 @@ class AuthManager extends Manager
      *
      * @param  string  $provider
      * @return \Illuminate\Contracts\Auth\UserProvider
+     *
+     * @throws InvalidArgumentException
      */
     public function createUserProvider($provider)
     {
-        $config = config('admin.auth');
+        $config = $this->app['config']['admin.auth.provider'];
 
-        return new EloquentUserProvider($this->app['hash'], $config['model']);
+        if (isset($this->customProviderCreators[$config['driver']])) {
+            return call_user_func(
+                $this->customProviderCreators[$config['driver']],
+                $this->app,
+                $config
+            );
+        }
+
+        switch ($config['driver']) {
+            case 'database':
+                return $this->createDatabaseProvider($config);
+            case 'eloquent':
+                return $this->createEloquentProvider($config);
+            default:
+                throw new InvalidArgumentException(
+                    "Authentication user provider [{$config['driver']}] is not defined."
+                );
+        }
     }
 }
