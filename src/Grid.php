@@ -196,6 +196,11 @@ class Grid
         return $this->columns[] = new Column($column, $label);
     }
 
+    public function blank($label)
+    {
+        return $this->addColumn('blank', $label);
+    }
+
     /**
      * Get Grid model.
      *
@@ -392,6 +397,16 @@ class Grid
         return app('router')->current()->getPath();
     }
 
+    public function pathOfCreate()
+    {
+        $path = $query = '';
+
+        extract(parse_url($this->resource()));
+
+        return '/' . trim($path, '/') . '/create' . $query;
+
+    }
+
     /**
      * Add variables to grid view.
      *
@@ -425,6 +440,7 @@ class Grid
     public function render()
     {
         try {
+
             $this->build();
         } catch (\Exception $e) {
 
@@ -443,6 +459,12 @@ class Grid
      */
     public function __call($method, $arguments)
     {
+        if ($this->model()->eloquent() instanceof \Jenssegers\Mongodb\Eloquent\Model) {
+            $label = isset($arguments[0]) ? $arguments[0] : ucfirst($method);
+
+            return $this->addColumn($method, $label);
+        }
+
         $connection = $this->model()->eloquent()->getConnectionName();
         if (Schema::connection($connection)->hasColumn($this->model()->getTable(), $method)) {
             $label = isset($arguments[0]) ? $arguments[0] : ucfirst($method);

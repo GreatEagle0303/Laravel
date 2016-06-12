@@ -1,16 +1,15 @@
 <?php
 
-namespace DummyNamespace;
+namespace Encore\Admin\Controllers;
 
-use Encore\Admin\Auth\Database\Role;
 use Encore\Admin\Form;
 use Encore\Admin\Grid;
 use Encore\Admin\Facades\Admin;
 use Encore\Admin\Layout\Content;
-use Encore\Admin\Controllers\AdminController;
 use Encore\Admin\Auth\Database\Administrator;
+use Encore\Admin\Auth\Database\Role;
 
-class AdministratorController extends AdminController
+class UserController extends AdminController
 {
     /**
      * Index interface.
@@ -23,8 +22,7 @@ class AdministratorController extends AdminController
 
             $content->header('Administrator');
             $content->description('list');
-
-            $content->body($this->grid());
+            $content->body($this->grid()->render());
         });
     }
 
@@ -39,8 +37,7 @@ class AdministratorController extends AdminController
         return Admin::content(function (Content $content) use ($id) {
 
             $content->header('Administrator');
-            $content->description('Edit Administrator');
-
+            $content->description('Edit');
             $content->body($this->form()->edit($id));
         });
     }
@@ -55,8 +52,7 @@ class AdministratorController extends AdminController
         return Admin::content(function (Content $content) {
 
             $content->header('Administrator');
-            $content->description('Create Administrator');
-
+            $content->description('Create');
             $content->body($this->form());
         });
     }
@@ -66,7 +62,7 @@ class AdministratorController extends AdminController
      *
      * @return Grid
      */
-    public function grid()
+    protected function grid()
     {
         return Admin::grid(Administrator::class, function (Grid $grid) {
 

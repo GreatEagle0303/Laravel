@@ -1,16 +1,14 @@
 <?php
 
-namespace DummyNamespace;
+namespace Encore\Admin\Controllers;
 
-use Encore\Admin\Auth\Database\Role;
 use Encore\Admin\Form;
 use Encore\Admin\Grid;
 use Encore\Admin\Facades\Admin;
 use Encore\Admin\Layout\Content;
-use Encore\Admin\Controllers\AdminController;
-use Encore\Admin\Auth\Database\Administrator;
+use Encore\Admin\Auth\Database\Permission;
 
-class AdministratorController extends AdminController
+class PermissionController extends AdminController
 {
     /**
      * Index interface.
@@ -21,10 +19,9 @@ class AdministratorController extends AdminController
     {
         return Admin::content(function (Content $content) {
 
-            $content->header('Administrator');
-            $content->description('list');
-
-            $content->body($this->grid());
+            $content->header('权限管理');
+            $content->description('权限列表');
+            $content->body($this->grid()->render());
         });
     }
 
@@ -38,9 +35,8 @@ class AdministratorController extends AdminController
     {
         return Admin::content(function (Content $content) use ($id) {
 
-            $content->header('Administrator');
-            $content->description('Edit Administrator');
-
+            $content->header('编辑权限');
+            $content->description('编辑权限');
             $content->body($this->form()->edit($id));
         });
     }
@@ -54,9 +50,8 @@ class AdministratorController extends AdminController
     {
         return Admin::content(function (Content $content) {
 
-            $content->header('Administrator');
-            $content->description('Create Administrator');
-
+            $content->header('添加权限');
+            $content->description('添加权限');
             $content->body($this->form());
         });
     }
@@ -66,12 +61,12 @@ class AdministratorController extends AdminController
      *
      * @return Grid
      */
-    public function grid()
+    protected function grid()
     {
-        return Admin::grid(Administrator::class, function (Grid $grid) {
+        return Admin::grid(Permission::class, function (Grid $grid) {
 
             $grid->id('ID')->sortable();
-            $grid->username();
+            $grid->slug();
             $grid->name();
 
             $grid->created_at();
@@ -86,24 +81,15 @@ class AdministratorController extends AdminController
      */
     public function form()
     {
-        return Admin::form(Administrator::class, function (Form $form) {
+        return Admin::form(Permission::class, function (Form $form) {
 
             $form->display('id', 'ID');
 
-            $form->text('username');
+            $form->text('slug');
             $form->text('name');
-            $form->password('password');
-
-            $form->multipleSelect('roles')->options(Role::all()->pluck('name', 'id'));
 
             $form->display('created_at', 'Created At');
             $form->display('updated_at', 'Updated At');
-
-            $form->saving(function (Form $form) {
-                if ($form->password && $form->model()->password != $form->password) {
-                    $form->password = bcrypt($form->password);
-                }
-            });
         });
     }
 }
