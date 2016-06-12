@@ -8,11 +8,6 @@ use Illuminate\Support\Arr;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Facades\Input;
 
-/**
- * Class Field
- * @package Encore\Admin\Form
- * @method Field default($value) set field default value
- */
 class Field
 {
     protected $id;
@@ -281,6 +276,7 @@ class Field
         $this->variables['label']   = $this->label;
         $this->variables['column']  = $this->column;
         $this->variables['attributes']  = $this->formatAttributes();
+        $this->variables['placeholder'] = trans('admin::lang.input') . " $this->label";
 
         return $this->variables;
     }

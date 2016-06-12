@@ -27,6 +27,8 @@ Inspired by [SleepingOwlAdmin](https://github.com/sleeping-owl/admin) and [rapyd
 # Installation
 
 ```
+
+//laravel 5.2
 composer require encore/laravel-admin "dev-master"
 ```
 

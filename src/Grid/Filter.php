@@ -4,7 +4,7 @@ namespace Encore\Admin\Grid;
 
 use ReflectionClass;
 use Illuminate\Support\Facades\Input;
-use Encore\Admin\Grid\Filter\AbstractFilter;
+use Encore\Admin\Filter\AbstractFilter;
 
 /**
  * Class Filter
@@ -101,7 +101,7 @@ class Filter
      */
     public function render()
     {
-        return view('admin::grid.filter')->with(['filters' => $this->filters()]);
+        return view('admin::filter')->with(['filters' => $this->filters()]);
     }
 
     /**
@@ -115,7 +115,7 @@ class Filter
     {
         if (in_array($method, $this->allows)) {
 
-            $className = '\\Encore\\Admin\\Grid\\Filter\\'.ucfirst($method);
+            $className = '\\Encore\\Admin\\Filter\\'.ucfirst($method);
             $reflection = new ReflectionClass($className);
 
             return $this->addFilter($reflection->newInstanceArgs($arguments));
