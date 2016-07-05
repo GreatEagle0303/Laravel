@@ -1,13 +1,12 @@
 <?php
 
-namespace DummyNamespace;
+namespace Encore\Admin\Controllers;
 
 use Encore\Admin\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\MessageBag;
 use App\Http\Controllers\Controller;
 
 class AuthController extends Controller

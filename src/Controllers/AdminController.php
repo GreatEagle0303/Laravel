@@ -2,9 +2,7 @@
 
 namespace Encore\Admin\Controllers;
 
-use App\Http\Controllers\Controller;
-
-class AdminController extends Controller
+trait AdminController
 {
     public function show($id)
     {

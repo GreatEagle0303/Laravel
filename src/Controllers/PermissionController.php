@@ -1,17 +1,15 @@
 <?php
 
-namespace DummyNamespace;
-
-use DummyModelNamespace;
+namespace Encore\Admin\Controllers;
 
 use Encore\Admin\Form;
 use Encore\Admin\Grid;
 use Encore\Admin\Facades\Admin;
 use Encore\Admin\Layout\Content;
-use App\Http\Controllers\Controller;
-use Encore\Admin\Controllers\AdminController;
+use Illuminate\Routing\Controller;
+use Encore\Admin\Auth\Database\Permission;
 
-class DummyClass extends Controller
+class PermissionController extends Controller
 {
     use AdminController;
 
@@ -24,10 +22,9 @@ class DummyClass extends Controller
     {
         return Admin::content(function (Content $content) {
 
-            $content->header('header');
-            $content->description('description');
-
-            $content->body($this->grid());
+            $content->header('Permission manage');
+            $content->description('Permissions');
+            $content->body($this->grid()->render());
         });
     }
 
@@ -41,9 +38,8 @@ class DummyClass extends Controller
     {
         return Admin::content(function (Content $content) use ($id) {
 
-            $content->header('header');
-            $content->description('description');
-
+            $content->header('Edit permission');
+            $content->description('Edit permission');
             $content->body($this->form()->edit($id));
         });
     }
@@ -57,9 +53,8 @@ class DummyClass extends Controller
     {
         return Admin::content(function (Content $content) {
 
-            $content->header('header');
-            $content->description('description');
-
+            $content->header('Add permission');
+            $content->description('Add permission');
             $content->body($this->form());
         });
     }
@@ -69,11 +64,13 @@ class DummyClass extends Controller
      *
      * @return Grid
      */
-    public function grid()
+    protected function grid()
     {
-        return Admin::grid(DummyModel::class, function (Grid $grid) {
+        return Admin::grid(Permission::class, function (Grid $grid) {
 
             $grid->id('ID')->sortable();
+            $grid->slug();
+            $grid->name();
 
             $grid->created_at();
             $grid->updated_at();
@@ -87,9 +84,12 @@ class DummyClass extends Controller
      */
     public function form()
     {
-        return Admin::form(DummyModel::class, function (Form $form) {
+        return Admin::form(Permission::class, function (Form $form) {
 
             $form->display('id', 'ID');
+
+            $form->text('slug');
+            $form->text('name');
 
             $form->display('created_at', 'Created At');
             $form->display('updated_at', 'Updated At');

@@ -725,7 +725,7 @@ class Form
     {
         if ($className = static::findFieldClass($method)) {
 
-            $column = array_get($arguments, 0, '');
+            $column = array_get($arguments, 0, '');//[0];
 
             $element = new $className($column, array_slice($arguments, 1));
 
