@@ -7,9 +7,7 @@ use Illuminate\Contracts\Support\Renderable;
 class Tab extends Widget implements Renderable
 {
     protected $attributes = [
-        'title'    => '',
-        'tabs'     => [],
-        'dropDown' => [],
+        'title' => '',
     ];
 
     public function add($title, $content)
