@@ -215,7 +215,7 @@ class Field
     {
         if (is_null($value)) {
             if (is_null($this->default)) {
-                //$this->default = Input::get($this->column);
+                $this->default = Input::get($this->column);
             }
 
             return is_null($this->value) ? $this->default : $this->value;
@@ -316,7 +316,7 @@ class Field
     {
         Admin::script($this->script);
 
-        return view($this->getView(), $this->variables());
+        return view($this->getView(), $this->variables())->render();
     }
 
     public function __call($method, $arguments)
