@@ -50,7 +50,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
  * @method Field\Display        display($column, $label = '')
  * @method Field\Rate           rate($column, $label = '')
  * @method Field\Divide         divide()
- * @method Field\Password       password($column, $label = '')
+ * @method Field\Password       password()
  */
 class Form
 {
@@ -321,6 +321,7 @@ class Form
 
             switch (get_class($relation)) {
                 case \Illuminate\Database\Eloquent\Relations\BelongsToMany::class:
+                case \Illuminate\Database\Eloquent\Relations\MorphToMany::class:
                     $relation->attach($values[$name]);
                     break;
                 case \Illuminate\Database\Eloquent\Relations\HasOne::class:
@@ -395,6 +396,7 @@ class Form
 
             switch (get_class($relation)) {
                 case \Illuminate\Database\Eloquent\Relations\BelongsToMany::class:
+                case \Illuminate\Database\Eloquent\Relations\MorphToMany::class:
                     $relation->sync($prepared[$name]);
                     break;
                 case \Illuminate\Database\Eloquent\Relations\HasOne::class:
@@ -540,7 +542,7 @@ class Form
     protected function getFieldByColumn($column)
     {
         return $this->builder->fields()->first(
-            function ($index, Field $field) use ($column) {
+            function (Field $field) use ($column) {
                 if (is_array($field->column())) {
                     return in_array($column, $field->column());
                 }
