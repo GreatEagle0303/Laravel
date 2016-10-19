@@ -3,7 +3,6 @@ laravel-admin
 
 [![Build Status](https://travis-ci.org/z-song/laravel-admin.svg?branch=master)](https://travis-ci.org/z-song/laravel-admin)
 [![StyleCI](https://styleci.io/repos/48796179/shield)](https://styleci.io/repos/48796179)
-[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/z-song/laravel-admin/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/z-song/laravel-admin/?branch=master)
 [![Packagist](https://img.shields.io/packagist/l/encore/laravel-admin.svg?maxAge=2592000)](https://packagist.org/packages/encore/laravel-admin)
 [![Total Downloads](https://img.shields.io/packagist/dt/encore/laravel-admin.svg?style=flat-square)](https://packagist.org/packages/encore/laravel-admin)
 
@@ -218,7 +217,18 @@ $router->resource('users', UserController::class);
 
 ### 3.添加左侧菜单栏连接
 
-打开`http://localhost:8000/admin/auth/menu`,添加对应的menu
+打开文件`app/Admin/menu.php`,添加以下数据：
+
+```
+...
+[
+    'title' => '用户列表',
+    'url'   => 'users',
+    'icon'  => 'fa-users',
+],
+...
+
+```
 
 然后就能在后台管理页面的左侧边栏看到用户管理页面的链接入口了。
 
