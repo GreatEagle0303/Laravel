@@ -400,11 +400,20 @@ class Form
                     $relation->sync($prepared[$name]);
                     break;
                 case \Illuminate\Database\Eloquent\Relations\HasOne::class:
-                    foreach ($prepared[$name] as $column => $value) {
-                        $this->model->$name->setAttribute($column, $value);
+
+                    $related = $this->model->$name;
+
+                    // if related is empty
+                    if (is_null($related)) {
+                        $related = $relation->getRelated();
+                        $related->{$relation->getForeignKey()} = $this->model->{$this->model->getKeyName()};
                     }
 
-                    $this->model->$name->save();
+                    foreach ($prepared[$name] as $column => $value) {
+                        $related->setAttribute($column, $value);
+                    }
+
+                    $related->save();
                     break;
             }
         }
@@ -542,7 +551,7 @@ class Form
     protected function getFieldByColumn($column)
     {
         return $this->builder->fields()->first(
-            function ($index, Field $field) use ($column) {
+            function (Field $field) use ($column) {
                 if (is_array($field->column())) {
                     return in_array($column, $field->column());
                 }
