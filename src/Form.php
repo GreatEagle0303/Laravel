@@ -13,6 +13,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Validator;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 /**
  * Class Form.
@@ -38,8 +39,6 @@ use Illuminate\Support\Facades\Validator;
  * @method Field\Date           date($column, $label = '')
  * @method Field\Datetime       datetime($column, $label = '')
  * @method Field\Time           time($column, $label = '')
- * @method Field\Year           year($column, $label = '')
- * @method Field\Month          month($column, $label = '')
  * @method Field\DateRange      dateRange($start, $end, $label = '')
  * @method Field\DateTimeRange  dateTimeRange($start, $end, $label = '')
  * @method Field\TimeRange      timeRange($start, $end, $label = '')
@@ -52,7 +51,6 @@ use Illuminate\Support\Facades\Validator;
  * @method Field\Rate           rate($column, $label = '')
  * @method Field\Divide         divide()
  * @method Field\Password       password($column, $label = '')
- * @method Field\Decimal        decimal($column, $label = '')
  */
 class Form
 {
@@ -258,9 +256,6 @@ class Form
             $inserts = $this->prepareInsert($this->updates);
 
             foreach ($inserts as $column => $value) {
-                if (is_array($value)) {
-                    $value = implode(',', $value);
-                }
                 $this->model->setAttribute($column, $value);
             }
 
@@ -288,37 +283,11 @@ class Form
             $callback($this);
         }
 
-        $this->relations = $this->getRelationInputs($data);
-
-        $updates = array_except($this->inputs, array_keys($this->relations));
-
-        $this->updates = array_filter($updates, function ($val) {
-            return !is_null($val);
+        $this->updates = array_filter($this->inputs, function ($val) {
+            return is_string($val) or ($val instanceof UploadedFile);
         });
-    }
 
-    /**
-     * Get inputs for relations.
-     *
-     * @param array $inputs
-     *
-     * @return array
-     */
-    protected function getRelationInputs($inputs = [])
-    {
-        $relations = [];
-
-        foreach ($inputs as $column => $value) {
-            if (method_exists($this->model, $column)) {
-                $relation = call_user_func([$this->model, $column]);
-
-                if ($relation instanceof Relation) {
-                    $relations[$column] = $value;
-                }
-            }
-        }
-
-        return $relations;
+        $this->relations = array_filter($this->inputs, 'is_array');
     }
 
     /**
@@ -393,10 +362,6 @@ class Form
             $updates = $this->prepareUpdate($this->updates);
 
             foreach ($updates as $column => $value) {
-                if (is_array($value)) {
-                    $value = implode(',', $value);
-                }
-
                 $this->model->setAttribute($column, $value);
             }
 
@@ -589,7 +554,7 @@ class Form
     protected function getFieldByColumn($column)
     {
         return $this->builder->fields()->first(
-            function (Field $field) use ($column) {
+            function ($index, Field $field) use ($column) {
                 if (is_array($field->column())) {
                     return in_array($column, $field->column());
                 }
