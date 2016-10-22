@@ -9,7 +9,6 @@ use Encore\Admin\Grid\Exporter;
 use Encore\Admin\Grid\Filter;
 use Encore\Admin\Grid\Model;
 use Encore\Admin\Grid\Row;
-use Encore\Admin\Pagination\AdminThreePresenter;
 use Illuminate\Database\Eloquent\Model as Eloquent;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -256,9 +255,7 @@ class Grid
     {
         $query = Input::all();
 
-        return $this->model()->eloquent()->appends($query)->render(
-            new AdminThreePresenter($this->model()->eloquent())
-        );
+        return $this->model()->eloquent()->appends($query)->render('admin::pagination');
     }
 
     /**
@@ -503,16 +500,14 @@ class Grid
      */
     public function __call($method, $arguments)
     {
-        if ($this->model()->eloquent() instanceof MongodbModel) {
-            $label = isset($arguments[0]) ? $arguments[0] : ucfirst($method);
+        $label = isset($arguments[0]) ? $arguments[0] : ucfirst($method);
 
+        if ($this->model()->eloquent() instanceof MongodbModel) {
             return $this->addColumn($method, $label);
         }
 
         $connection = $this->model()->eloquent()->getConnectionName();
         if (Schema::connection($connection)->hasColumn($this->model()->getTable(), $method)) {
-            $label = isset($arguments[0]) ? $arguments[0] : ucfirst($method);
-
             return $this->addColumn($method, $label);
         }
 
@@ -521,13 +516,13 @@ class Grid
         if ($relation instanceof HasOne || $relation instanceof BelongsTo) {
             $this->model()->with($method);
 
-            return $this->addColumn()->setRelation($method);
+            return $this->addColumn($method, $label)->setRelation($method);
         }
 
         if ($relation instanceof HasMany || $relation instanceof BelongsToMany || $relation instanceof MorphToMany) {
             $this->model()->with($method);
 
-            return $this->addColumn($method);
+            return $this->addColumn($method, $label);
         }
     }
 
