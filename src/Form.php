@@ -271,7 +271,7 @@ class Form
 
         $this->complete($this->saved);
 
-        return redirect($this->resource(0));
+        return redirect($this->resource());
     }
 
     /**
@@ -407,7 +407,7 @@ class Form
 
         $this->complete($this->saved);
 
-        return redirect($this->resource(-1));
+        return redirect($this->resource());
     }
 
     /**
@@ -589,7 +589,7 @@ class Form
     protected function getFieldByColumn($column)
     {
         return $this->builder->fields()->first(
-            function (Field $field) use ($column) {
+            function ($index, Field $field) use ($column) {
                 if (is_array($field->column())) {
                     return in_array($column, $field->column());
                 }
@@ -709,20 +709,16 @@ class Form
     /**
      * Get current resource route url.
      *
-     * @param int $slice
      * @return string
      */
-    public function resource($slice = -2)
+    public function resource()
     {
         $route = app('router')->current();
+        $prefix = $route->getPrefix();
 
-        $segments = explode('/', trim($route->getUri(), '/'));
+        $resource = trim(preg_replace("#$prefix#", '', $route->getUri(), 1), '/').'/';
 
-        if ($slice != 0) {
-            $segments = array_slice($segments, 0, $slice);
-        }
-
-        return '/'.join('/', $segments);
+        return "/$prefix/".substr($resource, 0, strpos($resource, '/'));
     }
 
     /**

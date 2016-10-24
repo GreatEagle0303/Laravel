@@ -140,15 +140,13 @@ class Builder
      */
     public function open($options = [])
     {
-        $attributes = [];
-
         if ($this->mode == self::MODE_EDIT) {
             $attributes['action'] = $this->form->resource().'/'.$this->id;
             $this->form->hidden('_method')->value('PUT');
         }
 
         if ($this->mode == self::MODE_CREATE) {
-            $attributes['action'] = $this->form->resource(-1);
+            $attributes['action'] = $this->form->resource();
         }
 
         $attributes['method'] = array_get($options, 'method', 'post');
@@ -195,15 +193,13 @@ class Builder
         $confirm = trans('admin::lang.delete_confirm');
         $token = csrf_token();
 
-        $slice = $this->mode == static::MODE_CREATE ? -1 : -2;
-
-        $location = '/'.trim($this->form->resource($slice), '/');
+        $location = '/'.trim($this->form->resource(), '/');
 
         $script = <<<SCRIPT
             $('.item_delete').click(function() {
                 var id = $(this).data('id');
                 if(confirm('{$confirm}')) {
-                    $.post('{$this->form->resource($slice)}/' + id, {_method:'delete','_token':'{$token}'}, function(data){
+                    $.post('{$this->form->resource()}/' + id, {_method:'delete','_token':'{$token}'}, function(data){
                         $.pjax({
                             timeout: 2000,
                             url: '$location',
@@ -220,7 +216,7 @@ SCRIPT;
         $vars = [
             'id'       => $this->id,
             'form'     => $this,
-            'resource' => $this->form->resource($slice),
+            'resource' => $this->form->resource(),
         ];
 
         return view('admin::form', $vars)->render();
