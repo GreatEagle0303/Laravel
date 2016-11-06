@@ -6,9 +6,6 @@ use Encore\Admin\Admin;
 
 class Between extends AbstractFilter
 {
-    /**
-     * @var null
-     */
     protected $view = null;
 
     /**
@@ -49,12 +46,6 @@ class Between extends AbstractFilter
         return ['start' => "{$name}[start]", 'end' => "{$name}[end]"];
     }
 
-    /**
-     * Get condition of this filter.
-     *
-     * @param array $inputs
-     * @return array|mixed|void
-     */
     public function condition($inputs)
     {
         if (!array_has($inputs, $this->column)) {

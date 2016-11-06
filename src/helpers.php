@@ -25,8 +25,8 @@ if (!function_exists('admin_url')) {
      */
     function admin_url($url = '')
     {
-        $prefix = trim(config('admin.prefix'), '/');
+        $prefix = app('router')->current()->getPrefix();
 
-        return ($prefix ? "/$prefix" : '').'/'.trim($url, '/');
+        return "/$prefix/".trim($url, '/');
     }
 }

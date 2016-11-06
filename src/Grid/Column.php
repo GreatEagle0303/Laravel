@@ -3,14 +3,10 @@
 namespace Encore\Admin\Grid;
 
 use Closure;
-use Encore\Admin\Facades\Admin;
-use Encore\Admin\Grid;
 use Illuminate\Support\Facades\URL;
 
 class Column
 {
-    protected $grid;
-
     protected $name;
 
     protected $label;
@@ -36,11 +32,6 @@ class Column
         $this->name = $name;
 
         $this->label = $this->formatLabel($label);
-    }
-
-    public function setGrid(Grid $grid)
-    {
-        $this->grid = $grid;
     }
 
     /**
@@ -136,7 +127,7 @@ class Column
             }
 
             if ($this->hasHtmlWrapper()) {
-                $value = $this->htmlWrap($value, $item);
+                $value = $this->htmlWrap($value);
                 array_set($item, $this->name, $value);
             }
         }
@@ -284,24 +275,9 @@ EOT;
     {
         $server = $server ?: config('admin.upload.host');
 
-        $wrapper = "<img src='$server/{\$value}' style='max-width:{$width}px;max-height:{$height}px' class='img img-thumbnail' />";
+        $wrapper = "<img src='$server/{\$value}' style='max-width:{$width}px;max-height:{$height}px' class=\'img\' />";
 
         $this->htmlWrapper($wrapper);
-
-        return $this;
-    }
-
-    /**
-     * Make the column editable.
-     *
-     * @return $this
-     */
-    public function editable()
-    {
-        $editable = new Editable($this->name, func_get_args());
-        $editable->setResource($this->grid->resource());
-
-        $this->htmlWrapper($editable->html());
 
         return $this;
     }
@@ -333,14 +309,13 @@ EOT;
      *
      * @return mixed
      */
-    protected function htmlWrap($value, $row = [])
+    protected function htmlWrap($value)
     {
         foreach ($this->htmlWrappers as $wrapper) {
             $value = str_replace('{value}', $value, $wrapper);
         }
 
-        $value = str_replace('{$value}', is_null($this->original) ? 'NULL' : $this->original, $value);
-        $value = str_replace('{pk}', array_get($row, $this->grid->getKeyName()), $value);
+        $value = str_replace('{$value}', $this->original, $value);
 
         return $value;
     }

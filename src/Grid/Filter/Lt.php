@@ -4,12 +4,6 @@ namespace Encore\Admin\Grid\Filter;
 
 class Lt extends AbstractFilter
 {
-    /**
-     * Get condition of this filter.
-     *
-     * @param array $inputs
-     * @return array|mixed|void
-     */
     public function condition($inputs)
     {
         $value = array_get($inputs, $this->column);
