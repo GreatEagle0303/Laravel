@@ -4,12 +4,12 @@ namespace Encore\Admin;
 
 use Closure;
 use Encore\Admin\Exception\Handle;
+use Encore\Admin\Facades\Admin as AdminManager;
 use Encore\Admin\Grid\Column;
 use Encore\Admin\Grid\Exporter;
 use Encore\Admin\Grid\Filter;
 use Encore\Admin\Grid\Model;
 use Encore\Admin\Grid\Row;
-use Encore\Admin\Pagination\AdminThreePresenter;
 use Illuminate\Database\Eloquent\Model as Eloquent;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -123,6 +123,20 @@ class Grid
     protected $allowActions = true;
 
     /**
+     * Allow export data.
+     *
+     * @var bool
+     */
+    protected $allowExport = true;
+
+    /**
+     * Is grid rows orderable.
+     *
+     * @var bool
+     */
+    protected $orderable = false;
+
+    /**
      * @var Exporter
      */
     protected $exporter;
@@ -143,6 +157,16 @@ class Grid
 
         $this->setupFilter();
         $this->setupExporter();
+    }
+
+    /**
+     * Get primary key name of model.
+     *
+     * @return string
+     */
+    public function getKeyName()
+    {
+        return $this->keyName ?: 'id';
     }
 
     /**
@@ -217,7 +241,10 @@ class Grid
     {
         //$label = $label ?: Str::upper($column);
 
-        return $this->columns[] = new Column($column, $label);
+        $column = new Column($column, $label);
+        $column->setGrid($this);
+
+        return $this->columns[] = $column;
     }
 
     public function blank($label)
@@ -256,9 +283,7 @@ class Grid
     {
         $query = Input::all();
 
-        return $this->model()->eloquent()->appends($query)->render(
-            new AdminThreePresenter($this->model()->eloquent())
-        );
+        return $this->model()->eloquent()->appends($query)->render('admin::pagination');
     }
 
     /**
@@ -272,9 +297,7 @@ class Grid
             return;
         }
 
-        call_user_func($this->builder, $this);
-
-        $data = $this->filter->execute();
+        $data = $this->processFilter();
 
         $this->columns->map(function (Column $column) use (&$data) {
             $data = $column->map($data);
@@ -285,6 +308,18 @@ class Grid
         $this->buildRows($data);
 
         $this->builded = true;
+    }
+
+    /**
+     * Process the grid filter.
+     *
+     * @return array
+     */
+    public function processFilter()
+    {
+        call_user_func($this->builder, $this);
+
+        return $this->filter->execute();
     }
 
     /**
@@ -343,7 +378,24 @@ class Grid
      */
     protected function setupExporter()
     {
-        $this->exporter = new Exporter($this);
+        if (Input::has('_export')) {
+            $exporter = new Exporter($this);
+
+            $exporter->export();
+        }
+    }
+
+    /**
+     * Export url.
+     *
+     * @return string
+     */
+    public function exportUrl()
+    {
+        $query = $query = Input::all();
+        $query['_export'] = true;
+
+        return $this->resource().'?'.http_build_query($query);
     }
 
     /**
@@ -398,6 +450,46 @@ class Grid
     public function disableActions()
     {
         $this->allowActions = false;
+    }
+
+    /**
+     * If grid allows export.s.
+     *
+     * @return bool
+     */
+    public function allowExport()
+    {
+        return $this->allowExport;
+    }
+
+    /**
+     * Disable export.
+     */
+    public function disableExport()
+    {
+        $this->allowExport = false;
+    }
+
+    /**
+     * Set grid as orderable.
+     *
+     * @return $this
+     */
+    public function orderable()
+    {
+        $this->orderable = true;
+
+        return $this;
+    }
+
+    /**
+     * Is the grid orderable.
+     *
+     * @return bool
+     */
+    public function isOrderable()
+    {
+        return $this->orderable;
     }
 
     /**
@@ -530,12 +622,93 @@ class Grid
     }
 
     /**
+     * Js code for grid.
+     *
+     * @return string
+     */
+    public function script()
+    {
+        $path = app('router')->current()->getPath();
+        $token = csrf_token();
+        $confirm = trans('admin::lang.delete_confirm');
+
+        return <<<EOT
+
+$('.grid-select-all').change(function() {
+    if (this.checked) {
+        $('.grid-item').prop("checked", true);
+    } else {
+        $('.grid-item').prop("checked", false);
+    }
+});
+
+$('.batch-delete').on('click', function() {
+    var selected = [];
+    $('.grid-item:checked').each(function(){
+        selected.push($(this).data('id'));
+    });
+
+    if (selected.length == 0) {
+        return;
+    }
+
+    if(confirm("{$confirm}")) {
+        $.post('/{$path}/' + selected.join(), {_method:'delete','_token':'{$token}'}, function(data){
+            $.pjax.reload('#pjax-container');
+            noty({
+                text: "<strong>Succeeded!</strong>",
+                type:'success',
+                timeout: 1000
+            });
+        });
+    }
+});
+
+$('.grid-refresh').on('click', function() {
+    $.pjax.reload('#pjax-container');
+
+    noty({
+        text: "<strong>Succeeded!</strong>",
+        type:'success',
+        timeout: 1000
+    });
+});
+
+var grid_order = function(id, direction) {
+    $.post('/{$path}/' + id, {_method:'PUT', _token:'{$token}', _orderable:direction}, function(data){
+
+        if (data.status) {
+            noty({
+                text: "<strong>Succeeded!</strong>",
+                type:'success',
+                timeout: 1000
+            });
+
+            $.pjax.reload('#pjax-container');
+        }
+    });
+}
+
+$('.grid-order-up').on('click', function() {
+    grid_order($(this).data('id'), 1);
+});
+
+$('.grid-order-down').on('click', function() {
+    grid_order($(this).data('id'), 0);
+});
+
+EOT;
+    }
+
+    /**
      * Get the string contents of the grid view.
      *
      * @return string
      */
     public function __toString()
     {
+        AdminManager::script($this->script());
+
         return $this->render();
     }
 }
