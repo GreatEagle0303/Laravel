@@ -2,7 +2,6 @@
 
 namespace Encore\Admin\Grid;
 
-use Encore\Admin\Facades\Admin;
 use Encore\Admin\Grid;
 use Encore\Admin\Grid\Filter\AbstractFilter;
 use Illuminate\Support\Facades\Input;
@@ -16,7 +15,6 @@ use ReflectionClass;
  * @method Filter     gt($column, $label = '')
  * @method Filter     lt($column, $label = '')
  * @method Filter     between($column, $label = '')
- * @method Filter     where(\Closure $callback, $label)
  */
 class Filter
 {
@@ -38,12 +36,7 @@ class Filter
     /**
      * @var array
      */
-    protected $supports = ['is', 'like', 'gt', 'lt', 'between', 'where'];
-
-    /**
-     * @var bool
-     */
-    protected $useModal = false;
+    protected $allows = ['is', 'like', 'gt', 'lt', 'between'];
 
     /**
      * Create a new filter instance.
@@ -58,14 +51,6 @@ class Filter
         $this->model = $model;
 
         $this->is($this->model->eloquent()->getKeyName());
-    }
-
-    /**
-     * Use modal to show filter form.
-     */
-    public function useModal()
-    {
-        $this->useModal = true;
     }
 
     /**
@@ -137,32 +122,7 @@ class Filter
      */
     public function render()
     {
-        if ($this->useModal) {
-            return $this->renderModalFilter();
-        }
-
         return view('admin::grid.filter')->with(['filters' => $this->filters(), 'grid' => $this->grid]);
-    }
-
-    /**
-     * Render modal filter.
-     *
-     * @return $this
-     */
-    public function renderModalFilter()
-    {
-        $script = <<<EOT
-
-$("#filter-modal .submit").click(function () {
-    $("#filter-modal").modal('toggle');
-    $('body').removeClass('modal-open');
-    $('.modal-backdrop').remove();
-});
-
-EOT;
-        Admin::script($script);
-
-        return view('admin::filter.modal')->with(['filters' => $this->filters(), 'grid' => $this->grid]);
     }
 
     /**
@@ -175,7 +135,7 @@ EOT;
      */
     public function __call($method, $arguments)
     {
-        if (in_array($method, $this->supports)) {
+        if (in_array($method, $this->allows)) {
             $className = '\\Encore\\Admin\\Grid\\Filter\\'.ucfirst($method);
             $reflection = new ReflectionClass($className);
 

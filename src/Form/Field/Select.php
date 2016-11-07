@@ -2,7 +2,6 @@
 
 namespace Encore\Admin\Form\Field;
 
-use Encore\Admin\Facades\Admin;
 use Encore\Admin\Form\Field;
 use Illuminate\Contracts\Support\Arrayable;
 
@@ -50,27 +49,6 @@ class Select extends Field
         }
 
         return $this;
-    }
-
-    /**
-     * Load options for other select on change.
-     *
-     * @param $field
-     * @param $source
-     */
-    public function load($field, $source)
-    {
-        $script = <<<EOT
-
-$("#{$this->id}").change(function () {
-    $.get("$source?q="+this.value, function (data) {
-        $("#$field option").remove();
-        $("#$field").select2({data: data});
-    });
-});
-EOT;
-
-        Admin::script($script);
     }
 
     /**
