@@ -119,9 +119,8 @@ class Model
     }
 
     /**
-     * @throws \Exception
-     *
      * @return Collection
+     * @throws \Exception
      */
     protected function get()
     {
@@ -160,7 +159,7 @@ class Model
             return $query['method'] == 'paginate';
         });
 
-        if (!$this->usePaginate) {
+        if (! $this->usePaginate) {
             $query = [
                 'method'    => 'get',
                 'arguments' => [],
