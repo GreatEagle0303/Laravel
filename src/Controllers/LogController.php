@@ -54,8 +54,6 @@ class LogController extends Controller
                     $filter->is('method')->select(array_combine(OperationLog::$methods, OperationLog::$methods));
                     $filter->like('path');
                     $filter->is('ip');
-
-                    $filter->useModal();
                 });
             });
 
@@ -67,16 +65,8 @@ class LogController extends Controller
     {
         $ids = explode(',', $id);
 
-        if (OperationLog::destroy(array_filter($ids))) {
-            return response()->json([
-                'status'  => true,
-                'message' => trans('admin::lang.delete_succeeded'),
-            ]);
-        } else {
-            return response()->json([
-                'status'  => false,
-                'message' => trans('admin::lang.delete_failed'),
-            ]);
-        }
+        OperationLog::destroy(array_filter($ids));
+
+        return response()->json(['msg' => 'delete success!']);
     }
 }

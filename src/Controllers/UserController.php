@@ -88,8 +88,6 @@ class UserController extends Controller
             });
 
             $grid->disableBatchDeletion();
-
-            $grid->disableExport();
         });
     }
 
