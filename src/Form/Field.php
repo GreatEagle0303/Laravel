@@ -248,9 +248,9 @@ class Field
     /**
      * Get or set rules.
      *
-     * @param string $rules
+     * @param null $rules
      *
-     * @return $this|string
+     * @return $this
      */
     public function rules($rules = null)
     {
@@ -268,7 +268,7 @@ class Field
     /**
      * Set or get value of the field.
      *
-     * @param string $value
+     * @param null $value
      *
      * @return mixed
      */
