@@ -41,7 +41,7 @@ class Box extends Widget implements Renderable
     /**
      * Set box content.
      *
-     * @param string $content
+     * @param $content
      *
      * @return $this
      */
@@ -95,7 +95,7 @@ class Box extends Widget implements Renderable
     /**
      * Set box style.
      *
-     * @param string $styles
+     * @param $styles
      *
      * @return $this|Box
      */

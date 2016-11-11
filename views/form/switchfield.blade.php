@@ -6,6 +6,8 @@
 
         @include('admin::form.error')
 
-        <textarea id="{{$id}}" name="{{$name}}" class="form-control" rows="3" placeholder="{{ trans('admin::lang.input') }} {{$label}}" {!! $attributes !!} >{{ old($column, $value) }}</textarea>
+        <input type="checkbox" id="{{$id}}_checkbox" {{ $value == 'on' ? 'checked' : '' }} {!! $attributes !!} />
+        <input type="hidden" id="{{$id}}" name="{{$name}}" class="" value="{{ old($column, $value) }}" />
+
     </div>
 </div>

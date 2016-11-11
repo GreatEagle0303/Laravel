@@ -18,8 +18,8 @@ class Tab extends Widget implements Renderable
     /**
      * Add a tab and its contents.
      *
-     * @param string            $title
-     * @param string|Renderable $content
+     * @param string $title
+     * @param $content
      *
      * @return $this
      */
@@ -44,7 +44,7 @@ class Tab extends Widget implements Renderable
     }
 
     /**
-     * Set drop-down items.
+     * Set dropdown items.
      *
      * @param array $links
      *
