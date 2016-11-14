@@ -42,15 +42,6 @@ class UsersTest extends TestCase
             ->see('dashboard')
             ->seeIsAuthenticated('admin')
             ->seePageIs('admin');
-
-        $this->assertFalse($this->app['auth']->guard('admin')->getUser()->isAdministrator());
-
-        $this
-                ->dontSee('<span>Users</span>')
-                ->dontSee('<span>Roles</span>')
-                ->dontSee('<span>Permission</span>')
-                ->dontSee('<span>Operation log</span>')
-                ->dontSee('<span>Menu</span>');
     }
 
     public function testUpdateUser()

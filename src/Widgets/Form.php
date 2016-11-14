@@ -144,10 +144,14 @@ class Form implements Renderable
      */
     public static function findFieldClass($method)
     {
-        $class = array_get(\Encore\Admin\Form::$availableFields, $method);
+        $className = '\\Encore\\Admin\\Form\\Field\\'.ucfirst($method);
 
-        if (class_exists($class)) {
-            return $class;
+        if (class_exists($className)) {
+            return $className;
+        }
+
+        if ($method == 'switch') {
+            return '\\Encore\\Admin\\Form\\Field\\SwitchField';
         }
 
         return false;

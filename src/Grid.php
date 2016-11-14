@@ -10,6 +10,7 @@ use Encore\Admin\Grid\Exporter;
 use Encore\Admin\Grid\Filter;
 use Encore\Admin\Grid\Model;
 use Encore\Admin\Grid\Row;
+use Encore\Admin\Pagination\AdminThreePresenter;
 use Illuminate\Database\Eloquent\Model as Eloquent;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -142,13 +143,6 @@ class Grid
     protected $exporter;
 
     /**
-     * View for grid to render.
-     *
-     * @var string
-     */
-    protected $view = 'admin::grid.table';
-
-    /**
      * Create a new grid instance.
      *
      * @param Eloquent $model
@@ -246,8 +240,6 @@ class Grid
      */
     protected function addColumn($column = '', $label = '')
     {
-        //$label = $label ?: Str::upper($column);
-
         $column = new Column($column, $label);
         $column->setGrid($this);
 
@@ -297,7 +289,9 @@ class Grid
     {
         $query = Input::all();
 
-        return $this->model()->eloquent()->appends($query)->render('admin::pagination');
+        return $this->model()->eloquent()->appends($query)->render(
+            new AdminThreePresenter($this->model()->eloquent())
+        );
     }
 
     /**
@@ -575,21 +569,6 @@ class Grid
     }
 
     /**
-     * Set a view to render.
-     *
-     * @param string $view
-     * @param array  $variables
-     */
-    public function view($view, $variables = [])
-    {
-        if (!empty($variables)) {
-            $this->with($variables);
-        }
-
-        $this->view = $view;
-    }
-
-    /**
      * Get the string contents of the grid view.
      *
      * @return string
@@ -602,7 +581,7 @@ class Grid
             return with(new Handle($e))->render();
         }
 
-        return view($this->view, $this->variables())->render();
+        return view('admin::grid', $this->variables())->render();
     }
 
     /**
@@ -623,10 +602,6 @@ class Grid
 
         $connection = $this->model()->eloquent()->getConnectionName();
         if (Schema::connection($connection)->hasColumn($this->model()->getTable(), $method)) {
-            return $this->addColumn($method, $label);
-        }
-
-        if ($this->model()->eloquent()->hasGetMutator($method)) {
             return $this->addColumn($method, $label);
         }
 
