@@ -5,7 +5,6 @@ namespace Encore\Admin\Form;
 use Encore\Admin\Admin;
 use Encore\Admin\Form;
 use Illuminate\Contracts\Support\Arrayable;
-use Illuminate\Support\Facades\Input;
 
 /**
  * Class Field.
@@ -248,9 +247,9 @@ class Field
     /**
      * Get or set rules.
      *
-     * @param string $rules
+     * @param null $rules
      *
-     * @return $this|string
+     * @return $this
      */
     public function rules($rules = null)
     {
@@ -268,17 +267,13 @@ class Field
     /**
      * Set or get value of the field.
      *
-     * @param string $value
+     * @param null $value
      *
      * @return mixed
      */
     public function value($value = null)
     {
         if (is_null($value)) {
-            if (is_null($this->default)) {
-                //$this->default = Input::get($this->column);
-            }
-
             return is_null($this->value) ? $this->default : $this->value;
         }
 
@@ -318,11 +313,32 @@ class Field
     }
 
     /**
+     * Add html attributes to elements.
+     *
+     * @param array|string $attribute
+     * @param mixed        $value
+     *
+     * @return $this
+     */
+    public function attribute($attribute, $value = null)
+    {
+        if (is_array($attribute)) {
+            $this->attributes = array_merge($this->attributes, $attribute);
+        } else {
+            $this->attributes[$attribute] = (string) $value;
+        }
+
+        return $this;
+    }
+
+    /**
      * Set the field as readonly mode.
+     *
+     * @return Field
      */
     public function readOnly()
     {
-        $this->attributes['disabled'] = true;
+        return $this->attribute('disabled', true);
     }
 
     /**
