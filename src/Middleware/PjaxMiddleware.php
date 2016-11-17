@@ -93,20 +93,7 @@ class PjaxMiddleware
             abort(422);
         }
 
-        return $this->decodeUtf8HtmlEntities($content->html());
-    }
-
-    /**
-     * Decode utf-8 characters to html entities.
-     *
-     * @param string $html
-     * @return string
-     */
-    protected function decodeUtf8HtmlEntities($html)
-    {
-        return preg_replace_callback("/(&#[0-9]+;)/", function($html) {
-            return mb_convert_encoding($html[1], 'UTF-8', 'HTML-ENTITIES');
-        }, $html);
+        return html_entity_decode($content->html());
     }
 
     /**
