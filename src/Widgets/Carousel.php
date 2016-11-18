@@ -29,7 +29,7 @@ class Carousel extends Widget implements Renderable
     /**
      * Set title.
      *
-     * @param string $title
+     * @param $title
      */
     public function title($title)
     {

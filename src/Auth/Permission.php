@@ -12,12 +12,20 @@ class Permission
      *
      * @param $permission
      *
-     * @return bool|null
+     * @return true
      */
     public static function check($permission)
     {
         if (static::isAdministrator()) {
             return true;
+        }
+
+        if (is_array($permission)) {
+            collect($permission)->each(function ($permission) {
+                call_user_func([Permission::class, 'check'], $permission);
+            });
+
+            return;
         }
 
         if (Auth::guard('admin')->user()->cannot($permission)) {
@@ -30,7 +38,7 @@ class Permission
      *
      * @param $roles
      *
-     * @return bool|null
+     * @return true
      */
     public static function allow($roles)
     {
@@ -48,7 +56,7 @@ class Permission
      *
      * @param $roles
      *
-     * @return bool|null
+     * @return true
      */
     public static function deny($roles)
     {

@@ -641,7 +641,7 @@ class Form
     protected function getFieldByColumn($column)
     {
         return $this->builder->fields()->first(
-            function ($index, Field $field) use ($column) {
+            function (Field $field) use ($column) {
                 if (is_array($field->column())) {
                     return in_array($column, $field->column());
                 }
@@ -708,7 +708,14 @@ class Form
                     continue;
                 }
 
-                $data[$field->label()] = array_get($input, $columns);
+                $value = array_get($input, $columns);
+
+                // remove empty options from multiple select.
+                if ($field instanceof Field\MultipleSelect) {
+                    $value = array_filter($value);
+                }
+
+                $data[$field->label()] = $value;
                 $rules[$field->label()] = $rule;
             }
 
