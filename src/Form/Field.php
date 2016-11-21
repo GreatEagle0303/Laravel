@@ -5,7 +5,6 @@ namespace Encore\Admin\Form;
 use Encore\Admin\Admin;
 use Encore\Admin\Form;
 use Illuminate\Contracts\Support\Arrayable;
-use Illuminate\Support\Facades\Input;
 
 /**
  * Class Field.
@@ -78,6 +77,20 @@ class Field
     protected $rules = '';
 
     /**
+     * Css required by this field.
+     *
+     * @var array
+     */
+    protected static $css = [];
+
+    /**
+     * Js required by this field.
+     *
+     * @var array
+     */
+    protected static $js = [];
+
+    /**
      * Script for field.
      *
      * @var string
@@ -99,6 +112,13 @@ class Field
     protected $form = null;
 
     /**
+     * View for field to render.
+     *
+     * @var string
+     */
+    protected $view = '';
+
+    /**
      * Field constructor.
      *
      * @param $column
@@ -109,6 +129,19 @@ class Field
         $this->column = $column;
         $this->label = $this->formatLabel($arguments);
         $this->id = $this->formatId($column);
+    }
+
+    /**
+     * Get assets required by this field.
+     *
+     * @return array
+     */
+    public static function getAssets()
+    {
+        return [
+            'css' => static::$css,
+            'js'  => static::$js,
+        ];
     }
 
     /**
@@ -248,9 +281,9 @@ class Field
     /**
      * Get or set rules.
      *
-     * @param string $rules
+     * @param null $rules
      *
-     * @return $this|string
+     * @return $this
      */
     public function rules($rules = null)
     {
@@ -268,7 +301,7 @@ class Field
     /**
      * Set or get value of the field.
      *
-     * @param string $value
+     * @param null $value
      *
      * @return mixed
      */
@@ -318,6 +351,7 @@ class Field
      *
      * @param array|string $attribute
      * @param mixed        $value
+     *
      * @return $this
      */
     public function attribute($attribute, $value = null)
@@ -381,6 +415,10 @@ class Field
      */
     public function getView()
     {
+        if (!empty($this->view)) {
+            return $this->view;
+        }
+
         $class = explode('\\', get_called_class());
 
         return 'admin::form.'.strtolower(end($class));
