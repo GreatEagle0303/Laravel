@@ -2,10 +2,10 @@
 
     <label for="{{$id}}" class="col-sm-2 control-label">{{$label}}</label>
 
-    <div class="col-sm-6">
+    <div class="col-sm-10">
 
         @include('admin::form.error')
 
-        <textarea class="form-control" id="{{$id}}" name="{{$name}}" placeholder="{{ trans('admin::lang.input') }} {{$label}}">{{ old($column, $value) }}</textarea>
+        <textarea id="{{$id}}" name="{{$name}}" class="form-control" data-provide="markdown" >{{ old($column, $value) }}</textarea>
     </div>
 </div>
