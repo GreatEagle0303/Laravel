@@ -4,15 +4,13 @@ namespace Encore\Admin\Form\Field;
 
 use Encore\Admin\Form\Field;
 
-class Radio extends Field
+class BootstrapSwitch extends Field
 {
     protected $values;
 
     public function render()
     {
-        $this->options['radioClass'] = 'iradio_minimal-blue';
-
-        $this->script = "$('.{$this->id}').iCheck(".json_encode($this->options).');';
+        $this->script = "$('.{$this->id}').bootstrapSwitch();";
 
         return parent::render()->with(['values' => $this->values]);
     }
