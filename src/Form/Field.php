@@ -5,6 +5,7 @@ namespace Encore\Admin\Form;
 use Encore\Admin\Admin;
 use Encore\Admin\Form;
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Facades\Input;
 
 /**
  * Class Field.
@@ -77,20 +78,6 @@ class Field
     protected $rules = '';
 
     /**
-     * Css required by this field.
-     *
-     * @var array
-     */
-    protected static $css = [];
-
-    /**
-     * Js required by this field.
-     *
-     * @var array
-     */
-    protected static $js = [];
-
-    /**
      * Script for field.
      *
      * @var string
@@ -112,13 +99,6 @@ class Field
     protected $form = null;
 
     /**
-     * View for field to render.
-     *
-     * @var string
-     */
-    protected $view = '';
-
-    /**
      * Field constructor.
      *
      * @param $column
@@ -129,19 +109,6 @@ class Field
         $this->column = $column;
         $this->label = $this->formatLabel($arguments);
         $this->id = $this->formatId($column);
-    }
-
-    /**
-     * Get assets required by this field.
-     *
-     * @return array
-     */
-    public static function getAssets()
-    {
-        return [
-            'css' => static::$css,
-            'js'  => static::$js,
-        ];
     }
 
     /**
@@ -281,9 +248,9 @@ class Field
     /**
      * Get or set rules.
      *
-     * @param null $rules
+     * @param string $rules
      *
-     * @return $this
+     * @return $this|string
      */
     public function rules($rules = null)
     {
@@ -301,13 +268,17 @@ class Field
     /**
      * Set or get value of the field.
      *
-     * @param null $value
+     * @param string $value
      *
      * @return mixed
      */
     public function value($value = null)
     {
         if (is_null($value)) {
+            if (is_null($this->default)) {
+                //$this->default = Input::get($this->column);
+            }
+
             return is_null($this->value) ? $this->default : $this->value;
         }
 
@@ -347,32 +318,11 @@ class Field
     }
 
     /**
-     * Add html attributes to elements.
-     *
-     * @param array|string $attribute
-     * @param mixed        $value
-     *
-     * @return $this
-     */
-    public function attribute($attribute, $value = null)
-    {
-        if (is_array($attribute)) {
-            $this->attributes = array_merge($this->attributes, $attribute);
-        } else {
-            $this->attributes[$attribute] = (string) $value;
-        }
-
-        return $this;
-    }
-
-    /**
      * Set the field as readonly mode.
-     *
-     * @return Field
      */
     public function readOnly()
     {
-        return $this->attribute('disabled', true);
+        $this->attributes['disabled'] = true;
     }
 
     /**
@@ -415,10 +365,6 @@ class Field
      */
     public function getView()
     {
-        if (!empty($this->view)) {
-            return $this->view;
-        }
-
         $class = explode('\\', get_called_class());
 
         return 'admin::form.'.strtolower(end($class));
