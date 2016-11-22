@@ -24,7 +24,7 @@ class Callout extends Widget implements Renderable
     /**
      * Callout constructor.
      *
-     * @param string $content
+     * @param $content
      * @param string $title
      * @param string $style
      */
