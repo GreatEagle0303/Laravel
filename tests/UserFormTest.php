@@ -23,18 +23,12 @@ class UserFormTest extends TestCase
             ->seeElement("input[type=text][name='profile[first_name]']")
             ->seeElement("input[type=text][name='profile[last_name]']")
             ->seeElement("input[type=text][name='profile[postcode]']")
-            ->seeElement("textarea[name='profile[address]'][rows=15]")
+            ->seeElement("textarea[name='profile[address]']")
             ->seeElement("input[type=hidden][name='profile[latitude]']")
             ->seeElement("input[type=hidden][name='profile[longitude]']")
             ->seeElement("input[type=text][name='profile[color]']")
             ->seeElement("input[type=text][name='profile[start_at]']")
-            ->seeElement("input[type=text][name='profile[end_at]']")
-            ->seeElement('span[class=help-block] i[class*=fa-info-circle]')
-            ->seeInElement('span[class=help-block]', 'Please input your postcode')
-            ->seeElement('span[class=help-block] i[class*=fa-image]')
-            ->seeInElement('span[class=help-block]', '上传头像')
-            ->seeElement("select[name='tags[]'][multiple=multiple]")
-            ->dontSeeElement('a[class*=item_delete]');
+            ->seeElement("input[type=text][name='profile[end_at]']");
     }
 
     public function testSubmitForm()
@@ -104,7 +98,6 @@ class UserFormTest extends TestCase
             ->create()
             ->each(function ($u) {
                 $u->profile()->save(factory(\Tests\Models\Profile::class)->make());
-                $u->tags()->saveMany(factory(\Tests\Models\Tag::class, 5)->make());
             });
     }
 
@@ -129,13 +122,7 @@ class UserFormTest extends TestCase
             ->seeElement("input[type=hidden][name='profile[longitude]'][value='{$user->profile->longitude}']")
             ->seeElement("input[type=text][name='profile[color]'][value='{$user->profile->color}']")
             ->seeElement("input[type=text][name='profile[start_at]'][value='{$user->profile->start_at}']")
-            ->seeElement("input[type=text][name='profile[end_at]'][value='{$user->profile->end_at}']")
-            ->seeElement("select[name='tags[]'][multiple=multiple]")
-            ->dontSeeElement('a[class*=item_delete]');
-
-
-        $this->assertCount(50, $this->crawler()->filter("select[name='tags[]'] option"));
-        $this->assertCount(5, $this->crawler()->filter("select[name='tags[]'] option[selected]"));
+            ->seeElement("input[type=text][name='profile[end_at]'][value='{$user->profile->end_at}']");
     }
 
     public function testUpdateForm()

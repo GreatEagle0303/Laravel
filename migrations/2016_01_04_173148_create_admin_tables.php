@@ -12,9 +12,7 @@ class CreateAdminTables extends Migration
      */
     public function up()
     {
-        $connection = config('admin.database.connection') ?: config('database.default');
-
-        Schema::connection($connection)->create(config('admin.database.users_table'), function (Blueprint $table) {
+        Schema::create(config('admin.database.users_table'), function (Blueprint $table) {
             $table->increments('id');
             $table->string('username', 190)->unique();
             $table->string('password', 60);
@@ -23,21 +21,21 @@ class CreateAdminTables extends Migration
             $table->timestamps();
         });
 
-        Schema::connection($connection)->create(config('admin.database.roles_table'), function (Blueprint $table) {
+        Schema::create(config('admin.database.roles_table'), function (Blueprint $table) {
             $table->increments('id');
             $table->string('name', 50)->unique();
             $table->string('slug', 50);
             $table->timestamps();
         });
 
-        Schema::connection($connection)->create(config('admin.database.permissions_table'), function (Blueprint $table) {
+        Schema::create(config('admin.database.permissions_table'), function (Blueprint $table) {
             $table->increments('id');
             $table->string('name', 50)->unique();
             $table->string('slug', 50);
             $table->timestamps();
         });
 
-        Schema::connection($connection)->create(config('admin.database.menu_table'), function (Blueprint $table) {
+        Schema::create(config('admin.database.menu_table'), function (Blueprint $table) {
             $table->increments('id');
             $table->integer('parent_id')->default(0);
             $table->integer('order')->default(0);
@@ -48,35 +46,35 @@ class CreateAdminTables extends Migration
             $table->timestamps();
         });
 
-        Schema::connection($connection)->create(config('admin.database.role_users_table'), function (Blueprint $table) {
+        Schema::create(config('admin.database.role_users_table'), function (Blueprint $table) {
             $table->integer('role_id');
             $table->integer('user_id');
             $table->index(['role_id', 'user_id']);
             $table->timestamps();
         });
 
-        Schema::connection($connection)->create(config('admin.database.role_permissions_table'), function (Blueprint $table) {
+        Schema::create(config('admin.database.role_permissions_table'), function (Blueprint $table) {
             $table->integer('role_id');
             $table->integer('permission_id');
             $table->index(['role_id', 'permission_id']);
             $table->timestamps();
         });
 
-        Schema::connection($connection)->create(config('admin.database.user_permissions_table'), function (Blueprint $table) {
+        Schema::create(config('admin.database.user_permissions_table'), function (Blueprint $table) {
             $table->integer('user_id');
             $table->integer('permission_id');
             $table->index(['user_id', 'permission_id']);
             $table->timestamps();
         });
 
-        Schema::connection($connection)->create(config('admin.database.role_menu_table'), function (Blueprint $table) {
+        Schema::create(config('admin.database.role_menu_table'), function (Blueprint $table) {
             $table->integer('role_id');
             $table->integer('menu_id');
             $table->index(['role_id', 'menu_id']);
             $table->timestamps();
         });
 
-        Schema::connection($connection)->create(config('admin.database.operation_log_table'), function (Blueprint $table) {
+        Schema::create(config('admin.database.operation_log_table'), function (Blueprint $table) {
             $table->increments('id');
             $table->integer('user_id');
             $table->string('path');
@@ -95,16 +93,14 @@ class CreateAdminTables extends Migration
      */
     public function down()
     {
-        $connection = config('admin.database.connection') ?: config('database.default');
-
-        Schema::connection($connection)->drop(config('admin.database.users_table'));
-        Schema::connection($connection)->drop(config('admin.database.roles_table'));
-        Schema::connection($connection)->drop(config('admin.database.permissions_table'));
-        Schema::connection($connection)->drop(config('admin.database.menu_table'));
-        Schema::connection($connection)->drop(config('admin.database.user_permissions_table'));
-        Schema::connection($connection)->drop(config('admin.database.role_users_table'));
-        Schema::connection($connection)->drop(config('admin.database.role_permissions_table'));
-        Schema::connection($connection)->drop(config('admin.database.role_menu_table'));
-        Schema::connection($connection)->drop(config('admin.database.operation_log_table'));
+        Schema::drop(config('admin.database.users_table'));
+        Schema::drop(config('admin.database.roles_table'));
+        Schema::drop(config('admin.database.permissions_table'));
+        Schema::drop(config('admin.database.menu_table'));
+        Schema::drop(config('admin.database.user_permissions_table'));
+        Schema::drop(config('admin.database.role_users_table'));
+        Schema::drop(config('admin.database.role_permissions_table'));
+        Schema::drop(config('admin.database.role_menu_table'));
+        Schema::drop(config('admin.database.operation_log_table'));
     }
 }

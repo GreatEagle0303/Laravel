@@ -25,8 +25,6 @@ return [
     'collapse'      => 'Collapse',
     'filter'        => 'Filter',
     'close'         => 'Close',
-    'show'          => 'Show',
-    'items'         => 'items',
 
     'action'           => 'Action',
     'title'            => 'Title',
@@ -58,10 +56,9 @@ return [
 
     'alert'         => 'Alert',
 
-    'parent_id'     => 'Parent',
+    'parent_id'     => 'Parent ID',
     'icon'          => 'Icon',
     'uri'           => 'URI',
 
-    'operation_log'       => 'Operation log',
-    'parent_select_error' => 'Parent select error',
+    'operation_log' => 'Operation log',
 ];

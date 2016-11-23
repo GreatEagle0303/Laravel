@@ -20,9 +20,9 @@ class Model
     /**
      * Array of queries of the eloquent model.
      *
-     * @var \Illuminate\Support\Collection
+     * @var array
      */
-    protected $queries;
+    protected $queries = [];
 
     /**
      * Sort parameters of the model.
@@ -44,25 +44,9 @@ class Model
     protected $perPage = 20;
 
     /**
-     * If the model use pagination.
-     *
      * @var bool
      */
     protected $usePaginate = true;
-
-    /**
-     * The query string variable used to store the per-page.
-     *
-     * @var string
-     */
-    protected $perPageName = 'per_page';
-
-    /**
-     * The query string variable used to store the sort.
-     *
-     * @var string
-     */
-    protected $sortName = '_sort';
 
     /**
      * Create a new grid model instance.
@@ -94,54 +78,6 @@ class Model
     public function usePaginate($use = true)
     {
         $this->usePaginate = $use;
-    }
-
-    /**
-     * Get the query string variable used to store the per-page.
-     *
-     * @return string
-     */
-    public function getPerPageName()
-    {
-        return $this->perPageName;
-    }
-
-    /**
-     * Set the query string variable used to store the per-page.
-     *
-     * @param string $name
-     *
-     * @return $this
-     */
-    public function setPerPageName($name)
-    {
-        $this->perPageName = $name;
-
-        return $this;
-    }
-
-    /**
-     * Get the query string variable used to store the sort.
-     *
-     * @return string
-     */
-    public function getSortName()
-    {
-        return $this->sortName;
-    }
-
-    /**
-     * Set the query string variable used to store the sort.
-     *
-     * @param string $name
-     *
-     * @return $this
-     */
-    public function setSortName($name)
-    {
-        $this->sortName = $name;
-
-        return $this;
     }
 
     /**
@@ -196,7 +132,7 @@ class Model
         $this->setSort();
         $this->setPaginate();
 
-        $this->queries->unique()->each(function ($query) {
+        $this->queries->each(function ($query) {
             $this->model = call_user_func_array([$this->model, $query['method']], $query['arguments']);
         });
 
@@ -218,7 +154,7 @@ class Model
      */
     protected function setPaginate()
     {
-        $paginate = $this->findQueryByMethod('paginate');
+        $paginate = $this->findQueryByMethod('paginate')->first();
 
         $this->queries = $this->queries->reject(function ($query) {
             return $query['method'] == 'paginate';
@@ -232,33 +168,11 @@ class Model
         } else {
             $query = [
                 'method'    => 'paginate',
-                'arguments' => $this->resolvePerPage($paginate),
+                'arguments' => is_null($paginate) ? [$this->perPage] : $paginate['arguments'],
             ];
         }
 
         $this->queries->push($query);
-    }
-
-    /**
-     * Resolve perPage for pagination.
-     *
-     * @param array|null $paginate
-     *
-     * @return array
-     */
-    protected function resolvePerPage($paginate)
-    {
-        if ($perPage = app('request')->input($this->perPageName)) {
-            if (is_array($paginate)) {
-                $paginate['arguments'][0] = $perPage;
-
-                return $paginate['arguments'];
-            }
-
-            $this->perPage = $perPage;
-        }
-
-        return [$this->perPage];
     }
 
     /**
@@ -270,7 +184,7 @@ class Model
      */
     protected function findQueryByMethod($method)
     {
-        return $this->queries->first(function ($query) use ($method) {
+        return $this->queries->filter(function ($query) use ($method) {
             return $query['method'] == $method;
         });
     }
@@ -282,7 +196,7 @@ class Model
      */
     protected function setSort()
     {
-        $this->sort = Input::get($this->sortName, []);
+        $this->sort = Input::get('_sort', []);
         if (!is_array($this->sort)) {
             return;
         }
@@ -294,8 +208,6 @@ class Model
         if (str_contains($this->sort['column'], '.')) {
             $this->setRelationSort($this->sort['column']);
         } else {
-            $this->resetOrderBy();
-
             $this->queries->push([
                 'method'    => 'orderBy',
                 'arguments' => [$this->sort['column'], $this->sort['type']],
@@ -314,7 +226,7 @@ class Model
     {
         list($relationName, $relationColumn) = explode('.', $column);
 
-        if ($this->queries->contains(function ($query) use ($relationName) {
+        if ($this->queries->contains(function ($key, $query) use ($relationName) {
             return $query['method'] == 'with' && in_array($relationName, $query['arguments']);
         })) {
             $relation = $this->model->$relationName();
@@ -324,8 +236,6 @@ class Model
                 'arguments' => $this->joinParameters($relation),
             ]);
 
-            $this->resetOrderBy();
-
             $this->queries->push([
                 'method'    => 'orderBy',
                 'arguments' => [
@@ -334,18 +244,6 @@ class Model
                 ],
             ]);
         }
-    }
-
-    /**
-     * Reset orderBy query.
-     *
-     * @return void
-     */
-    public function resetOrderBy()
-    {
-        $this->queries = $this->queries->reject(function ($query) {
-            return $query['method'] == 'orderBy';
-        });
     }
 
     /**

@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
-use Illuminate\Validation\Validator;
+use Illuminate\Support\Facades\Validator;
 use Spatie\EloquentSortable\Sortable;
 
 /**
@@ -115,13 +115,6 @@ class Form
     protected $callable;
 
     /**
-     * Allow delete item in form page.
-     *
-     * @var bool
-     */
-    protected $allowDeletion = true;
-
-    /**
      * Available fields.
      *
      * @var array
@@ -186,20 +179,6 @@ class Form
     public function builder()
     {
         return $this->builder;
-    }
-
-    /**
-     * Disable deletion in form page.
-     *
-     * @return $this
-     */
-    public function disableDeletion()
-    {
-        $this->builder->disableDeletion();
-
-        $this->allowDeletion = false;
-
-        return $this;
     }
 
     /**
@@ -284,10 +263,8 @@ class Form
     {
         $data = Input::all();
 
-        if ($validator = $this->validationFails($data)) {
-            dump($validator->messages());
-
-            return back()->withInput()->withErrors($validator->messages());
+        if (!$this->validate($data)) {
+            return back()->withInput()->withErrors($this->validator->messages());
         }
 
         $this->prepare($data, $this->saving);
@@ -425,8 +402,8 @@ class Form
             return response(['status' => true, 'message' => trans('admin::lang.succeeded')]);
         }
 
-        if ($validator = $this->validationFails($data)) {
-            return back()->withInput()->withErrors($validator->messages());
+        if (!$this->validate($data)) {
+            return back()->withInput()->withErrors($this->validator->messages());
         }
 
         $this->model = $this->model->with($this->getRelations())->findOrFail($id);
@@ -678,7 +655,7 @@ class Form
     protected function getFieldByColumn($column)
     {
         return $this->builder->fields()->first(
-            function (Field $field) use ($column) {
+            function ($index, Field $field) use ($column) {
                 if (is_array($field->column())) {
                     return in_array($column, $field->column());
                 }
@@ -723,25 +700,53 @@ class Form
     }
 
     /**
-     * Validation fails.
+     * Validate input data.
      *
-     * @param array $input
+     * @param $input
      *
      * @return bool
      */
-    protected function validationFails($input)
+    protected function validate($input)
     {
+        $data = $rules = [];
+
         foreach ($this->builder->fields() as $field) {
-            if (!$validator = $field->validate($input)) {
+            if (!method_exists($field, 'rules') || !$rule = $field->rules()) {
                 continue;
             }
 
-            if (($validator instanceof Validator) && !$validator->passes()) {
-                return $validator;
+            $columns = $field->column();
+
+            if (is_string($columns)) {
+                if (!array_key_exists($columns, $input)) {
+                    continue;
+                }
+
+                $value = array_get($input, $columns);
+
+                // remove empty options from multiple select.
+                if ($field instanceof Field\MultipleSelect) {
+                    $value = array_filter($value);
+                }
+
+                $data[$field->label()] = $value;
+                $rules[$field->label()] = $rule;
+            }
+
+            if (is_array($columns)) {
+                foreach ($columns as $key => $column) {
+                    if (!array_key_exists($column, $input)) {
+                        continue;
+                    }
+                    $data[$field->label().$key] = array_get($input, $column);
+                    $rules[$field->label().$key] = $rule;
+                }
             }
         }
 
-        return false;
+        $this->validator = Validator::make($data, $rules);
+
+        return $this->validator->passes();
     }
 
     /**
