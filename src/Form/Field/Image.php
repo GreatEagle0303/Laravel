@@ -30,9 +30,9 @@ class Image extends File
 
         $this->name = $this->name ?: $image->getClientOriginalName();
 
-        $this->executeCalls($image->getRealPath());
-
         $target = $this->uploadAndDeleteOriginal($image);
+
+        $target = $this->executeCalls($target);
 
         return $target;
     }

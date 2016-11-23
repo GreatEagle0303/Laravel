@@ -3,7 +3,6 @@
 namespace Encore\Admin\Controllers;
 
 use Encore\Admin\Auth\Database\Administrator;
-use Encore\Admin\Auth\Database\Permission;
 use Encore\Admin\Auth\Database\Role;
 use Encore\Admin\Facades\Admin;
 use Encore\Admin\Form;
@@ -109,7 +108,6 @@ class UserController extends Controller
             $form->password('password', trans('admin::lang.password'))->rules('required');
 
             $form->multipleSelect('roles', trans('admin::lang.roles'))->options(Role::all()->pluck('name', 'id'));
-            $form->multipleSelect('permissions', trans('admin::lang.permissions'))->options(Permission::all()->pluck('name', 'id'));
 
             $form->display('created_at', trans('admin::lang.created_at'));
             $form->display('updated_at', trans('admin::lang.updated_at'));

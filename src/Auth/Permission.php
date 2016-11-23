@@ -12,7 +12,7 @@ class Permission
      *
      * @param $permission
      *
-     * @return true
+     * @return bool|null
      */
     public static function check($permission)
     {
@@ -38,7 +38,7 @@ class Permission
      *
      * @param $roles
      *
-     * @return true
+     * @return bool|null
      */
     public static function allow($roles)
     {
@@ -46,7 +46,7 @@ class Permission
             return true;
         }
 
-        if (!Auth::guard('admin')->user()->inRoles($roles)) {
+        if (!Auth::guard('admin')->user()->isRole($roles)) {
             static::error();
         }
     }
@@ -56,7 +56,7 @@ class Permission
      *
      * @param $roles
      *
-     * @return true
+     * @return bool|null
      */
     public static function deny($roles)
     {
@@ -64,7 +64,7 @@ class Permission
             return true;
         }
 
-        if (Auth::guard('admin')->user()->inRoles($roles)) {
+        if (Auth::guard('admin')->user()->isRole($roles)) {
             static::error();
         }
     }
