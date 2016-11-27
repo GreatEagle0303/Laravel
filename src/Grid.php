@@ -10,6 +10,7 @@ use Encore\Admin\Grid\Exporter;
 use Encore\Admin\Grid\Filter;
 use Encore\Admin\Grid\Model;
 use Encore\Admin\Grid\Row;
+use Encore\Admin\Pagination\AdminThreePresenter;
 use Illuminate\Database\Eloquent\Model as Eloquent;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -295,7 +296,9 @@ class Grid
     {
         $query = Input::all();
 
-        return $this->model()->eloquent()->appends($query)->render('admin::pagination');
+        return $this->model()->eloquent()->appends($query)->render(
+            new AdminThreePresenter($this->model()->eloquent())
+        );
     }
 
     /**
@@ -312,7 +315,7 @@ class Grid
         $data = $this->processFilter();
 
         $this->columns->map(function (Column $column) use (&$data) {
-            $data = $column->fill($data);
+            $data = $column->map($data);
 
             $this->columnNames[] = $column->getName();
         });
@@ -547,108 +550,6 @@ class Grid
     }
 
     /**
-     * Handle table column for grid.
-     *
-     * @param string $method
-     * @param string $label
-     *
-     * @return bool|Column
-     */
-    protected function handleTableColumn($method, $label)
-    {
-        $connection = $this->model()->eloquent()->getConnectionName();
-
-        if (Schema::connection($connection)->hasColumn($this->model()->getTable(), $method)) {
-            return $this->addColumn($method, $label);
-        }
-
-        return false;
-    }
-
-    /**
-     * Handle get mutator column for grid.
-     *
-     * @param string $method
-     * @param string $label
-     *
-     * @return bool|Column
-     */
-    protected function handleGetMutatorColumn($method, $label)
-    {
-        if ($this->model()->eloquent()->hasGetMutator($method)) {
-            return $this->addColumn($method, $label);
-        }
-
-        return false;
-    }
-
-    /**
-     * Handle relation column for grid.
-     *
-     * @param string $method
-     * @param string $label
-     *
-     * @return bool|Column
-     */
-    protected function handleRelationColumn($method, $label)
-    {
-        $model = $this->model()->eloquent();
-
-        if (!method_exists($model, $method)) {
-            return false;
-        }
-
-        if (!($relation = $model->$method()) instanceof Relation) {
-            return false;
-        }
-
-        if ($relation instanceof HasOne || $relation instanceof BelongsTo) {
-            $this->model()->with($method);
-
-            return $this->addColumn($method, $label)->setRelation($method);
-        }
-
-        if ($relation instanceof HasMany || $relation instanceof BelongsToMany || $relation instanceof MorphToMany) {
-            $this->model()->with($method);
-
-            return $this->addColumn($method, $label);
-        }
-
-        return false;
-    }
-
-    /**
-     * Dynamically add columns to the grid view.
-     *
-     * @param $method
-     * @param $arguments
-     *
-     * @return $this|Column
-     */
-    public function __call($method, $arguments)
-    {
-        $label = isset($arguments[0]) ? $arguments[0] : ucfirst($method);
-
-        if ($this->model()->eloquent() instanceof MongodbModel) {
-            return $this->addColumn($method, $label);
-        }
-
-        if ($column = $this->handleTableColumn($method, $label)) {
-            return $column;
-        }
-
-        if ($column = $this->handleGetMutatorColumn($method, $label)) {
-            return $column;
-        }
-
-        if ($column = $this->handleRelationColumn($method, $label)) {
-            return $column;
-        }
-
-        return $this->addColumn($method, $label);
-    }
-
-    /**
      * Add variables to grid view.
      *
      * @param array $variables
@@ -703,6 +604,46 @@ class Grid
         }
 
         return view($this->view, $this->variables())->render();
+    }
+
+    /**
+     * Dynamically add columns to the grid view.
+     *
+     * @param $method
+     * @param $arguments
+     *
+     * @return $this|Column
+     */
+    public function __call($method, $arguments)
+    {
+        $label = isset($arguments[0]) ? $arguments[0] : ucfirst($method);
+
+        if ($this->model()->eloquent() instanceof MongodbModel) {
+            return $this->addColumn($method, $label);
+        }
+
+        $connection = $this->model()->eloquent()->getConnectionName();
+        if (Schema::connection($connection)->hasColumn($this->model()->getTable(), $method)) {
+            return $this->addColumn($method, $label);
+        }
+
+        if ($this->model()->eloquent()->hasGetMutator($method)) {
+            return $this->addColumn($method, $label);
+        }
+
+        $relation = $this->model()->eloquent()->$method();
+
+        if ($relation instanceof HasOne || $relation instanceof BelongsTo) {
+            $this->model()->with($method);
+
+            return $this->addColumn($method, $label)->setRelation($method);
+        }
+
+        if ($relation instanceof HasMany || $relation instanceof BelongsToMany || $relation instanceof MorphToMany) {
+            $this->model()->with($method);
+
+            return $this->addColumn($method, $label);
+        }
     }
 
     /**

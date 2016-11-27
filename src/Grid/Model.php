@@ -20,9 +20,9 @@ class Model
     /**
      * Array of queries of the eloquent model.
      *
-     * @var \Illuminate\Support\Collection
+     * @var array
      */
-    protected $queries;
+    protected $queries = [];
 
     /**
      * Sort parameters of the model.
@@ -132,7 +132,7 @@ class Model
         $this->setSort();
         $this->setPaginate();
 
-        $this->queries->unique()->each(function ($query) {
+        $this->queries->each(function ($query) {
             $this->model = call_user_func_array([$this->model, $query['method']], $query['arguments']);
         });
 
@@ -208,8 +208,6 @@ class Model
         if (str_contains($this->sort['column'], '.')) {
             $this->setRelationSort($this->sort['column']);
         } else {
-            $this->resetOrderBy();
-
             $this->queries->push([
                 'method'    => 'orderBy',
                 'arguments' => [$this->sort['column'], $this->sort['type']],
@@ -228,7 +226,7 @@ class Model
     {
         list($relationName, $relationColumn) = explode('.', $column);
 
-        if ($this->queries->contains(function ($query) use ($relationName) {
+        if ($this->queries->contains(function ($key, $query) use ($relationName) {
             return $query['method'] == 'with' && in_array($relationName, $query['arguments']);
         })) {
             $relation = $this->model->$relationName();
@@ -238,8 +236,6 @@ class Model
                 'arguments' => $this->joinParameters($relation),
             ]);
 
-            $this->resetOrderBy();
-
             $this->queries->push([
                 'method'    => 'orderBy',
                 'arguments' => [
@@ -248,18 +244,6 @@ class Model
                 ],
             ]);
         }
-    }
-
-    /**
-     * Reset orderBy query.
-     *
-     * @return void
-     */
-    public function resetOrderBy()
-    {
-        $this->queries = $this->queries->reject(function ($query) {
-            return $query['method'] == 'orderBy';
-        });
     }
 
     /**
