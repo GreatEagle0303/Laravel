@@ -10,7 +10,6 @@ use Encore\Admin\Grid\Exporter;
 use Encore\Admin\Grid\Filter;
 use Encore\Admin\Grid\Model;
 use Encore\Admin\Grid\Row;
-use Encore\Admin\Pagination\AdminThreePresenter;
 use Illuminate\Database\Eloquent\Model as Eloquent;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -148,6 +147,13 @@ class Grid
      * @var string
      */
     protected $view = 'admin::grid.table';
+
+    /**
+     * Per-page options.
+     *
+     * @var array
+     */
+    protected $perPages = [10, 20, 30, 50, 100];
 
     /**
      * Create a new grid instance.
@@ -296,9 +302,7 @@ class Grid
     {
         $query = Input::all();
 
-        return $this->model()->eloquent()->appends($query)->render(
-            new AdminThreePresenter($this->model()->eloquent())
-        );
+        return $this->model()->eloquent()->appends($query)->render('admin::pagination');
     }
 
     /**
@@ -315,7 +319,7 @@ class Grid
         $data = $this->processFilter();
 
         $this->columns->map(function (Column $column) use (&$data) {
-            $data = $column->map($data);
+            $data = $column->fill($data);
 
             $this->columnNames[] = $column->getName();
         });
@@ -528,6 +532,37 @@ class Grid
     }
 
     /**
+     * Set per-page options.
+     *
+     * @param array $perPages
+     */
+    public function perPages(array $perPages)
+    {
+        $this->perPages = $perPages;
+    }
+
+    /**
+     * Generate per-page options.
+     *
+     * @return string
+     */
+    public function perPageOptions()
+    {
+        $perPage = app('request')->input('per_page', 20);
+
+        $options = '';
+
+        foreach ($this->perPages as $option) {
+            $selected = ($option == $perPage) ? 'selected' : '';
+            $url = app('request')->fullUrlWithQuery(['per_page' => $option]);
+
+            $options .= "<option value=\"$url\" $selected>$option</option>\r\n";
+        }
+
+        return $options;
+    }
+
+    /**
      * Get current resource uri.
      *
      * @param string $path
@@ -547,6 +582,108 @@ class Grid
         }
 
         return app('router')->current()->getPath();
+    }
+
+    /**
+     * Handle table column for grid.
+     *
+     * @param string $method
+     * @param string $label
+     *
+     * @return bool|Column
+     */
+    protected function handleTableColumn($method, $label)
+    {
+        $connection = $this->model()->eloquent()->getConnectionName();
+
+        if (Schema::connection($connection)->hasColumn($this->model()->getTable(), $method)) {
+            return $this->addColumn($method, $label);
+        }
+
+        return false;
+    }
+
+    /**
+     * Handle get mutator column for grid.
+     *
+     * @param string $method
+     * @param string $label
+     *
+     * @return bool|Column
+     */
+    protected function handleGetMutatorColumn($method, $label)
+    {
+        if ($this->model()->eloquent()->hasGetMutator($method)) {
+            return $this->addColumn($method, $label);
+        }
+
+        return false;
+    }
+
+    /**
+     * Handle relation column for grid.
+     *
+     * @param string $method
+     * @param string $label
+     *
+     * @return bool|Column
+     */
+    protected function handleRelationColumn($method, $label)
+    {
+        $model = $this->model()->eloquent();
+
+        if (!method_exists($model, $method)) {
+            return false;
+        }
+
+        if (!($relation = $model->$method()) instanceof Relation) {
+            return false;
+        }
+
+        if ($relation instanceof HasOne || $relation instanceof BelongsTo) {
+            $this->model()->with($method);
+
+            return $this->addColumn($method, $label)->setRelation($method);
+        }
+
+        if ($relation instanceof HasMany || $relation instanceof BelongsToMany || $relation instanceof MorphToMany) {
+            $this->model()->with($method);
+
+            return $this->addColumn($method, $label);
+        }
+
+        return false;
+    }
+
+    /**
+     * Dynamically add columns to the grid view.
+     *
+     * @param $method
+     * @param $arguments
+     *
+     * @return $this|Column
+     */
+    public function __call($method, $arguments)
+    {
+        $label = isset($arguments[0]) ? $arguments[0] : ucfirst($method);
+
+        if ($this->model()->eloquent() instanceof MongodbModel) {
+            return $this->addColumn($method, $label);
+        }
+
+        if ($column = $this->handleTableColumn($method, $label)) {
+            return $column;
+        }
+
+        if ($column = $this->handleGetMutatorColumn($method, $label)) {
+            return $column;
+        }
+
+        if ($column = $this->handleRelationColumn($method, $label)) {
+            return $column;
+        }
+
+        return $this->addColumn($method, $label);
     }
 
     /**
@@ -604,46 +741,6 @@ class Grid
         }
 
         return view($this->view, $this->variables())->render();
-    }
-
-    /**
-     * Dynamically add columns to the grid view.
-     *
-     * @param $method
-     * @param $arguments
-     *
-     * @return $this|Column
-     */
-    public function __call($method, $arguments)
-    {
-        $label = isset($arguments[0]) ? $arguments[0] : ucfirst($method);
-
-        if ($this->model()->eloquent() instanceof MongodbModel) {
-            return $this->addColumn($method, $label);
-        }
-
-        $connection = $this->model()->eloquent()->getConnectionName();
-        if (Schema::connection($connection)->hasColumn($this->model()->getTable(), $method)) {
-            return $this->addColumn($method, $label);
-        }
-
-        if ($this->model()->eloquent()->hasGetMutator($method)) {
-            return $this->addColumn($method, $label);
-        }
-
-        $relation = $this->model()->eloquent()->$method();
-
-        if ($relation instanceof HasOne || $relation instanceof BelongsTo) {
-            $this->model()->with($method);
-
-            return $this->addColumn($method, $label)->setRelation($method);
-        }
-
-        if ($relation instanceof HasMany || $relation instanceof BelongsToMany || $relation instanceof MorphToMany) {
-            $this->model()->with($method);
-
-            return $this->addColumn($method, $label);
-        }
     }
 
     /**
@@ -720,6 +817,10 @@ $('.grid-order-up').on('click', function() {
 
 $('.grid-order-down').on('click', function() {
     grid_order($(this).data('id'), 0);
+});
+
+$('.per-page').select2().on("select2:select", function(e) {
+    $.pjax({url: this.value, container: '#pjax-container'});
 });
 
 EOT;
