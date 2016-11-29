@@ -85,6 +85,14 @@ class UserController extends Controller
             $grid->profile()->start_at('开始时间');
             $grid->profile()->end_at('结束时间');
 
+            $grid->tags()->value(function ($tags) {
+                $tags = collect($tags)->map(function ($tag) {
+                    return "<code>{$tag['name']}</code>";
+                })->toArray();
+
+                return implode('', $tags);
+            });
+
             $grid->created_at();
             $grid->updated_at();
 
@@ -94,6 +102,14 @@ class UserController extends Controller
                 $filter->like('profile.postcode');
                 $filter->between('profile.start_at')->datetime();
                 $filter->between('profile.end_at')->datetime();
+            });
+
+            $grid->rows(function (Grid\Row $row) {
+                if ($row->id % 2 == 0) {
+                    $row->actions()->add(function ($row) {
+                        return '<a href="/" class="btn btn-xs btn-danger">detail</a>';
+                    });
+                }
             });
         });
     }
