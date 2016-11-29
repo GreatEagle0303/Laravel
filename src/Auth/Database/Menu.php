@@ -32,11 +32,7 @@ class Menu extends Model
      */
     public function __construct(array $attributes = [])
     {
-        $connection = config('admin.database.connection') ?: config('database.default');
-
-        $this->setConnection($connection);
-
-        $this->setTable(config('admin.database.menu_table'));
+        $this->table = config('admin.database.menu_table');
 
         parent::__construct($attributes);
     }

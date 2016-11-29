@@ -59,19 +59,4 @@ class MenuTest extends TestCase
             ->seeInDatabase(config('admin.database.menu_table'), ['title' => 'blablabla'])
             ->assertEquals(7, Menu::count());
     }
-
-    public function testShowPage()
-    {
-        $this->visit('admin/auth/menu/1')
-            ->seePageIs('admin/auth/menu/1/edit');
-    }
-
-    public function testEditMenuParent()
-    {
-        $this->setExpectedException(Illuminate\Foundation\Testing\HttpException::class);
-
-        $this->visit('admin/auth/menu/5/edit')
-            ->see('Menu')
-            ->submitForm('Submit', ['parent_id' => 5]);
-    }
 }

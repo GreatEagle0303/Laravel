@@ -13,59 +13,23 @@ class File extends Field
     const ACTION_KEEP = 0;
     const ACTION_REMOVE = 1;
 
-    /**
-     * Upload directory.
-     *
-     * @var string
-     */
     protected $directory = '';
 
-    /**
-     * File name.
-     *
-     * @var null
-     */
     protected $name = null;
 
-    /**
-     * Options for file-upload plugin.
-     *
-     * @var array
-     */
     protected $options = [];
 
-    /**
-     * Storage instance.
-     *
-     * @var string
-     */
     protected $storage = '';
 
-    /**
-     * Css.
-     *
-     * @var array
-     */
     protected static $css = [
         '/packages/admin/bootstrap-fileinput/css/fileinput.min.css',
     ];
 
-    /**
-     * Js.
-     *
-     * @var array
-     */
     protected static $js = [
         '/packages/admin/bootstrap-fileinput/js/plugins/canvas-to-blob.min.js',
         '/packages/admin/bootstrap-fileinput/js/fileinput.min.js',
     ];
 
-    /**
-     * Create a new File instance.
-     *
-     * @param string $column
-     * @param array  $arguments
-     */
     public function __construct($column, $arguments = [])
     {
         $this->initOptions();
@@ -74,21 +38,6 @@ class File extends Field
         parent::__construct($column, $arguments);
     }
 
-    /**
-     * Initialize the storage instance.
-     *
-     * @return void.
-     */
-    protected function initStorage()
-    {
-        $this->storage = Storage::disk(config('admin.upload.disk'));
-    }
-
-    /**
-     * Initialize file-upload plugin.
-     *
-     * @return void.
-     */
     protected function initOptions()
     {
         $this->options = [
@@ -98,38 +47,16 @@ class File extends Field
         ];
     }
 
-    /**
-     * Set options for file-upload plugin.
-     *
-     * @param array $options
-     *
-     * @return $this
-     */
-    public function options($options = [])
+    protected function initStorage()
     {
-        $this->options = array_merge($this->options, $options);
-
-        return $this;
+        $this->storage = Storage::disk(config('admin.upload.disk'));
     }
 
-    /**
-     * Default store path for file upload.
-     *
-     * @return mixed
-     */
     public function defaultStorePath()
     {
         return config('admin.upload.directory.file');
     }
 
-    /**
-     * Specify the directory and name for uplaod file.
-     *
-     * @param string      $directory
-     * @param null|string $name
-     *
-     * @return $this
-     */
     public function move($directory, $name = null)
     {
         $this->directory = $directory;
@@ -139,13 +66,6 @@ class File extends Field
         return $this;
     }
 
-    /**
-     * Prepare for saving.
-     *
-     * @param UploadedFile $file
-     *
-     * @return mixed|string
-     */
     public function prepare(UploadedFile $file = null)
     {
         if (is_null($file)) {
@@ -164,9 +84,7 @@ class File extends Field
     }
 
     /**
-     * Upload file and delete original file.
-     *
-     * @param UploadedFile $file
+     * @param $file
      *
      * @return mixed
      */
@@ -183,11 +101,6 @@ class File extends Field
         return $target;
     }
 
-    /**
-     * Preview html for file-upload plugin.
-     *
-     * @return string
-     */
     protected function preview()
     {
         $fileName = basename($this->value);
@@ -204,27 +117,22 @@ class File extends Field
 EOT;
     }
 
-    /**
-     * Get file visit url.
-     *
-     * @param $path
-     *
-     * @return string
-     */
+    public function options($options = [])
+    {
+        $this->options = array_merge($this->options, $options);
+
+        return $this;
+    }
+
     public function objectUrl($path)
     {
         if (Str::startsWith($path, ['http://', 'https://'])) {
             return $path;
         }
 
-        return rtrim(config('admin.upload.host'), '/').'/'.trim($path, '/');
+        return trim(config('admin.upload.host'), '/').'/'.trim($path, '/');
     }
 
-    /**
-     * Render file upload field.
-     *
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
-     */
     public function render()
     {
         $this->options['initialCaption'] = basename($this->value);
@@ -267,8 +175,6 @@ EOT;
     }
 
     /**
-     * If name already exists, rename it.
-     *
      * @param $file
      *
      * @return void
@@ -280,15 +186,8 @@ EOT;
         }
     }
 
-    /**
-     * Destroy original file.
-     *
-     * @return void.
-     */
     public function destroy()
     {
-        if ($this->storage->exists($this->original)) {
-            $this->storage->delete($this->original);
-        }
+        $this->storage->delete($this->original);
     }
 }
