@@ -12,7 +12,6 @@ use Encore\Admin\Layout\Row;
 use Encore\Admin\Menu\Menu;
 use Encore\Admin\Widgets\Box;
 use Encore\Admin\Widgets\Callout;
-use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 
 class MenuController extends Controller
@@ -52,20 +51,6 @@ class MenuController extends Controller
 
             Admin::script($this->script());
         });
-    }
-
-    /**
-     * Redirect to edit page.
-     *
-     * @param int $id
-     *
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function show($id)
-    {
-        return redirect()->action(
-            '\Encore\Admin\Controllers\MenuController@edit', ['id' => $id]
-        );
     }
 
     /**
@@ -121,14 +106,6 @@ class MenuController extends Controller
      */
     public function store()
     {
-        if (Request::capture()->has('_order')) {
-            $menu = new Menu(new MenuModel());
-
-            return response()->json([
-                'status' => $menu->saveTree(Request::capture()->get('_order')),
-            ]);
-        }
-
         return $this->form()->store();
     }
 
