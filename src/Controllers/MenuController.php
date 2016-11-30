@@ -13,6 +13,7 @@ use Encore\Admin\Menu\Menu;
 use Encore\Admin\Widgets\Box;
 use Encore\Admin\Widgets\Callout;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Request;
 
 class MenuController extends Controller
 {
@@ -54,6 +55,20 @@ class MenuController extends Controller
     }
 
     /**
+     * Redirect to edit page.
+     *
+     * @param int $id
+     *
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function show($id)
+    {
+        return redirect()->action(
+            '\Encore\Admin\Controllers\MenuController@edit', ['id' => $id]
+        );
+    }
+
+    /**
      * Edit interface.
      *
      * @param $id
@@ -78,6 +93,10 @@ class MenuController extends Controller
      */
     public function update($id)
     {
+        if (Request::input('parent_id') == $id) {
+            throw new \Exception(trans('admin::lang.parent_select_error'));
+        }
+
         return $this->form()->update($id);
     }
 
@@ -106,6 +125,14 @@ class MenuController extends Controller
      */
     public function store()
     {
+        if (Request::has('_order')) {
+            $menu = new Menu(new MenuModel());
+
+            return response()->json([
+                'status' => $menu->saveTree(Request::input('_order')),
+            ]);
+        }
+
         return $this->form()->store();
     }
 
