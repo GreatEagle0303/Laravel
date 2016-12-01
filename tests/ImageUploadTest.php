@@ -13,6 +13,12 @@ class ImageUploadTest extends TestCase
         $this->be(Administrator::first(), 'admin');
     }
 
+    public function testDisableFilter()
+    {
+        $this->visit('admin/images')
+            ->dontSeeElement('input[name=id]');
+    }
+
     public function testImageUploadPage()
     {
         $this->visit('admin/images/create')
@@ -61,6 +67,8 @@ class ImageUploadTest extends TestCase
         foreach (range(1, 6) as $index) {
             $this->assertFileExists(public_path('upload/'.$images['image'.$index]));
         }
+
+        $this->assertFileExists(public_path('upload/image/asdasdasdasdasd.jpeg'));
 
         File::cleanDirectory(public_path('upload/image'));
     }

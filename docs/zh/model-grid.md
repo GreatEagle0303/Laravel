@@ -170,11 +170,6 @@ $grid->rows(function($row){
             return "<a class=\"btn btn-xs btn-danger\">btn</a>";
         });
     }
-    
-    // 修改column1的显示，使用列column2的值
-    $row->column('column1', function ($column1)  use ($row) {
-        return $column1 . $row->column2;
-    });
 });
 ```
 
@@ -256,7 +251,7 @@ class User extends Model
 
 class Profile extends Model
 {
-    $this->belongsTo(User::class);
+    $this->hasOne(User::class);
 }
 
 ```
