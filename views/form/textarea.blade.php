@@ -6,6 +6,9 @@
 
         @include('admin::form.error')
 
-        <textarea id="{{$id}}" name="{{$name}}" class="form-control" rows="3" placeholder="{{ trans('admin::lang.input') }} {{$label}}" {!! $attributes !!} >{{ old($column, $value) }}</textarea>
+        <textarea id="{{$id}}" name="{{$name}}" class="form-control" rows="{{ $rows }}" placeholder="{{ trans('admin::lang.input') }} {{$label}}" {!! $attributes !!} >{{ old($column, $value) }}</textarea>
+
+        @include('admin::form.help-block')
+
     </div>
 </div>
