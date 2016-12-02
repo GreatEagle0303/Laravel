@@ -11,8 +11,5 @@
                 <option value="{{$select}}" {{ $select == old($column, $value) ?'selected':'' }}>{{$option}}</option>
             @endforeach
         </select>
-
-        @include('admin::form.help-block')
-
     </div>
 </div>
