@@ -12,8 +12,5 @@
             </div>
             <input type="password" id="{{$id}}" name="{{$name}}" value="{{ old($column, $value) }}" class="form-control" placeholder="{{ trans('admin::lang.input') }} {{$label}}" {!! $attributes !!} />
         </div>
-
-        @include('admin::form.help-block')
-
     </div>
 </div>

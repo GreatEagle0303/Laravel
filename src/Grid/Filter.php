@@ -41,18 +41,9 @@ class Filter
     protected $supports = ['is', 'like', 'gt', 'lt', 'between', 'where'];
 
     /**
-     * If use a modal to hold the filters.
-     *
      * @var bool
      */
     protected $useModal = false;
-
-    /**
-     * If use id filter.
-     *
-     * @var bool
-     */
-    protected $useIdFilter = true;
 
     /**
      * Create a new filter instance.
@@ -75,14 +66,6 @@ class Filter
     public function useModal()
     {
         $this->useModal = true;
-    }
-
-    /**
-     * Disable Id filter.
-     */
-    public function disableIdFilter()
-    {
-        $this->useIdFilter = false;
     }
 
     /**
@@ -140,8 +123,6 @@ class Filter
     }
 
     /**
-     * Get parent grid instance.
-     *
      * @return Grid
      */
     public function getGrid()
@@ -156,19 +137,11 @@ class Filter
      */
     public function render()
     {
-        if (!$this->useIdFilter) {
-            array_shift($this->filters);
-        }
-
-        if (empty($this->filters)) {
-            return '';
-        }
-
         if ($this->useModal) {
             return $this->renderModalFilter();
         }
 
-        return view('admin::grid.filter')->with(['filters' => $this->filters, 'grid' => $this->grid]);
+        return view('admin::grid.filter')->with(['filters' => $this->filters(), 'grid' => $this->grid]);
     }
 
     /**

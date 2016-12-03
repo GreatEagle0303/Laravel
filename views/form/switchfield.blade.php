@@ -6,10 +6,8 @@
 
         @include('admin::form.error')
 
-        <input type="checkbox" id="{{$id}}_checkbox" {{ old($column, $value) == 'on' ? 'checked' : '' }} {!! $attributes !!} />
+        <input type="checkbox" id="{{$id}}_checkbox" {{ $value == 'on' ? 'checked' : '' }} {!! $attributes !!} />
         <input type="hidden" id="{{$id}}" name="{{$name}}" class="" value="{{ old($column, $value) }}" />
-
-        @include('admin::form.help-block')
 
     </div>
 </div>
