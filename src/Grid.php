@@ -10,7 +10,6 @@ use Encore\Admin\Grid\Exporter;
 use Encore\Admin\Grid\Filter;
 use Encore\Admin\Grid\Model;
 use Encore\Admin\Grid\Row;
-use Encore\Admin\Pagination\AdminThreePresenter;
 use Illuminate\Database\Eloquent\Model as Eloquent;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -131,6 +130,27 @@ class Grid
     protected $allowExport = true;
 
     /**
+     * If use grid filter.
+     *
+     * @var bool
+     */
+    protected $useFilter = true;
+
+    /**
+     * If grid use pagination.
+     *
+     * @var bool
+     */
+    protected $usePagination = true;
+
+    /**
+     * If grid use per-page selector.
+     *
+     * @var bool
+     */
+    protected $usePerPageSelector = true;
+
+    /**
      * Is grid rows orderable.
      *
      * @var bool
@@ -148,6 +168,20 @@ class Grid
      * @var string
      */
     protected $view = 'admin::grid.table';
+
+    /**
+     * Per-page options.
+     *
+     * @var array
+     */
+    protected $perPages = [10, 20, 30, 50, 100];
+
+    /**
+     * Default items count per-page.
+     *
+     * @var int
+     */
+    protected $perPage = 20;
 
     /**
      * Create a new grid instance.
@@ -282,8 +316,10 @@ class Grid
      *
      * @return void
      */
-    public function paginate($perPage = null)
+    public function paginate($perPage = 20)
     {
+        $this->perPage = $perPage;
+
         $this->model()->paginate($perPage);
     }
 
@@ -294,11 +330,13 @@ class Grid
      */
     public function paginator()
     {
+        if (!$this->usePagination) {
+            return '';
+        }
+
         $query = Input::all();
 
-        return $this->model()->eloquent()->appends($query)->render(
-            new AdminThreePresenter($this->model()->eloquent())
-        );
+        return $this->model()->eloquent()->appends($query)->render('admin::pagination');
     }
 
     /**
@@ -315,7 +353,7 @@ class Grid
         $data = $this->processFilter();
 
         $this->columns->map(function (Column $column) use (&$data) {
-            $data = $column->map($data);
+            $data = $column->fill($data);
 
             $this->columnNames[] = $column->getName();
         });
@@ -425,18 +463,26 @@ class Grid
 
     /**
      * Disable batch deletion.
+     *
+     * @return $this
      */
     public function disableBatchDeletion()
     {
         $this->allowBatchDeletion = false;
+
+        return $this;
     }
 
     /**
      * Disable creation.
+     *
+     * @return $this
      */
     public function disableCreation()
     {
         $this->allowCreation = false;
+
+        return $this;
     }
 
     /**
@@ -461,10 +507,14 @@ class Grid
 
     /**
      * Disable all actions.
+     *
+     * @return $this
      */
     public function disableActions()
     {
         $this->allowActions = false;
+
+        return $this;
     }
 
     /**
@@ -479,10 +529,70 @@ class Grid
 
     /**
      * Disable export.
+     *
+     * @return $this
      */
     public function disableExport()
     {
         $this->allowExport = false;
+
+        return $this;
+    }
+
+    /**
+     * Disable grid filter.
+     *
+     * @return $this
+     */
+    public function disableFilter()
+    {
+        $this->useFilter = false;
+
+        return $this;
+    }
+
+    /**
+     * Disable grid pagination.
+     *
+     * @return $this
+     */
+    public function disablePagination()
+    {
+        $this->model->usePaginate(false);
+
+        $this->usePagination = false;
+
+        return $this;
+    }
+
+    /**
+     * If this grid use pagination.
+     *
+     * @return bool
+     */
+    public function usePagination()
+    {
+        return $this->usePagination;
+    }
+
+    /**
+     * Disable grid per-page selector.
+     */
+    public function disablePerPageSelector()
+    {
+        $this->usePerPageSelector = false;
+
+        return $this;
+    }
+
+    /**
+     * If this grid use per-page selector.
+     *
+     * @return bool
+     */
+    public function usePerPageSelector()
+    {
+        return $this->usePerPageSelector;
     }
 
     /**
@@ -524,7 +634,46 @@ class Grid
      */
     public function renderFilter()
     {
+        if (!$this->useFilter) {
+            return '';
+        }
+
         return $this->filter->render();
+    }
+
+    /**
+     * Set per-page options.
+     *
+     * @param array $perPages
+     */
+    public function perPages(array $perPages)
+    {
+        $this->perPages = $perPages;
+    }
+
+    /**
+     * Generate per-page options.
+     *
+     * @return string
+     */
+    public function perPageOptions()
+    {
+        $perPage = (int) app('request')->input(
+            $this->model->getPerPageName(),
+            $this->perPage
+        );
+
+        return collect($this->perPages)
+            ->push($this->perPage)
+            ->push($perPage)
+            ->unique()
+            ->sort()
+            ->map(function ($option) use ($perPage) {
+                $selected = ($option == $perPage) ? 'selected' : '';
+                $url = app('request')->fullUrlWithQuery([$this->model->getPerPageName() => $option]);
+
+                return "<option value=\"$url\" $selected>$option</option>";
+            })->implode("\r\n");
     }
 
     /**
@@ -547,6 +696,108 @@ class Grid
         }
 
         return app('router')->current()->getPath();
+    }
+
+    /**
+     * Handle table column for grid.
+     *
+     * @param string $method
+     * @param string $label
+     *
+     * @return bool|Column
+     */
+    protected function handleTableColumn($method, $label)
+    {
+        $connection = $this->model()->eloquent()->getConnectionName();
+
+        if (Schema::connection($connection)->hasColumn($this->model()->getTable(), $method)) {
+            return $this->addColumn($method, $label);
+        }
+
+        return false;
+    }
+
+    /**
+     * Handle get mutator column for grid.
+     *
+     * @param string $method
+     * @param string $label
+     *
+     * @return bool|Column
+     */
+    protected function handleGetMutatorColumn($method, $label)
+    {
+        if ($this->model()->eloquent()->hasGetMutator($method)) {
+            return $this->addColumn($method, $label);
+        }
+
+        return false;
+    }
+
+    /**
+     * Handle relation column for grid.
+     *
+     * @param string $method
+     * @param string $label
+     *
+     * @return bool|Column
+     */
+    protected function handleRelationColumn($method, $label)
+    {
+        $model = $this->model()->eloquent();
+
+        if (!method_exists($model, $method)) {
+            return false;
+        }
+
+        if (!($relation = $model->$method()) instanceof Relation) {
+            return false;
+        }
+
+        if ($relation instanceof HasOne || $relation instanceof BelongsTo) {
+            $this->model()->with($method);
+
+            return $this->addColumn($method, $label)->setRelation($method);
+        }
+
+        if ($relation instanceof HasMany || $relation instanceof BelongsToMany || $relation instanceof MorphToMany) {
+            $this->model()->with($method);
+
+            return $this->addColumn($method, $label);
+        }
+
+        return false;
+    }
+
+    /**
+     * Dynamically add columns to the grid view.
+     *
+     * @param $method
+     * @param $arguments
+     *
+     * @return $this|Column
+     */
+    public function __call($method, $arguments)
+    {
+        $label = isset($arguments[0]) ? $arguments[0] : ucfirst($method);
+
+        if ($this->model()->eloquent() instanceof MongodbModel) {
+            return $this->addColumn($method, $label);
+        }
+
+        if ($column = $this->handleTableColumn($method, $label)) {
+            return $column;
+        }
+
+        if ($column = $this->handleGetMutatorColumn($method, $label)) {
+            return $column;
+        }
+
+        if ($column = $this->handleRelationColumn($method, $label)) {
+            return $column;
+        }
+
+        return $this->addColumn($method, $label);
     }
 
     /**
@@ -603,47 +854,9 @@ class Grid
             return with(new Handle($e))->render();
         }
 
+        AdminManager::script($this->script());
+
         return view($this->view, $this->variables())->render();
-    }
-
-    /**
-     * Dynamically add columns to the grid view.
-     *
-     * @param $method
-     * @param $arguments
-     *
-     * @return $this|Column
-     */
-    public function __call($method, $arguments)
-    {
-        $label = isset($arguments[0]) ? $arguments[0] : ucfirst($method);
-
-        if ($this->model()->eloquent() instanceof MongodbModel) {
-            return $this->addColumn($method, $label);
-        }
-
-        $connection = $this->model()->eloquent()->getConnectionName();
-        if (Schema::connection($connection)->hasColumn($this->model()->getTable(), $method)) {
-            return $this->addColumn($method, $label);
-        }
-
-        if ($this->model()->eloquent()->hasGetMutator($method)) {
-            return $this->addColumn($method, $label);
-        }
-
-        $relation = $this->model()->eloquent()->$method();
-
-        if ($relation instanceof HasOne || $relation instanceof BelongsTo) {
-            $this->model()->with($method);
-
-            return $this->addColumn($method, $label)->setRelation($method);
-        }
-
-        if ($relation instanceof HasMany || $relation instanceof BelongsToMany || $relation instanceof MorphToMany) {
-            $this->model()->with($method);
-
-            return $this->addColumn($method, $label);
-        }
     }
 
     /**
@@ -722,6 +935,10 @@ $('.grid-order-down').on('click', function() {
     grid_order($(this).data('id'), 0);
 });
 
+$('.per-page').select2({minimumResultsForSearch: -1}).on("select2:select", function(e) {
+    $.pjax({url: this.value, container: '#pjax-container'});
+});
+
 EOT;
     }
 
@@ -732,8 +949,6 @@ EOT;
      */
     public function __toString()
     {
-        AdminManager::script($this->script());
-
         return $this->render();
     }
 }
