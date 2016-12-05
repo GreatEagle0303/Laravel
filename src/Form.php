@@ -285,7 +285,6 @@ class Form
         $data = Input::all();
 
         if ($validator = $this->validationFails($data)) {
-            dump($validator->messages());
             return back()->withInput()->withErrors($validator->messages());
         }
 
@@ -677,7 +676,7 @@ class Form
     protected function getFieldByColumn($column)
     {
         return $this->builder->fields()->first(
-            function ($index, Field $field) use ($column) {
+            function (Field $field) use ($column) {
                 if (is_array($field->column())) {
                     return in_array($column, $field->column());
                 }
@@ -731,10 +730,9 @@ class Form
     protected function validationFails($input)
     {
         foreach ($this->builder->fields() as $field) {
-
             if (!$validator = $field->validate($input)) {
                 continue;
-            };
+            }
 
             if (($validator instanceof Validator) && !$validator->passes()) {
                 return $validator;

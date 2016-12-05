@@ -64,8 +64,6 @@ Documentation
 - [layout](/docs/en/layout.md)
 - [model-grid](/docs/en/model-grid.md)
 - [model-form](/docs/en/model-form.md)
-  - [image/file upload](/docs/en/form-upload.md)
-  - [components management](/docs/en/components-management.md)
 - [widgets](/docs/en/widgets/table.md)
   - [table](/docs/en/widgets/table.md)
   - [form](/docs/en/widgets/form.md)
@@ -141,7 +139,7 @@ The rest needs to be done is open `app/Admin/Contollers/UserController.php`, fin
 
 Other
 ------------
-`laravel-admin` based on following plugins or services:
+`laravel-admin` based on thses plugins or services:
 
 + [Laravel](https://laravel.com/)
 + [AdminLTE](https://almsaeedstudio.com/)
