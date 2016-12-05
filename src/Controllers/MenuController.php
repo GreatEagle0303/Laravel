@@ -58,7 +58,6 @@ class MenuController extends Controller
      * Redirect to edit page.
      *
      * @param int $id
-     *
      * @return \Illuminate\Http\RedirectResponse
      */
     public function show($id)

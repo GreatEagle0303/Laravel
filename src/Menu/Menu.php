@@ -5,6 +5,7 @@ namespace Encore\Admin\Menu;
 use Encore\Admin\Facades\Admin as AdminManager;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
 
 class Menu implements Renderable
 {

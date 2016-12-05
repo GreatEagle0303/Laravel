@@ -306,6 +306,7 @@ class Field
         return $this;
     }
 
+
     protected function getRules()
     {
         return $this->rules;

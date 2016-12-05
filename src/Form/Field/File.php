@@ -117,7 +117,6 @@ class File extends Field
      * Set options for file-upload plugin.
      *
      * @param array $options
-     *
      * @return $this
      */
     public function options($options = [])
@@ -156,7 +155,6 @@ class File extends Field
      *
      * @param string      $directory
      * @param null|string $name
-     *
      * @return $this
      */
     public function move($directory, $name = null)
@@ -197,7 +195,6 @@ class File extends Field
      * Hydrate the files array.
      *
      * @param array $value
-     *
      * @return array
      */
     protected function hydrateFiles(array $value)
@@ -367,7 +364,6 @@ EOT;
      * Get file visit url.
      *
      * @param $path
-     *
      * @return string
      */
     public function objectUrl($path)
@@ -383,7 +379,6 @@ EOT;
      * Initialize the caption.
      *
      * @param string $caption
-     *
      * @return string
      */
     protected function initialCaption($caption)
