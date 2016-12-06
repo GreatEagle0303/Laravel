@@ -54,7 +54,6 @@ use Spatie\EloquentSortable\Sortable;
  * @method Field\Divide         divide()
  * @method Field\Password       password($column, $label = '')
  * @method Field\Decimal        decimal($column, $label = '')
- * @method Field\Html           html($html)
  */
 class Form
 {
@@ -677,7 +676,7 @@ class Form
     protected function getFieldByColumn($column)
     {
         return $this->builder->fields()->first(
-            function (Field $field) use ($column) {
+            function ($index, Field $field) use ($column) {
                 if (is_array($field->column())) {
                     return in_array($column, $field->column());
                 }
@@ -872,7 +871,6 @@ class Form
             'timeRange'         => \Encore\Admin\Form\Field\TimeRange::class,
             'url'               => \Encore\Admin\Form\Field\Url::class,
             'year'              => \Encore\Admin\Form\Field\Year::class,
-            'html'              => \Encore\Admin\Form\Field\Html::class,
         ];
 
         foreach ($map as $abstract => $class) {

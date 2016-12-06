@@ -85,14 +85,6 @@ class UserController extends Controller
             $grid->profile()->start_at('开始时间');
             $grid->profile()->end_at('结束时间');
 
-            $grid->column('column1_not_in_table')->display(function ($row) {
-                return 'full name:'.$row['full_name'];
-            });
-
-            $grid->column('column2_not_in_table')->display(function ($row) {
-                return $this->email.'#'.$this->profile['color'];
-            });
-
             $grid->tags()->value(function ($tags) {
                 $tags = collect($tags)->map(function ($tag) {
                     return "<code>{$tag['name']}</code>";
@@ -154,8 +146,6 @@ class UserController extends Controller
 
             $form->display('created_at', 'Created At');
             $form->display('updated_at', 'Updated At');
-
-            $form->html('<a html-field>html...</a>');
         });
     }
 }
