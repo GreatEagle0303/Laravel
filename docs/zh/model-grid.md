@@ -107,55 +107,24 @@ $grid->paginate(15);
 
 #### 修改显示输出
 
-
 ```php
-$grid->text()->display(function($text) {
+$grid->text()->value(function($text) {
     return str_limit($text, 30, '...');
 });
 
-$grid->name()->display(function ($name) {
+$grid->name()->value(function ($name) {
     return "<span class='label'>$name</span>";
 });
 
-$grid->email()->display(function ($email) {
+$grid->email()->value(function ($email) {
     return "mailto:$email";
 });
 
-// 添加不存在的字段
-$grid->column('column_not_in_table')->display(function () {
-    return 'blablabla....';
-});
-```
-
-`display()`方法接收的匿名函数绑定了当前行的数据对象，可以在里面调用当前行的其它字段数据
-
-```php
-$grid->first_name();
-$grid->last_name();
-
-// 不存的字段列
-$grid->column('full_name')->display(function () {
-    return $this->first_name.' '.$this->last_name;
-});
 ```
 
 #### 禁用创建按钮
 ```php
 $grid->disableCreation();
-```
-
-#### 禁用分页条
-```php
-$grid->disablePagination();
-```
-
-#### 禁用页数选择器
-```php
-$grid->disablePerPageSelector();
-```
-#### 禁用查询过滤器
-```php
-$grid->disableFilter();
 ```
 
 #### 禁用导出数据按钮
@@ -167,17 +136,6 @@ $grid->disableExport();
 ```php
 $grid->disableBatchDeletion();
 ```
-
-#### 开启行排序功能
-```php
-$grid->orderable();
-```
-
-#### 设置分页选择器选项
-```php
-$grid->perPages([10, 20, 30, 40, 50]);
-```
-
 #### 修改行操作按钮
 ```php
 //开启编辑和删除操作
@@ -212,11 +170,6 @@ $grid->rows(function($row){
             return "<a class=\"btn btn-xs btn-danger\">btn</a>";
         });
     }
-    
-    // 修改column1的显示，使用列column2的值
-    $row->column('column1', function ($column1)  use ($row) {
-        return $column1 . $row->column2;
-    });
 });
 ```
 
@@ -253,18 +206,6 @@ $grid->filter(function($filter){
         $query->whereRaw("`rate` >= 6 AND `created_at` = {$this->input}");
 
     }, 'Text');
-    
-    // 关系查询，查询对应关系`profile`的字段
-    $filter->where(function ($query) {
-
-        $input = $this->input;
-
-        $query->whereHas('profile', function ($query) use ($input) {
-            $query->where('address', 'like', "%{$input}%")->orWhere('email', 'like', "%{$input}%");
-        });
-
-    }, '地址或手机号');
-    
 });
 ```
 
@@ -310,7 +251,7 @@ class User extends Model
 
 class Profile extends Model
 {
-    $this->belongsTo(User::class);
+    $this->hasOne(User::class);
 }
 
 ```

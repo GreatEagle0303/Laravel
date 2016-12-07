@@ -57,9 +57,6 @@ $grid = Admin::form(Movie::class, function(Form $grid){
     // 两个时间显示
     $form->display('created_at', '创建时间');
     $form->display('updated_at', '修改时间');
-    
-    // 去掉form删除功能（移除删除按钮）
-    $form->disableDeletion();
 });
 
 // 显示表单内容
@@ -336,9 +333,6 @@ $form->image($column[, $label])->crop(int $width, int $height, [int $x, int $y])
 
 // 加水印
 $form->image($column[, $label])->insert($watermark, 'center');
-
-// 多图上传，图片的路径会以JSON的格式存储在数据库中
-$form->image($column[, $label])->multiple();
 ```
 
 #### 文件上传
@@ -351,9 +345,6 @@ $form->file($column[, $label])->move($dir, $name);
 
 // 并设置上传文件类型
 $form->file($column[, $label])->rules('mimes:doc,docx,xlsx');
-
-// 多文件上传，文件的路径会以JSON的格式存储在数据库中
-$form->file($column[, $label])->multiple();
 ```
 
 #### 地图控件
@@ -404,12 +395,6 @@ $form->display($column[, $label]);
 #### 分割线
 ```php
 $form->divide();
-```
-
-#### Html
-插入html内容，参数可以是实现了`Htmlable`、`Renderable`或者实现了`__toString()`方法的类
-```php
-$form->html('你的html内容');
 ```
 
 #### 保存数据回调
