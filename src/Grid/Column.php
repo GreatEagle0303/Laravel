@@ -427,6 +427,7 @@ EOT;
             array_set($row, $this->name, $value);
 
             if ($this->hasValueCallback()) {
+
                 $input = $isCustomColumn ? $row : $this->original;
 
                 $callback = $this->bindOriginalRow($this->valueCallback, $key);
@@ -455,7 +456,7 @@ EOT;
     {
         $originalRow = static::$originalGridData[$key];
 
-        return $callback->bindTo((object) $originalRow);
+        return $callback->bindTo((object)$originalRow);
     }
 
     /**
