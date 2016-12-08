@@ -108,55 +108,23 @@ $grid->paginate(15);
 #### Modify the display output
 
 ```php
-$grid->text()->display(function($text) {
+$grid->text()->value(function($text) {
     return str_limit($text, 30, '...');
 });
 
-$grid->name()->display(function ($name) {
+$grid->name()->value(function ($name) {
     return "<span class='label'>$name</span>";
 });
 
-$grid->email()->display(function ($email) {
+$grid->email()->value(function ($email) {
     return "mailto:$email";
 });
 
-// column not in table
-$grid->column('column_not_in_table')->display(function () {
-    return 'blablabla....';
-});
-
-```
-
-The closure passed to method `display()` is bind to row data object, you can use other column data in current row.
-
-```php
-$grid->first_name();
-$grid->last_name();
-
-// column not in table
-$grid->column('full_name')->display(function () {
-    return $this->first_name.' '.$this->last_name;
-});
 ```
 
 #### Disable the create button 
 ```php
 $grid->disableCreation();
-```
-
-#### Disable Pagination
-```php
-$grid->disablePagination();
-```
-
-#### Disable PerPage Selector
-```php
-$grid->disablePerPageSelector();
-```
-
-#### Disable data filter
-```php
-$grid->disableFilter();
 ```
 
 #### Disable the batch delete button
@@ -167,16 +135,6 @@ $grid->disableBatchDeletion();
 #### Disable the export button
 ```php
 $grid->disableExport();
-```
-
-#### Enable orderable grid
-```php
-$grid->orderable();
-```
-
-#### Set options for perPage selector
-```php
-$grid->perPages([10, 20, 30, 40, 50]);
 ```
 
 #### Modify the row action button
@@ -208,18 +166,6 @@ $grid->rows(function($row){
             return "<a class=\"btn btn-xs btn-danger\">btn</a>";
         });
     }
-    
-    // add custom button in specified rows.
-    if($row->id % 2) {
-        $row->actions()->add(function ($row) {
-            return "<a class=\"btn btn-xs btn-danger\">btn</a>";
-        });
-    }
-    
-    // modify the output of column `column1`, use the data in column `column2`
-    $row->column('column1', function ($column1)  use ($row) {
-        return $column1 . $row->column2;
-    });
 });
 ```
 
@@ -256,17 +202,6 @@ $grid->filter(function($filter){
         $query->whereRaw("`rate` >= 6 AND `created_at` = {$this->input}");
 
     }, 'Text');
-    
-    // relation filter, filter columns in relation `profile`
-    $filter->where(function ($query) {
-
-        $input = $this->input;
-
-        $query->whereHas('profile', function ($query) use ($input) {
-            $query->where('address', 'like', "%{$input}%")->orWhere('email', 'like', "%{$input}%");
-        });
-
-    }, 'Address or Email');
 });
 ```
 

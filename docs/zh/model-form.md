@@ -57,9 +57,6 @@ $grid = Admin::form(Movie::class, function(Form $grid){
     // 两个时间显示
     $form->display('created_at', '创建时间');
     $form->display('updated_at', '修改时间');
-    
-    // 去掉form删除功能（移除删除按钮）
-    $form->disableDeletion();
 });
 
 // 显示表单内容
@@ -324,9 +321,6 @@ $form->rate($column[, $label]);
 ```
 
 #### 图片上传
-
-使用图片上传功能之前需要先完成上传配置，请参考:[图片/文件上传](/docs/zh/form-upload.md).
-
 可以使用压缩、裁切、添加水印等各种方法，请参考[[Intervention](http://image.intervention.io/getting_started/introduction)]，图片上传目录在文件`config/admin.php`中的`upload.image`中配置，如果目录不存在，需要创建该目录并开放写权限。：
 ```php
 $form->image($column[, $label]);
@@ -339,15 +333,9 @@ $form->image($column[, $label])->crop(int $width, int $height, [int $x, int $y])
 
 // 加水印
 $form->image($column[, $label])->insert($watermark, 'center');
-
-// 多图上传，图片的路径会以JSON的格式存储在数据库中
-$form->image($column[, $label])->multiple();
 ```
 
 #### 文件上传
-
-使用图片上传功能之前需要先完成上传配置，请参考:[图片/文件上传](/docs/zh/form-upload.md).
-
 文件上传目录在文件`config/admin.php`中的`upload.file`中配置，如果目录不存在，需要创建该目录并开放写权限。
 ```php
 $form->file($column[, $label]);
@@ -357,15 +345,9 @@ $form->file($column[, $label])->move($dir, $name);
 
 // 并设置上传文件类型
 $form->file($column[, $label])->rules('mimes:doc,docx,xlsx');
-
-// 多文件上传，文件的路径会以JSON的格式存储在数据库中
-$form->file($column[, $label])->multiple();
 ```
 
 #### 地图控件
-
-地图组件引用了网络资源，如果网络方面有问题参考[form组件管理](/docs/zh/field-management.md)移除该组件
-
 地图控件，用来选择经纬度,`$latitude`, `$longitude`为经纬度字段，laravel的`locale`设置为`zh_CN`的时候使用腾讯地图，否则使用Google地图：
 ```php
 $form->map($latitude, $longitude, $label);
@@ -384,11 +366,13 @@ $form->slider($column[, $label])->options(['max' => 100, 'min' => 1, 'step' => 1
 ```
 
 #### 富文本编辑框
-
-编辑器组件引用了网络资源，如果网络方面有问题参考[form组件管理](/docs/zh/field-management.md)移除该组件
-
 ```php
 $form->editor($column[, $label]);
+```
+
+#### json编辑框
+```php
+$form->json($column[, $label]);
 ```
 
 #### 隐藏域
@@ -411,12 +395,6 @@ $form->display($column[, $label]);
 #### 分割线
 ```php
 $form->divide();
-```
-
-#### Html
-插入html内容，参数可以是实现了`Htmlable`、`Renderable`或者实现了`__toString()`方法的类
-```php
-$form->html('你的html内容');
 ```
 
 #### 保存数据回调
