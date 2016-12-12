@@ -375,15 +375,15 @@ class Field
     }
 
     /**
-     * Get validator for this field.
+     * Validate input field data.
      *
      * @param array $input
      *
      * @return bool|Validator
      */
-    public function getValidator(array $input)
+    public function validate(array $input)
     {
-        $rules = $attributes = [];
+        $data = $rules = [];
 
         if (!$fieldRules = $this->getRules()) {
             return false;
@@ -394,10 +394,15 @@ class Field
                 return false;
             }
 
-            $input = $this->sanitizeInput($input, $this->column);
+            $value = array_get($input, $this->column);
 
-            $rules[$this->column] = $fieldRules;
-            $attributes[$this->column] = $this->label;
+            // remove empty options from multiple select.
+            if ($this instanceof Field\MultipleSelect) {
+                $value = array_filter($value);
+            }
+
+            $data[$this->label] = $value;
+            $rules[$this->label] = $fieldRules;
         }
 
         if (is_array($this->column)) {
@@ -405,31 +410,12 @@ class Field
                 if (!array_key_exists($column, $input)) {
                     continue;
                 }
-                $input[$column.$key] = array_get($input, $column);
-                $rules[$column.$key] = $fieldRules;
-                $attributes[$column.$key] = $this->label."[$column]";
+                $data[$this->label.$key] = array_get($input, $column);
+                $rules[$this->label.$key] = $fieldRules;
             }
         }
 
-        return Validator::make($input, $rules, [], $attributes);
-    }
-
-    /**
-     * Sanitize input data.
-     *
-     * @param array  $input
-     * @param string $column
-     *
-     * @return array
-     */
-    protected function sanitizeInput($input, $column)
-    {
-        if ($this instanceof Field\MultipleSelect) {
-            $value = array_get($input, $column);
-            array_set($input, $column, array_filter($value));
-        }
-
-        return $input;
+        return Validator::make($data, $rules);
     }
 
     /**

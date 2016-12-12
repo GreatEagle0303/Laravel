@@ -12,7 +12,6 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
-use Illuminate\Support\MessageBag;
 use Illuminate\Validation\Validator;
 use Spatie\EloquentSortable\Sortable;
 
@@ -129,13 +128,6 @@ class Form
      * @var array
      */
     public static $availableFields = [];
-
-    /**
-     * Ignored saving fields.
-     *
-     * @var array
-     */
-    protected $ignored = [];
 
     /**
      * Collected field assets.
@@ -293,9 +285,8 @@ class Form
     {
         $data = Input::all();
 
-        // Handle validation errors.
-        if ($validationMessages = $this->validationMessages($data)) {
-            return back()->withInput()->withErrors($validationMessages);
+        if ($validator = $this->validationFails($data)) {
+            return back()->withInput()->withErrors($validator->messages());
         }
 
         $this->prepare($data, $this->saving);
@@ -328,7 +319,7 @@ class Form
      */
     protected function prepare($data = [], Closure $callback = null)
     {
-        $this->inputs = $this->removeIgnoredFields($data);
+        $this->inputs = $data;
 
         if ($callback instanceof Closure) {
             $callback($this);
@@ -341,20 +332,6 @@ class Form
         $this->updates = array_filter($updates, function ($val) {
             return !is_null($val);
         });
-    }
-
-    /**
-     * Remove ignored fields from input.
-     *
-     * @param array $input
-     *
-     * @return array
-     */
-    protected function removeIgnoredFields($input)
-    {
-        array_forget($input, $this->ignored);
-
-        return $input;
     }
 
     /**
@@ -447,9 +424,8 @@ class Form
             return response(['status' => true, 'message' => trans('admin::lang.succeeded')]);
         }
 
-        // Handle validation errors.
-        if ($validationMessages = $this->validationMessages($data)) {
-            return back()->withInput()->withErrors($validationMessages);
+        if ($validator = $this->validationFails($data)) {
+            return back()->withInput()->withErrors($validator->messages());
         }
 
         $this->model = $this->model->with($this->getRelations())->findOrFail($id);
@@ -667,20 +643,6 @@ class Form
     }
 
     /**
-     * Ignore fields to save.
-     *
-     * @param string|array $fields
-     *
-     * @return $this
-     */
-    public function ignore($fields)
-    {
-        $this->ignored = (array) $fields;
-
-        return $this;
-    }
-
-    /**
      * @param array        $data
      * @param string|array $columns
      *
@@ -715,7 +677,7 @@ class Form
     protected function getFieldByColumn($column)
     {
         return $this->builder->fields()->first(
-            function (Field $field) use ($column) {
+            function ($index, Field $field) use ($column) {
                 if (is_array($field->column())) {
                     return in_array($column, $field->column());
                 }
@@ -760,47 +722,25 @@ class Form
     }
 
     /**
-     * Get validation messages.
+     * Validation fails.
      *
      * @param array $input
      *
-     * @return MessageBag|bool
+     * @return bool
      */
-    protected function validationMessages($input)
+    protected function validationFails($input)
     {
-        $failedValidators = [];
-
         foreach ($this->builder->fields() as $field) {
-            if (!$validator = $field->getValidator($input)) {
+            if (!$validator = $field->validate($input)) {
                 continue;
             }
 
             if (($validator instanceof Validator) && !$validator->passes()) {
-                $failedValidators[] = $validator;
+                return $validator;
             }
         }
 
-        $message = $this->mergeValidationMessages($failedValidators);
-
-        return $message->any() ? $message : false;
-    }
-
-    /**
-     * Merge validation messages from input validators.
-     *
-     * @param \Illuminate\Validation\Validator[] $validators
-     *
-     * @return MessageBag
-     */
-    protected function mergeValidationMessages($validators)
-    {
-        $messageBag = new MessageBag();
-
-        foreach ($validators as $validator) {
-            $messageBag = $messageBag->merge($validator->messages());
-        }
-
-        return $messageBag;
+        return false;
     }
 
     /**

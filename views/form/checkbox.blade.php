@@ -1,4 +1,4 @@
-<div class="form-group {!! !$errors->has($column) ?: 'has-error' !!}">
+<div class="form-group {!! !$errors->has($label) ?: 'has-error' !!}">
 
     <label for="{{$id}}" class="col-sm-2 control-label">{{$label}}</label>
 
@@ -6,11 +6,9 @@
 
         @include('admin::form.error')
 
-        <div class="input-group">
-            @foreach($options as $option => $label)
-            <input type="checkbox" name="{{$name}}[]" value="{{$option}}" class="{{$id}}" {{ in_array($option, (array)old($column, $value))?'checked':'' }} {!! $attributes !!} />&nbsp;{{$label}}&nbsp;&nbsp;
-            @endforeach
-        </div>
+        @foreach($values as $option => $label)
+        <input type="checkbox" name="{{$name}}[]" value="{{$option}}" class="{{$id}}" {{ in_array($option, (array)old($column, $value))?'checked':'' }} {!! $attributes !!} />&nbsp;{{$label}}&nbsp;&nbsp;
+        @endforeach
 
         <input type="hidden" name="{{$name}}[]">
 

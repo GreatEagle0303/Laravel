@@ -56,6 +56,13 @@ class Column
     protected $attributes = [];
 
     /**
+     * Value callback.
+     *
+     * @var \Closure
+     */
+    protected $valueCallback;
+
+    /**
      * Html callback.
      *
      * @var array
@@ -84,11 +91,6 @@ class Column
     protected static $originalGridData = [];
 
     /**
-     * @var []Closure
-     */
-    protected $displayCallbacks = [];
-
-    /**
      * @param string $name
      * @param string $label
      */
@@ -105,16 +107,6 @@ class Column
     public function setGrid(Grid $grid)
     {
         $this->grid = $grid;
-    }
-
-    /**
-     * Set original data for column.
-     *
-     * @param array $input
-     */
-    public static function setOriginalGridData(array $input)
-    {
-        static::$originalGridData = $input;
     }
 
     /**
@@ -196,9 +188,11 @@ class Column
      */
     public function badge($style = 'red')
     {
-        return $this->display(function ($value) use ($style) {
-            return "<span class='badge bg-{$style}'>$value</span>";
-        });
+        $callback = "<span class='badge bg-{$style}'>{value}</span>";
+
+        $this->htmlCallback($callback);
+
+        return $this;
     }
 
     /**
@@ -210,9 +204,11 @@ class Column
      */
     public function label($style = 'success')
     {
-        return $this->display(function ($value) use ($style) {
-            return "<span class='label label-{$style}'>$value</span>";
-        });
+        $callback = "<span class='label label-{$style}'>{value}</span>";
+
+        $this->htmlCallback($callback);
+
+        return $this;
     }
 
     /**
@@ -225,11 +221,15 @@ class Column
      */
     public function link($href = '', $target = '_blank')
     {
-        return $this->display(function ($value) use ($href, $target) {
-            $href = $href ?: $value;
+        if (empty($href)) {
+            $href = '{$value}';
+        }
 
-            return "<a href='$href' target='$target'>$value</a>";
-        });
+        $callback = "<a href='$href' target='$target'>{value}</a>";
+
+        $this->htmlCallback($callback);
+
+        return $this;
     }
 
     /**
@@ -241,13 +241,21 @@ class Column
      */
     public function button($style = 'default')
     {
-        return $this->display(function ($value) use ($style) {
-            $style = collect((array) $style)->map(function ($style) {
+        if (is_array($style)) {
+            $style = array_map(function ($style) {
                 return 'btn-'.$style;
-            })->implode(' ');
+            }, $style);
 
-            return "<span class='btn $style'>$value</span>";
-        });
+            $style = implode(' ', $style);
+        } elseif (is_string($style)) {
+            $style = 'btn-'.$style;
+        }
+
+        $callback = "<span class='btn $style'>{value}</span>";
+
+        $this->htmlCallback($callback);
+
+        return $this;
     }
 
     /**
@@ -261,25 +269,33 @@ class Column
      */
     public function progressBar($style = 'primary', $size = 'sm', $max = 100)
     {
-        return $this->display(function ($value) use ($style, $size, $max) {
-            $style = collect((array) $style)->map(function ($style) {
+        if (is_array($style)) {
+            $style = array_map(function ($style) {
                 return 'progress-bar-'.$style;
-            })->implode(' ');
+            }, $style);
 
-            return <<<EOT
+            $style = implode(' ', $style);
+        } elseif (is_string($style)) {
+            $style = 'progress-bar-'.$style;
+        }
+
+        $callback = <<<EOT
 
 <div class="progress progress-$size">
-    <div class="progress-bar $style" role="progressbar" aria-valuenow="$value" aria-valuemin="0" aria-valuemax="$max" style="width: $value%">
-      <span class="sr-only">$value</span>
+    <div class="progress-bar $style" role="progressbar" aria-valuenow="{value}" aria-valuemin="0" aria-valuemax="$max" style="width: {value}%">
+      <span class="sr-only">{value}</span>
     </div>
 </div>
 
 EOT;
-        });
+
+        $this->htmlCallback($callback);
+
+        return $this;
     }
 
     /**
-     * Wrap value with image tag.
+     * Wrap value as a image.
      *
      * @param string $server
      * @param int    $width
@@ -289,20 +305,13 @@ EOT;
      */
     public function image($server = '', $width = 200, $height = 200)
     {
-        return $this->display(function ($path) use ($server, $width, $height) {
-            if (!$path) {
-                return '';
-            }
+        $server = $server ?: config('admin.upload.host');
 
-            if (url()->isValidUrl($path)) {
-                $src = $path;
-            } else {
-                $server = $server ?: config('admin.upload.host');
-                $src = trim($server, '/').'/'.trim($path, '/');
-            }
+        $callback = "<img src='$server/{\$value}' style='max-width:{$width}px;max-height:{$height}px' class='img img-thumbnail' />";
 
-            return "<img src='$src' style='max-width:{$width}px;max-height:{$height}px' class='img img-thumbnail' />";
-        });
+        $this->htmlCallback($callback);
+
+        return $this;
     }
 
     /**
@@ -321,41 +330,39 @@ EOT;
     }
 
     /**
-     * Alias for `display()` method.
+     * Add a value callback.
      *
      * @param callable $callable
-     *
-     * @deprecated please use `display()` method instead.
      *
      * @return $this
      */
     public function value(Closure $callable)
     {
-        return $this->display($callable);
-    }
-
-    /**
-     * Add a display callback.
-     *
-     * @param callable $callback
-     *
-     * @return $this
-     */
-    public function display(Closure $callback)
-    {
-        $this->displayCallbacks[] = $callback;
+        $this->valueCallback = $callable;
 
         return $this;
     }
 
     /**
-     * If has display callbacks.
+     * Alias for value method.
+     *
+     * @param callable $callable
+     *
+     * @return $this
+     */
+    public function display(Closure $callable)
+    {
+        return $this->value($callable);
+    }
+
+    /**
+     * If has a value callback.
      *
      * @return bool
      */
-    protected function hasDisplayCallbacks()
+    protected function hasValueCallback()
     {
-        return !empty($this->displayCallbacks);
+        return (bool) $this->valueCallback;
     }
 
     /**
@@ -369,11 +376,11 @@ EOT;
     }
 
     /**
-     * If column has html callbacks.
+     * If column has html callback.
      *
      * @return bool
      */
-    protected function hasHtmlCallbacks()
+    protected function hasHtmlCallback()
     {
         return !empty($this->htmlCallbacks);
     }
@@ -385,7 +392,7 @@ EOT;
      *
      * @return mixed
      */
-    protected function callHtmlCallbacks($value, $row = [])
+    protected function htmlWrap($value, $row = [])
     {
         foreach ($this->htmlCallbacks as $callback) {
             $value = str_replace('{value}', $value, $callback);
@@ -402,21 +409,38 @@ EOT;
     }
 
     /**
-     * Call all of the "display" callbacks column.
+     * Fill all data to every column.
      *
-     * @param mixed $value
-     * @param int   $key
+     * @param array $data
      *
      * @return mixed
      */
-    protected function callDisplayCallbacks($value, $key)
+    public function fill(array $data)
     {
-        foreach ($this->displayCallbacks as $callback) {
-            $callback = $this->bindOriginalRow($callback, $key);
-            $value = call_user_func($callback, $value);
+        foreach ($data as $key => &$row) {
+            $this->original = $value = array_get($row, $this->name);
+
+            $isCustomColumn = !array_has($row, $this->name);
+
+            $value = $this->htmlEntityEncode($value);
+
+            array_set($row, $this->name, $value);
+
+            if ($this->hasValueCallback()) {
+                $input = $isCustomColumn ? $row : $this->original;
+
+                $callback = $this->bindOriginalRow($this->valueCallback, $key);
+                $value = call_user_func($callback, $input);
+                array_set($row, $this->name, $value);
+            }
+
+            if ($this->hasHtmlCallback()) {
+                $value = $this->htmlWrap($value, $row);
+                array_set($row, $this->name, $value);
+            }
         }
 
-        return $value;
+        return $data;
     }
 
     /**
@@ -435,33 +459,13 @@ EOT;
     }
 
     /**
-     * Fill all data to every column.
+     * Set original data for column.
      *
-     * @param array $data
-     *
-     * @return mixed
+     * @param array $input
      */
-    public function fill(array $data)
+    public static function setOriginalGridData(array $input)
     {
-        foreach ($data as $key => &$row) {
-            $this->original = $value = array_get($row, $this->name);
-
-            $value = $this->htmlEntityEncode($value);
-
-            array_set($row, $this->name, $value);
-
-            if ($this->hasDisplayCallbacks()) {
-                $value = $this->callDisplayCallbacks($this->original, $key);
-                array_set($row, $this->name, $value);
-            }
-
-            if ($this->hasHtmlCallbacks()) {
-                $value = $this->callHtmlCallbacks($value, $row);
-                array_set($row, $this->name, $value);
-            }
-        }
-
-        return $data;
+        static::$originalGridData = $input;
     }
 
     /**

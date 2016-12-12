@@ -171,10 +171,8 @@ class File extends Field
     /**
      * {@inheritdoc}
      */
-    public function getValidator(array $input)
+    public function validate(array $input)
     {
-        $rules = $attributes = [];
-
         if (!$fieldRules = $this->getRules()) {
             return false;
         }
@@ -183,14 +181,16 @@ class File extends Field
             return false;
         }
 
-        $rules[$this->column] = $fieldRules;
-        $attributes[$this->column] = $this->label;
+        $value = array_get($input, $this->column);
 
         if ($this->multiple) {
-            list($rules, $input) = $this->hydrateFiles(array_get($input, $this->column));
+            list($rules, $data) = $this->hydrateFiles($value);
+        } else {
+            $data = [$this->column => $value];
+            $rules = [$this->column => $this->getRules()];
         }
 
-        return Validator::make($input, $rules, [], $attributes);
+        return Validator::make($data, $rules);
     }
 
     /**
@@ -202,14 +202,14 @@ class File extends Field
      */
     protected function hydrateFiles(array $value)
     {
-        $rules = $input = [];
+        $data = $rules = [];
 
         foreach ($value as $key => $file) {
             $rules[$this->column.$key] = $this->getRules();
-            $input[$this->column.$key] = $file;
+            $data[$this->column.$key] = $file;
         }
 
-        return [$rules, $input];
+        return [$rules, $data];
     }
 
     /**

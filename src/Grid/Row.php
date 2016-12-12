@@ -160,7 +160,6 @@ class Row
         $this->actions = new Action($actions);
 
         $this->actions->setRow($this);
-        $this->actions->setPath($this->path);
 
         return $this->actions;
     }

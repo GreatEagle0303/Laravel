@@ -66,16 +66,6 @@ class Action
     }
 
     /**
-     * Set action path.
-     *
-     * @param $path
-     */
-    public function setPath($path)
-    {
-        $this->path = $path;
-    }
-
-    /**
      * @param callable $callback
      */
     public function add(\Closure $callback)
@@ -88,6 +78,8 @@ class Action
      */
     protected function setUpScript()
     {
+        $this->path = app('router')->current()->getPath();
+
         $confirm = trans('admin::lang.delete_confirm');
         $token = csrf_token();
         $script = <<<SCRIPT
