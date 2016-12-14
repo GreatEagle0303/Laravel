@@ -375,15 +375,15 @@ class Field
     }
 
     /**
-     * Validate input field data.
+     * Get validator for this field.
      *
      * @param array $input
      *
      * @return bool|Validator
      */
-    public function validate(array $input)
+    public function getValidator(array $input)
     {
-        $data = $rules = [];
+        $rules = $attributes = [];
 
         if (!$fieldRules = $this->getRules()) {
             return false;
@@ -394,15 +394,10 @@ class Field
                 return false;
             }
 
-            $value = array_get($input, $this->column);
+            $input = $this->sanitizeInput($input, $this->column);
 
-            // remove empty options from multiple select.
-            if ($this instanceof Field\MultipleSelect) {
-                $value = array_filter($value);
-            }
-
-            $data[$this->label] = $value;
-            $rules[$this->label] = $fieldRules;
+            $rules[$this->column] = $fieldRules;
+            $attributes[$this->column] = $this->label;
         }
 
         if (is_array($this->column)) {
@@ -410,12 +405,31 @@ class Field
                 if (!array_key_exists($column, $input)) {
                     continue;
                 }
-                $data[$this->label.$key] = array_get($input, $column);
-                $rules[$this->label.$key] = $fieldRules;
+                $input[$column.$key] = array_get($input, $column);
+                $rules[$column.$key] = $fieldRules;
+                $attributes[$column.$key] = $this->label."[$column]";
             }
         }
 
-        return Validator::make($data, $rules);
+        return Validator::make($input, $rules, [], $attributes);
+    }
+
+    /**
+     * Sanitize input data.
+     *
+     * @param array  $input
+     * @param string $column
+     *
+     * @return array
+     */
+    protected function sanitizeInput($input, $column)
+    {
+        if ($this instanceof Field\MultipleSelect) {
+            $value = array_get($input, $column);
+            array_set($input, $column, array_filter($value));
+        }
+
+        return $input;
     }
 
     /**
