@@ -3,7 +3,7 @@
 namespace Encore\Admin\Grid;
 
 use Encore\Admin\Grid;
-use Encore\Admin\Grid\Exporters\CsvExporter;
+use Illuminate\Support\Arr;
 
 class Exporter
 {
@@ -13,22 +13,6 @@ class Exporter
     protected $grid;
 
     /**
-     * Available exporter drivers.
-     *
-     * @var array
-     */
-    protected static $drivers = [];
-
-    /**
-     * Export query name.
-     *
-     * @var string
-     */
-    public static $queryName = '_export_';
-
-    /**
-     * Create a new Exporter instance.
-     *
      * @param Grid $grid
      */
     public function __construct(Grid $grid)
@@ -39,61 +23,53 @@ class Exporter
     }
 
     /**
-     * Set export query name.
+     * Export csv file.
      *
-     * @param $name
+     * @return mixed
      */
-    public static function setQueryName($name)
+    public function export()
     {
-        static::$queryName = $name;
-    }
+        $titles = [];
 
-    /**
-     * Extends new exporter driver.
-     *
-     * @param $driver
-     * @param $extend
-     */
-    public static function extend($driver, $extend)
-    {
-        static::$drivers[$driver] = $extend;
-    }
+        $filename = $this->grid->model()->eloquent()->getTable().'.csv';
 
-    /**
-     * Resolve export driver.
-     *
-     * @param string $driver
-     *
-     * @return CsvExporter
-     */
-    public function resolve($driver)
-    {
-        return $this->getExporter($driver);
-    }
+        $data = $this->grid->processFilter();
 
-    /**
-     * Get export driver.
-     *
-     * @param string $driver
-     *
-     * @return CsvExporter
-     */
-    protected function getExporter($driver)
-    {
-        if (!array_key_exists($driver, static::$drivers)) {
-            return $this->getDefaultExporter();
+        if (!empty($data)) {
+            $columns = array_dot($this->sanitize($data[0]));
+
+            $titles = array_keys($columns);
         }
 
-        return new static::$drivers[$driver]($this->grid);
+        $output = implode(',', $titles)."\n";
+
+        foreach ($data as $row) {
+            $row = array_only($row, $titles);
+            $output .= implode(',', array_dot($row))."\n";
+        }
+
+        $headers = [
+            'Content-Encoding'    => 'UTF-8',
+            'Content-Type'        => 'text/csv;charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"$filename\"",
+        ];
+
+        response(rtrim($output, "\n"), 200, $headers)->send();
+
+        exit;
     }
 
     /**
-     * Get default exporter.
+     * Remove indexed array.
      *
-     * @return CsvExporter
+     * @param array $row
+     *
+     * @return array
      */
-    public function getDefaultExporter()
+    protected function sanitize(array $row)
     {
-        return new CsvExporter($this->grid);
+        return collect($row)->reject(function ($val, $_) {
+            return is_array($val) && !Arr::isAssoc($val);
+        })->toArray();
     }
 }

@@ -25,7 +25,7 @@ class Mobile extends Field
 
         $this->script = <<<EOT
 
-$('.{$this->getElementClass()}').inputmask($options);
+$('#{$this->id}').inputmask($options);
 EOT;
 
         return parent::render();

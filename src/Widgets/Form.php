@@ -87,7 +87,6 @@ class Form implements Renderable
             'action'         => '',
             'class'          => 'form-horizontal',
             'accept-charset' => 'UTF-8',
-            'pjax-container' => true,
         ];
     }
 
@@ -132,18 +131,6 @@ class Form implements Renderable
         } else {
             $this->attributes[$attr] = $value;
         }
-
-        return $this;
-    }
-
-    /**
-     * Disable Pjax.
-     *
-     * @return $this
-     */
-    public function disablePjax()
-    {
-        array_forget($this->attributes, 'pjax-container');
 
         return $this;
     }
