@@ -10,7 +10,6 @@ use Encore\Admin\Grid\Exporter;
 use Encore\Admin\Grid\Filter;
 use Encore\Admin\Grid\Model;
 use Encore\Admin\Grid\Row;
-use Encore\Admin\Pagination\AdminThreePresenter;
 use Illuminate\Database\Eloquent\Model as Eloquent;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -159,7 +158,9 @@ class Grid
     protected $orderable = false;
 
     /**
-     * @var Exporter
+     * Export driver.
+     *
+     * @var string
      */
     protected $exporter;
 
@@ -236,7 +237,7 @@ class Grid
 
         if (isset($relation) && $relation instanceof Relation) {
             $this->model()->with($relationName);
-            $column->setRelation($relation, $relationColumn);
+            $column->setRelation($relationName, $relationColumn);
         }
 
         return $column;
@@ -289,18 +290,6 @@ class Grid
     }
 
     /**
-     * Add a blank column.
-     *
-     * @param $label
-     *
-     * @return Column
-     */
-    public function blank($label)
-    {
-        return $this->addColumn('blank', $label);
-    }
-
-    /**
      * Get Grid model.
      *
      * @return Model
@@ -337,9 +326,7 @@ class Grid
 
         $query = Input::all();
 
-        return $this->model()->eloquent()->appends($query)->render(
-            new AdminThreePresenter($this->model()->eloquent())
-        );
+        return $this->model()->eloquent()->appends($query)->render('admin::pagination');
     }
 
     /**
@@ -378,6 +365,16 @@ class Grid
         call_user_func($this->builder, $this);
 
         return $this->filter->execute();
+    }
+
+    /**
+     * Get filter of Grid.
+     *
+     * @return Filter
+     */
+    public function getFilter()
+    {
+        return $this->filter;
     }
 
     /**
@@ -436,11 +433,27 @@ class Grid
      */
     protected function setupExporter()
     {
-        if (Input::has('_export')) {
-            $exporter = new Exporter($this);
+        if (Input::has(Exporter::$queryName)) {
+            $this->model()->usePaginate(false);
 
-            $exporter->export();
+            call_user_func($this->builder, $this);
+
+            (new Exporter($this))->resolve($this->exporter)->export();
         }
+    }
+
+    /**
+     * Set exporter driver for Grid to export.
+     *
+     * @param $exporter
+     *
+     * @return $this
+     */
+    public function exporter($exporter)
+    {
+        $this->exporter = $exporter;
+
+        return $this;
     }
 
     /**
@@ -450,10 +463,11 @@ class Grid
      */
     public function exportUrl()
     {
-        $query = $query = Input::all();
-        $query['_export'] = true;
+        $input = Input::all();
 
-        return $this->resource().'?'.http_build_query($query);
+        $input = array_merge($input, [Exporter::$queryName => true]);
+
+        return $this->resource().'?'.http_build_query($input);
     }
 
     /**
@@ -603,10 +617,16 @@ class Grid
     /**
      * Set grid as orderable.
      *
+     * @throws \Exception
+     *
      * @return $this
      */
     public function orderable()
     {
+        if (!trait_exists('\Spatie\EloquentSortable\SortableTrait')) {
+            throw new \Exception('To use orderable grid, please install package [spatie/eloquent-sortable] first.');
+        }
+
         $this->orderable = true;
 
         return $this;
@@ -625,7 +645,7 @@ class Grid
     /**
      * Set the grid filter.
      *
-     * @param callable $callback
+     * @param Closure $callback
      */
     public function filter(Closure $callback)
     {
@@ -806,6 +826,33 @@ class Grid
     }
 
     /**
+     * Register column displayers.
+     *
+     * @return void.
+     */
+    public static function registerColumnDisplayer()
+    {
+        $map = [
+            'editable'      => \Encore\Admin\Grid\Displayers\Editable::class,
+            'switch'        => \Encore\Admin\Grid\Displayers\SwitchDisplay::class,
+            'switchGroup'   => \Encore\Admin\Grid\Displayers\SwitchGroup::class,
+            'select'        => \Encore\Admin\Grid\Displayers\Select::class,
+            'image'         => \Encore\Admin\Grid\Displayers\Image::class,
+            'label'         => \Encore\Admin\Grid\Displayers\Label::class,
+            'button'        => \Encore\Admin\Grid\Displayers\Button::class,
+            'link'          => \Encore\Admin\Grid\Displayers\Link::class,
+            'badge'         => \Encore\Admin\Grid\Displayers\Badge::class,
+            'progressBar'   => \Encore\Admin\Grid\Displayers\ProgressBar::class,
+            'radio'         => \Encore\Admin\Grid\Displayers\Radio::class,
+            'checkbox'      => \Encore\Admin\Grid\Displayers\Checkbox::class,
+        ];
+
+        foreach ($map as $abstract => $class) {
+            Column::extend($abstract, $class);
+        }
+    }
+
+    /**
      * Add variables to grid view.
      *
      * @param array $variables
@@ -874,6 +921,8 @@ class Grid
         $path = app('router')->current()->getPath();
         $token = csrf_token();
         $confirm = trans('admin::lang.delete_confirm');
+        $deleteSucceeded = trans('admin::lang.delete_succeeded');
+        $refreshSucceeded = trans('admin::lang.refresh_succeeded');
 
         return <<<EOT
 
@@ -898,36 +947,22 @@ $('.batch-delete').on('click', function() {
     if(confirm("{$confirm}")) {
         $.post('/{$path}/' + selected.join(), {_method:'delete','_token':'{$token}'}, function(data){
             $.pjax.reload('#pjax-container');
-            noty({
-                text: "<strong>Succeeded!</strong>",
-                type:'success',
-                timeout: 1000
-            });
+            toastr.success('{$deleteSucceeded}');
         });
     }
 });
 
 $('.grid-refresh').on('click', function() {
     $.pjax.reload('#pjax-container');
-
-    noty({
-        text: "<strong>Succeeded!</strong>",
-        type:'success',
-        timeout: 1000
-    });
+    toastr.success('{$refreshSucceeded}');
 });
 
 var grid_order = function(id, direction) {
     $.post('/{$path}/' + id, {_method:'PUT', _token:'{$token}', _orderable:direction}, function(data){
 
         if (data.status) {
-            noty({
-                text: "<strong>Succeeded!</strong>",
-                type:'success',
-                timeout: 1000
-            });
-
             $.pjax.reload('#pjax-container');
+            toastr.success(data.message);
         }
     });
 }

@@ -82,7 +82,7 @@ class CreateAdminTables extends Migration
             $table->string('path');
             $table->string('method', 10);
             $table->string('ip', 15);
-            $table->longText('input');
+            $table->text('input');
             $table->index('user_id');
             $table->timestamps();
         });
