@@ -70,5 +70,6 @@ $('form.grid-checkbox-$name').on('submit', function () {
 });
 
 EOT;
+
     }
 }

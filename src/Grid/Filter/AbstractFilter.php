@@ -153,12 +153,10 @@ abstract class AbstractFilter
 
     /**
      * Datetime filter.
-     *
-     * @param array $options
      */
-    public function datetime($options = [])
+    public function datetime()
     {
-        $this->setField(new DateTime($this, $options));
+        $this->setField(new DateTime($this));
     }
 
     /**

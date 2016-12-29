@@ -64,5 +64,6 @@ $('form.grid-radio-$name').on('submit', function () {
 });
 
 EOT;
+
     }
 }
