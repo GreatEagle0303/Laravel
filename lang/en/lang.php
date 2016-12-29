@@ -26,7 +26,7 @@ return [
     'filter'        => 'Filter',
     'close'         => 'Close',
     'show'          => 'Show',
-    'entries'       => 'entries',
+    'items'         => 'items',
 
     'action'           => 'Action',
     'title'            => 'Title',
@@ -67,8 +67,4 @@ return [
 
     'operation_log'       => 'Operation log',
     'parent_select_error' => 'Parent select error',
-
-    'pagination'    => [
-        'range'  => 'Showing :first to :last of :total entries',
-    ],
 ];

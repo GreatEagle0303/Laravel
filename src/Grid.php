@@ -4,14 +4,12 @@ namespace Encore\Admin;
 
 use Closure;
 use Encore\Admin\Exception\Handle;
+use Encore\Admin\Facades\Admin as AdminManager;
 use Encore\Admin\Grid\Column;
-use Encore\Admin\Grid\Displayers\Actions;
-use Encore\Admin\Grid\Displayers\RowSelector;
 use Encore\Admin\Grid\Exporter;
 use Encore\Admin\Grid\Filter;
 use Encore\Admin\Grid\Model;
 use Encore\Admin\Grid\Row;
-use Encore\Admin\Grid\Tools;
 use Illuminate\Database\Eloquent\Model as Eloquent;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -146,6 +144,20 @@ class Grid
     protected $usePagination = true;
 
     /**
+     * If grid use per-page selector.
+     *
+     * @var bool
+     */
+    protected $usePerPageSelector = true;
+
+    /**
+     * Is grid rows orderable.
+     *
+     * @var bool
+     */
+    protected $orderable = false;
+
+    /**
      * Export driver.
      *
      * @var string
@@ -164,28 +176,14 @@ class Grid
      *
      * @var array
      */
-    public $perPages = [10, 20, 30, 50, 100];
+    protected $perPages = [10, 20, 30, 50, 100];
 
     /**
      * Default items count per-page.
      *
      * @var int
      */
-    public $perPage = 20;
-
-    /**
-     * Header tools.
-     *
-     * @var Tools
-     */
-    public $tools;
-
-    /**
-     * Callback for grid actions.
-     *
-     * @var Closure
-     */
-    protected $actionsCallback;
+    protected $perPage = 20;
 
     /**
      * Create a new grid instance.
@@ -201,43 +199,8 @@ class Grid
         $this->rows = new Collection();
         $this->builder = $builder;
 
-        $this->setupTools();
         $this->setupFilter();
         $this->setupExporter();
-    }
-
-    /**
-     * Setup grid tools.
-     */
-    public function setupTools()
-    {
-        $this->tools = new Tools($this);
-    }
-
-    /**
-     * Setup grid filter.
-     *
-     * @return void
-     */
-    protected function setupFilter()
-    {
-        $this->filter = new Filter($this, $this->model());
-    }
-
-    /**
-     * Setup grid exporter.
-     *
-     * @return void
-     */
-    protected function setupExporter()
-    {
-        if (Input::has(Exporter::$queryName)) {
-            $this->model()->usePaginate(false);
-
-            call_user_func($this->builder, $this);
-
-            (new Exporter($this))->resolve($this->exporter)->export();
-        }
     }
 
     /**
@@ -357,110 +320,13 @@ class Grid
      */
     public function paginator()
     {
-        return new Tools\Paginator($this);
-    }
-
-    /**
-     * Disable grid pagination.
-     *
-     * @return $this
-     */
-    public function disablePagination()
-    {
-        $this->model->usePaginate(false);
-
-        $this->usePagination = false;
-
-        return $this;
-    }
-
-    /**
-     * If this grid use pagination.
-     *
-     * @return bool
-     */
-    public function usePagination()
-    {
-        return $this->usePagination;
-    }
-
-    /**
-     * Set per-page options.
-     *
-     * @param array $perPages
-     */
-    public function perPages(array $perPages)
-    {
-        $this->perPages = $perPages;
-    }
-
-    /**
-     * Disable all actions.
-     *
-     * @return $this
-     */
-    public function disableActions()
-    {
-        $this->allowActions = false;
-
-        return $this;
-    }
-
-    /**
-     * Set grid action callback.
-     *
-     * @param callable $callback
-     *
-     * @return $this
-     */
-    public function actions(Closure $callback)
-    {
-        $this->actionsCallback = $callback;
-
-        return $this;
-    }
-
-    /**
-     * Add `actions` column for grid.
-     *
-     * @return void
-     */
-    protected function appendActionsColumn()
-    {
-        if (!$this->allowActions) {
-            return;
+        if (!$this->usePagination) {
+            return '';
         }
 
-        $grid = $this;
-        $callback = $this->actionsCallback;
-        $column = $this->addColumn('__actions__', trans('admin::lang.action'));
+        $query = Input::all();
 
-        $column->display(function ($value) use ($grid, $column, $callback) {
-
-            $actions = new Actions($value, $grid, $column, $this);
-            return $actions->display($callback);
-        });
-    }
-
-    /**
-     * Prepend checkbox column for grid.
-     *
-     * @return void
-     */
-    protected function prependRowSelectorColumn()
-    {
-        $grid = $this;
-
-        $column = new Column('__row_selector__', ' ');
-        $column->setGrid($this);
-
-        $column->display(function ($value) use ($grid, $column) {
-            $actions = new RowSelector($value, $grid, $column, $this);
-
-            return $actions->display();
-        });
-
-        $this->columns->prepend($column);
+        return $this->model()->eloquent()->appends($query)->render('admin::pagination');
     }
 
     /**
@@ -476,9 +342,6 @@ class Grid
 
         $data = $this->processFilter();
 
-        $this->prependRowSelectorColumn();
-        $this->appendActionsColumn();
-
         Column::setOriginalGridData($data);
 
         $this->columns->map(function (Column $column) use (&$data) {
@@ -490,28 +353,6 @@ class Grid
         $this->buildRows($data);
 
         $this->builded = true;
-    }
-
-    /**
-     * Disable grid filter.
-     *
-     * @return $this
-     */
-    public function disableFilter()
-    {
-        $this->useFilter = false;
-
-        return $this;
-    }
-
-    /**
-     * Get filter of Grid.
-     *
-     * @return Filter
-     */
-    public function getFilter()
-    {
-        return $this->filter;
     }
 
     /**
@@ -527,27 +368,13 @@ class Grid
     }
 
     /**
-     * Set the grid filter.
+     * Get filter of Grid.
      *
-     * @param Closure $callback
+     * @return Filter
      */
-    public function filter(Closure $callback)
+    public function getFilter()
     {
-        call_user_func($callback, $this->filter);
-    }
-
-    /**
-     * Render the grid filter.
-     *
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
-     */
-    public function renderFilter()
-    {
-        if (!$this->useFilter) {
-            return '';
-        }
-
-        return $this->filter->render();
+        return $this->filter;
     }
 
     /**
@@ -589,28 +416,30 @@ class Grid
         $this->rowsCallback = $callable;
     }
 
-
-
     /**
-     * Setup grid tools.
-     *
-     * @param callable $callback
+     * Setup grid filter.
      *
      * @return void
      */
-    public function tools(Closure $callback)
+    protected function setupFilter()
     {
-        call_user_func($callback, $this->tools);
+        $this->filter = new Filter($this, $this->model());
     }
 
     /**
-     * Render custom tools.
+     * Setup grid exporter.
      *
-     * @return string
+     * @return void
      */
-    public function renderHeaderTools()
+    protected function setupExporter()
     {
-        return $this->tools->render();
+        if (Input::has(Exporter::$queryName)) {
+            $this->model()->usePaginate(false);
+
+            call_user_func($this->builder, $this);
+
+            (new Exporter($this))->resolve($this->exporter)->export();
+        }
     }
 
     /**
@@ -639,38 +468,6 @@ class Grid
         $input = array_merge($input, [Exporter::$queryName => true]);
 
         return $this->resource().'?'.http_build_query($input);
-    }
-
-    /**
-     * If grid allows export.s.
-     *
-     * @return bool
-     */
-    public function allowExport()
-    {
-        return $this->allowExport;
-    }
-
-    /**
-     * Disable export.
-     *
-     * @return $this
-     */
-    public function disableExport()
-    {
-        $this->allowExport = false;
-
-        return $this;
-    }
-
-    /**
-     * Render export button.
-     *
-     * @return Tools\ExportButton
-     */
-    public function renderExportButton()
-    {
-        return new Tools\ExportButton($this);
     }
 
     /**
@@ -718,13 +515,190 @@ class Grid
     }
 
     /**
-     * Render create button for grid.
+     * If allow actions.
      *
-     * @return Tools\CreateButton
+     * @return bool
      */
-    public function renderCreateButton()
+    public function allowActions()
     {
-        return new Tools\CreateButton($this);
+        return $this->allowActions;
+    }
+
+    /**
+     * Disable all actions.
+     *
+     * @return $this
+     */
+    public function disableActions()
+    {
+        $this->allowActions = false;
+
+        return $this;
+    }
+
+    /**
+     * If grid allows export.s.
+     *
+     * @return bool
+     */
+    public function allowExport()
+    {
+        return $this->allowExport;
+    }
+
+    /**
+     * Disable export.
+     *
+     * @return $this
+     */
+    public function disableExport()
+    {
+        $this->allowExport = false;
+
+        return $this;
+    }
+
+    /**
+     * Disable grid filter.
+     *
+     * @return $this
+     */
+    public function disableFilter()
+    {
+        $this->useFilter = false;
+
+        return $this;
+    }
+
+    /**
+     * Disable grid pagination.
+     *
+     * @return $this
+     */
+    public function disablePagination()
+    {
+        $this->model->usePaginate(false);
+
+        $this->usePagination = false;
+
+        return $this;
+    }
+
+    /**
+     * If this grid use pagination.
+     *
+     * @return bool
+     */
+    public function usePagination()
+    {
+        return $this->usePagination;
+    }
+
+    /**
+     * Disable grid per-page selector.
+     */
+    public function disablePerPageSelector()
+    {
+        $this->usePerPageSelector = false;
+
+        return $this;
+    }
+
+    /**
+     * If this grid use per-page selector.
+     *
+     * @return bool
+     */
+    public function usePerPageSelector()
+    {
+        return $this->usePerPageSelector;
+    }
+
+    /**
+     * Set grid as orderable.
+     *
+     * @throws \Exception
+     *
+     * @return $this
+     */
+    public function orderable()
+    {
+        if (!trait_exists('\Spatie\EloquentSortable\SortableTrait')) {
+            throw new \Exception('To use orderable grid, please install package [spatie/eloquent-sortable] first.');
+        }
+
+        $this->orderable = true;
+
+        return $this;
+    }
+
+    /**
+     * Is the grid orderable.
+     *
+     * @return bool
+     */
+    public function isOrderable()
+    {
+        return $this->orderable;
+    }
+
+    /**
+     * Set the grid filter.
+     *
+     * @param Closure $callback
+     */
+    public function filter(Closure $callback)
+    {
+        call_user_func($callback, $this->filter);
+    }
+
+    /**
+     * Render the grid filter.
+     *
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
+    public function renderFilter()
+    {
+        if (!$this->useFilter) {
+            return '';
+        }
+
+        return $this->filter->render();
+    }
+
+    /**
+     * Set per-page options.
+     *
+     * @param array $perPages
+     */
+    public function perPages(array $perPages)
+    {
+        $this->perPages = $perPages;
+    }
+
+    /**
+     * Generate per-page options.
+     *
+     * @return string
+     */
+    public function perPageOptions()
+    {
+        $perPage = (int) app('request')->input(
+            $this->model->getPerPageName(),
+            $this->perPage
+        );
+
+        return collect($this->perPages)
+            ->push($this->perPage)
+            ->push($perPage)
+            ->unique()
+            ->sort()
+            ->map(function ($option) use ($perPage) {
+                $selected = ($option == $perPage) ? 'selected' : '';
+                $url = app('request')->fullUrlWithQuery([$this->model->getPerPageName() => $option]);
+
+                return "<option value=\"$url\" $selected>$option</option>";
+            })->implode("\r\n");
     }
 
     /**
@@ -871,7 +845,6 @@ class Grid
             'progressBar'   => \Encore\Admin\Grid\Displayers\ProgressBar::class,
             'radio'         => \Encore\Admin\Grid\Displayers\Radio::class,
             'checkbox'      => \Encore\Admin\Grid\Displayers\Checkbox::class,
-            'orderable'     => \Encore\Admin\Grid\Displayers\Orderable::class,
         ];
 
         foreach ($map as $abstract => $class) {
@@ -933,7 +906,80 @@ class Grid
             return with(new Handle($e))->render();
         }
 
+        AdminManager::script($this->script());
+
         return view($this->view, $this->variables())->render();
+    }
+
+    /**
+     * Js code for grid.
+     *
+     * @return string
+     */
+    public function script()
+    {
+        $path = app('router')->current()->getPath();
+        $token = csrf_token();
+        $confirm = trans('admin::lang.delete_confirm');
+        $deleteSucceeded = trans('admin::lang.delete_succeeded');
+        $refreshSucceeded = trans('admin::lang.refresh_succeeded');
+
+        return <<<EOT
+
+$('.grid-select-all').change(function() {
+    if (this.checked) {
+        $('.grid-item').prop("checked", true);
+    } else {
+        $('.grid-item').prop("checked", false);
+    }
+});
+
+$('.batch-delete').on('click', function() {
+    var selected = [];
+    $('.grid-item:checked').each(function(){
+        selected.push($(this).data('id'));
+    });
+
+    if (selected.length == 0) {
+        return;
+    }
+
+    if(confirm("{$confirm}")) {
+        $.post('/{$path}/' + selected.join(), {_method:'delete','_token':'{$token}'}, function(data){
+            $.pjax.reload('#pjax-container');
+            toastr.success('{$deleteSucceeded}');
+        });
+    }
+});
+
+$('.grid-refresh').on('click', function() {
+    $.pjax.reload('#pjax-container');
+    toastr.success('{$refreshSucceeded}');
+});
+
+var grid_order = function(id, direction) {
+    $.post('/{$path}/' + id, {_method:'PUT', _token:'{$token}', _orderable:direction}, function(data){
+
+        if (data.status) {
+            $.pjax.reload('#pjax-container');
+            toastr.success(data.message);
+        }
+    });
+}
+
+$('.grid-order-up').on('click', function() {
+    grid_order($(this).data('id'), 1);
+});
+
+$('.grid-order-down').on('click', function() {
+    grid_order($(this).data('id'), 0);
+});
+
+$('.per-page').select2({minimumResultsForSearch: -1}).on("select2:select", function(e) {
+    $.pjax({url: this.value, container: '#pjax-container'});
+});
+
+EOT;
     }
 
     /**

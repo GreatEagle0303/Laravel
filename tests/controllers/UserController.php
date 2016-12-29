@@ -112,9 +112,11 @@ class UserController extends Controller
                 $filter->between('profile.end_at')->datetime();
             });
 
-            $grid->actions(function ($actions) {
-                if ($actions->getKey() % 2 == 0) {
-                    $actions->append('<a href="/" class="btn btn-xs btn-danger">detail</a>');
+            $grid->rows(function (Grid\Row $row) {
+                if ($row->id % 2 == 0) {
+                    $row->actions()->add(function ($row) {
+                        return '<a href="/" class="btn btn-xs btn-danger">detail</a>';
+                    });
                 }
             });
         });
