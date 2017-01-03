@@ -26,11 +26,12 @@ return [
     'filter'        => '筛选',
     'close'         => '关闭',
     'show'          => '显示',
-    'items'         => '条',
+    'entries'       => '条',
 
     'action'           => '操作',
     'title'            => '标题',
     'description'      => '简介',
+    'back'             => '返回',
     'back_to_list'     => '返回列表',
     'submit'           => '提交',
     'menu'             => '菜单',
@@ -40,6 +41,9 @@ return [
     'delete_confirm'   => '确认删除?',
     'delete_succeeded' => '删除成功 !',
     'delete_failed'    => '删除失败 !',
+    'update_succeeded' => '更新成功 !',
+    'save_succeeded'   => '保存成功 !',
+    'refresh_succeeded'=> '刷新成功 !',
 
     'choose'        => '选择',
     'choose_file'   => '选择文件',
@@ -64,4 +68,8 @@ return [
 
     'operation_log'       => '操作日志',
     'parent_select_error' => '父级选择错误',
+
+    'pagination'    => [
+        'range'  => '从 :first 到 :last ，总共 :total 条',
+    ],
 ];

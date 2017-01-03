@@ -12,11 +12,11 @@ class Number extends Field
 
     public function render()
     {
-        $this->default(0);
+        $this->default((int) $this->default);
 
         $this->script = <<<EOT
 
-$('#{$this->id}').bootstrapNumber({
+$('.{$this->getElementClass()}').bootstrapNumber({
 	upClass: 'success',
 	downClass: 'primary',
 	center: true
