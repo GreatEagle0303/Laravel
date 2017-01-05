@@ -250,12 +250,12 @@ class Model
     {
         if ($perPage = app('request')->input($this->perPageName)) {
             if (is_array($paginate)) {
-                $paginate['arguments'][0] = (int) $perPage;
+                $paginate['arguments'][0] = $perPage;
 
                 return $paginate['arguments'];
             }
 
-            $this->perPage = (int) $perPage;
+            $this->perPage = $perPage;
         }
 
         return [$this->perPage];

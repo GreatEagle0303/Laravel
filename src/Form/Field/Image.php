@@ -101,16 +101,10 @@ class Image extends File
      * @param string $method
      * @param array  $arguments
      *
-     * @throws \Exception
-     *
      * @return $this
      */
     public function __call($method, $arguments)
     {
-        if (!class_exists(ImageManagerStatic::class)) {
-            throw new \Exception('To use image handling and manipulation, please install [intervention/image] first.');
-        }
-
         $this->calls[] = [
             'method'    => $method,
             'arguments' => $arguments,

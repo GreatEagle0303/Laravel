@@ -7,17 +7,13 @@ use Encore\Admin\Exception\Handle;
 use Encore\Admin\Form\Builder;
 use Encore\Admin\Form\Field;
 use Encore\Admin\Form\Field\File;
-use Encore\Admin\Form\NestedForm;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
-use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
-use Illuminate\Support\MessageBag;
 use Illuminate\Validation\Validator;
 use Spatie\EloquentSortable\Sortable;
-use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Class Form.
@@ -50,6 +46,7 @@ use Symfony\Component\HttpFoundation\Response;
  * @method Field\TimeRange      timeRange($start, $end, $label = '')
  * @method Field\Number         number($column, $label = '')
  * @method Field\Currency       currency($column, $label = '')
+ * @method Field\Json           json($column, $label = '')
  * @method Field\HasMany        hasMany($relationName, $callback)
  * @method Field\SwitchField    switch($column, $label = '')
  * @method Field\Display        display($column, $label = '')
@@ -58,8 +55,6 @@ use Symfony\Component\HttpFoundation\Response;
  * @method Field\Password       password($column, $label = '')
  * @method Field\Decimal        decimal($column, $label = '')
  * @method Field\Html           html($html)
- * @method Field\Tags           tags($column, $label = '')
- * @method Field\Icon           icon($column, $label = '')
  */
 class Form
 {
@@ -116,6 +111,11 @@ class Form
     protected $inputs = [];
 
     /**
+     * @var callable
+     */
+    protected $callable;
+
+    /**
      * Allow delete item in form page.
      *
      * @var bool
@@ -130,13 +130,6 @@ class Form
     public static $availableFields = [];
 
     /**
-     * Ignored saving fields.
-     *
-     * @var array
-     */
-    protected $ignored = [];
-
-    /**
      * Collected field assets.
      *
      * @var array
@@ -144,9 +137,7 @@ class Form
     protected static $collectedAssets = [];
 
     /**
-     * Create a new form instance.
-     *
-     * @param $model
+     * @param \$model
      * @param \Closure $callback
      */
     public function __construct($model, Closure $callback)
@@ -155,7 +146,17 @@ class Form
 
         $this->builder = new Builder($this);
 
+        $this->callable = $callback;
+
         $callback($this);
+    }
+
+    /**
+     * Set up the form.
+     */
+    protected function setUp()
+    {
+        call_user_func($this->callable, $this);
     }
 
     /**
@@ -284,9 +285,8 @@ class Form
     {
         $data = Input::all();
 
-        // Handle validation errors.
-        if ($validationMessages = $this->validationMessages($data)) {
-            return back()->withInput()->withErrors($validationMessages);
+        if ($validator = $this->validationFails($data)) {
+            return back()->withInput()->withErrors($validator->messages());
         }
 
         $this->prepare($data, $this->saving);
@@ -306,54 +306,9 @@ class Form
             $this->saveRelation($this->relations);
         });
 
-        if (($result = $this->complete($this->saved)) instanceof Response) {
-            return $result;
-        }
+        $this->complete($this->saved);
 
-        if ($response = $this->ajaxResponse(trans('admin::lang.save_succeeded'))) {
-            return $response;
-        }
-
-        return $this->redirectAfterStore();
-    }
-
-    /**
-     * Get RedirectResponse after store.
-     *
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    protected function redirectAfterStore()
-    {
-        $success = new MessageBag([
-            'title'   => trans('admin::lang.succeeded'),
-            'message' => trans('admin::lang.save_succeeded'),
-        ]);
-
-        $url = Input::get(Builder::PREVIOUS_URL_KEY) ?: $this->resource(0);
-
-        return redirect($url)->with(compact('success'));
-    }
-
-    /**
-     * Get ajax response.
-     *
-     * @param string $message
-     *
-     * @return bool|\Illuminate\Http\JsonResponse
-     */
-    protected function ajaxResponse($message)
-    {
-        $request = Request::capture();
-
-        // ajax but not pjax
-        if ($request->ajax() && !$request->pjax()) {
-            return response()->json([
-                'status'  => true,
-                'message' => $message,
-            ]);
-        }
-
-        return false;
+        return redirect($this->resource(0));
     }
 
     /**
@@ -364,7 +319,7 @@ class Form
      */
     protected function prepare($data = [], Closure $callback = null)
     {
-        $this->inputs = $this->removeIgnoredFields($data);
+        $this->inputs = $data;
 
         if ($callback instanceof Closure) {
             $callback($this);
@@ -377,20 +332,6 @@ class Form
         $this->updates = array_filter($updates, function ($val) {
             return !is_null($val);
         });
-    }
-
-    /**
-     * Remove ignored fields from input.
-     *
-     * @param array $input
-     *
-     * @return array
-     */
-    protected function removeIgnoredFields($input)
-    {
-        array_forget($input, $this->ignored);
-
-        return $input;
     }
 
     /**
@@ -422,12 +363,12 @@ class Form
      *
      * @param Closure|null $callback
      *
-     * @return mixed|null
+     * @return void
      */
     protected function complete(Closure $callback = null)
     {
         if ($callback instanceof Closure) {
-            return $callback($this);
+            $callback($this);
         }
     }
 
@@ -457,21 +398,10 @@ class Form
                 case \Illuminate\Database\Eloquent\Relations\HasOne::class:
                     $related = $relation->getRelated();
                     foreach ($values[$name] as $column => $value) {
-                        if (is_array($value)) {
-                            $value = implode(',', $value);
-                        }
-
                         $related->setAttribute($column, $value);
                     }
 
                     $relation->save($related);
-                    break;
-                case \Illuminate\Database\Eloquent\Relations\HasMany::class:
-
-                    $nestedForm = new NestedForm($relation);
-
-                    $nestedForm->update($values[$name]);
-
                     break;
             }
         }
@@ -491,15 +421,11 @@ class Form
         $data = $this->handleEditable($data);
 
         if ($this->handleOrderable($id, $data)) {
-            return response([
-                'status'  => true,
-                'message' => trans('admin::lang.update_succeeded'),
-            ]);
+            return response(['status' => true, 'message' => trans('admin::lang.succeeded')]);
         }
 
-        // Handle validation errors.
-        if ($validationMessages = $this->validationMessages($data)) {
-            return back()->withInput()->withErrors($validationMessages);
+        if ($validator = $this->validationFails($data)) {
+            return back()->withInput()->withErrors($validator->messages());
         }
 
         $this->model = $this->model->with($this->getRelations())->findOrFail($id);
@@ -524,32 +450,9 @@ class Form
             $this->updateRelation($this->relations);
         });
 
-        if (($result = $this->complete($this->saved)) instanceof Response) {
-            return $result;
-        }
+        $this->complete($this->saved);
 
-        if ($response = $this->ajaxResponse(trans('admin::lang.update_succeeded'))) {
-            return $response;
-        }
-
-        return $this->redirectAfterUpdate();
-    }
-
-    /**
-     * Get RedirectResponse after update.
-     *
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    protected function redirectAfterUpdate()
-    {
-        $success = new MessageBag([
-            'title'   => trans('admin::lang.succeeded'),
-            'message' => trans('admin::lang.update_succeeded'),
-        ]);
-
-        $url = Input::get(Builder::PREVIOUS_URL_KEY) ?: $this->resource(-1);
-
-        return redirect($url)->with(compact('success'));
+        return redirect($this->resource(-1));
     }
 
     /**
@@ -633,20 +536,10 @@ class Form
                     }
 
                     foreach ($prepared[$name] as $column => $value) {
-                        if (is_array($value)) {
-                            $value = implode(',', $value);
-                        }
                         $related->setAttribute($column, $value);
                     }
 
                     $related->save();
-                    break;
-                case \Illuminate\Database\Eloquent\Relations\HasMany::class:
-
-                    $nestedForm = new NestedForm($relation);
-
-                    $nestedForm->update($prepared[$name]);
-
                     break;
             }
         }
@@ -699,7 +592,9 @@ class Form
      */
     protected function prepareInsert($inserts)
     {
-        if ($this->isHasOneRelation($inserts)) {
+        $first = current($inserts);
+
+        if (is_array($first) && Arr::isAssoc($first)) {
             $inserts = array_dot($inserts);
         }
 
@@ -724,28 +619,6 @@ class Form
     }
 
     /**
-     * Is input data is has-one relation.
-     *
-     * @param array $inserts
-     *
-     * @return bool
-     */
-    protected function isHasOneRelation($inserts)
-    {
-        $first = current($inserts);
-
-        if (!is_array($first)) {
-            return false;
-        }
-
-        if (is_array(current($first))) {
-            return false;
-        }
-
-        return Arr::isAssoc($first);
-    }
-
-    /**
      * Set saving callback.
      *
      * @param callable $callback
@@ -767,20 +640,6 @@ class Form
     public function saved(Closure $callback)
     {
         $this->saved = $callback;
-    }
-
-    /**
-     * Ignore fields to save.
-     *
-     * @param string|array $fields
-     *
-     * @return $this
-     */
-    public function ignore($fields)
-    {
-        $this->ignored = (array) $fields;
-
-        return $this;
     }
 
     /**
@@ -818,7 +677,7 @@ class Form
     protected function getFieldByColumn($column)
     {
         return $this->builder->fields()->first(
-            function (Field $field) use ($column) {
+            function ($index, Field $field) use ($column) {
                 if (is_array($field->column())) {
                     return in_array($column, $field->column());
                 }
@@ -863,47 +722,25 @@ class Form
     }
 
     /**
-     * Get validation messages.
+     * Validation fails.
      *
      * @param array $input
      *
-     * @return MessageBag|bool
+     * @return bool
      */
-    protected function validationMessages($input)
+    protected function validationFails($input)
     {
-        $failedValidators = [];
-
         foreach ($this->builder->fields() as $field) {
-            if (!$validator = $field->getValidator($input)) {
+            if (!$validator = $field->validate($input)) {
                 continue;
             }
 
             if (($validator instanceof Validator) && !$validator->passes()) {
-                $failedValidators[] = $validator;
+                return $validator;
             }
         }
 
-        $message = $this->mergeValidationMessages($failedValidators);
-
-        return $message->any() ? $message : false;
-    }
-
-    /**
-     * Merge validation messages from input validators.
-     *
-     * @param \Illuminate\Validation\Validator[] $validators
-     *
-     * @return MessageBag
-     */
-    protected function mergeValidationMessages($validators)
-    {
-        $messageBag = new MessageBag();
-
-        foreach ($validators as $validator) {
-            $messageBag = $messageBag->merge($validator->messages());
-        }
-
-        return $messageBag;
+        return false;
     }
 
     /**
@@ -997,6 +834,7 @@ class Form
         $map = [
             'button'            => \Encore\Admin\Form\Field\Button::class,
             'checkbox'          => \Encore\Admin\Form\Field\Checkbox::class,
+            'code'              => \Encore\Admin\Form\Field\Code::class,
             'color'             => \Encore\Admin\Form\Field\Color::class,
             'currency'          => \Encore\Admin\Form\Field\Currency::class,
             'date'              => \Encore\Admin\Form\Field\Date::class,
@@ -1016,6 +854,7 @@ class Form
             'id'                => \Encore\Admin\Form\Field\Id::class,
             'image'             => \Encore\Admin\Form\Field\Image::class,
             'ip'                => \Encore\Admin\Form\Field\Ip::class,
+            'json'              => \Encore\Admin\Form\Field\Json::class,
             'map'               => \Encore\Admin\Form\Field\Map::class,
             'mobile'            => \Encore\Admin\Form\Field\Mobile::class,
             'month'             => \Encore\Admin\Form\Field\Month::class,
@@ -1034,8 +873,6 @@ class Form
             'url'               => \Encore\Admin\Form\Field\Url::class,
             'year'              => \Encore\Admin\Form\Field\Year::class,
             'html'              => \Encore\Admin\Form\Field\Html::class,
-            'tags'              => \Encore\Admin\Form\Field\Tags::class,
-            'icon'              => \Encore\Admin\Form\Field\Icon::class,
         ];
 
         foreach ($map as $abstract => $class) {

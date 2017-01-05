@@ -5,18 +5,12 @@ namespace Encore\Admin\Form;
 use Encore\Admin\Admin;
 use Encore\Admin\Form;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\URL;
 
 /**
  * Class Builder.
  */
 class Builder
 {
-    /**
-     *  Previous url key
-     */
-    const PREVIOUS_URL_KEY = '_previous_';
-
     /**
      * @var mixed
      */
@@ -255,24 +249,6 @@ class Builder
     }
 
     /**
-     * Add field for store redirect url after update or store.
-     *
-     * @return void
-     */
-    protected function addRedirectUrlField()
-    {
-        $previous = URL::previous();
-
-        if (!$previous || $previous == URL::current()) {
-            return;
-        }
-
-        $hidden = new Form\Field\Hidden(static::PREVIOUS_URL_KEY);
-
-        $this->fields->push($hidden->value($previous));
-    }
-
-    /**
      * Render form.
      *
      * @return string
@@ -300,11 +276,6 @@ class Builder
                     });
                 }
             });
-
-            $('.form-history-back').on('click', function () {
-                event.preventDefault();
-                history.back(1);
-            })
 SCRIPT;
 
         Admin::script($script);
@@ -318,8 +289,6 @@ SCRIPT;
         if ($this->mode == static::MODE_CREATE) {
             $this->disableDeletion();
         }
-
-        $this->addRedirectUrlField();
 
         return view('admin::form', $vars)->render();
     }
