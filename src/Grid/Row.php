@@ -160,6 +160,7 @@ class Row
         $this->actions = new Action($actions);
 
         $this->actions->setRow($this);
+        $this->actions->setPath($this->path);
 
         return $this->actions;
     }
@@ -199,7 +200,7 @@ class Row
         if (is_null($value)) {
             $column = array_get($this->data, $name);
 
-            return is_string($column) ? $column : var_export($column, true);
+            return $this->dump($column);
         }
 
         if (is_callable($value)) {
@@ -210,5 +211,21 @@ class Row
         array_set($this->data, $name, $value);
 
         return $this;
+    }
+
+    /**
+     * Dump output column vars.
+     *
+     * @param mixed $var
+     *
+     * @return mixed|string
+     */
+    protected function dump($var)
+    {
+        if (!is_scalar($var)) {
+            return '<pre>'.var_export($var, true).'</pre>';
+        }
+
+        return $var;
     }
 }
