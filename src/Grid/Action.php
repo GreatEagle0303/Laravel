@@ -66,16 +66,6 @@ class Action
     }
 
     /**
-     * Set action path.
-     *
-     * @param $path
-     */
-    public function setPath($path)
-    {
-        $this->path = $path;
-    }
-
-    /**
      * @param callable $callback
      */
     public function add(\Closure $callback)
@@ -88,11 +78,10 @@ class Action
      */
     protected function setUpScript()
     {
-        $token = csrf_token();
-        $confirm = trans('admin::lang.delete_confirm');
-        $deleteSucceeded = trans('admin::lang.delete_succeeded');
-        $deleteFailed = trans('admin::lang.delete_failed');
+        $this->path = app('router')->current()->getPath();
 
+        $confirm = trans('admin::lang.delete_confirm');
+        $token = csrf_token();
         $script = <<<SCRIPT
 
 $('._delete').click(function() {
@@ -100,15 +89,23 @@ $('._delete').click(function() {
     if(confirm("{$confirm}")) {
         $.post('/{$this->path}/' + id, {_method:'delete','_token':'{$token}'}, function(data){
 
-            $.pjax.reload('#pjax-container');
-
             if (typeof data === 'object') {
                 if (data.status) {
-                    toastr.success('{$deleteSucceeded}');
+                    noty({
+                        text: "<strong>Succeeded!</strong><br/>"+data.message,
+                        type:'success',
+                        timeout: 3000
+                    });
                 } else {
-                    toastr.error('{$deleteFailed}');
+                    noty({
+                        text: "<strong>Failed!</strong><br/>"+data.message,
+                        type:'error',
+                        timeout: 3000
+                    });
                 }
             }
+
+            $.pjax.reload('#pjax-container');
         });
     }
 });

@@ -47,7 +47,6 @@ class Admin
     {
         if (!static::$initialized) {
             Form::registerBuiltinFields();
-            Grid::registerColumnDisplayer();
 
             static::$initialized = true;
         }
@@ -99,9 +98,9 @@ class Admin
      *
      * @return Tree
      */
-    public function tree($model, Closure $callable = null)
+    public function tree($model)
     {
-        return new Tree($this->getModel($model), $callable);
+        return new Tree($this->getModel($model));
     }
 
     /**

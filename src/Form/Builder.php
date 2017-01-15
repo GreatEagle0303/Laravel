@@ -5,18 +5,12 @@ namespace Encore\Admin\Form;
 use Encore\Admin\Admin;
 use Encore\Admin\Form;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\URL;
 
 /**
  * Class Builder.
  */
 class Builder
 {
-    /**
-     *  Previous url key
-     */
-    const PREVIOUS_URL_KEY = '_previous_';
-
     /**
      * @var mixed
      */
@@ -35,7 +29,7 @@ class Builder
     /**
      * @var array
      */
-    protected $options = [];
+    protected $options = ['title' => 'Edit'];
 
     /**
      * Modes constants.
@@ -52,9 +46,11 @@ class Builder
     protected $mode = 'create';
 
     /**
-     * @var Tab
+     * Allow delete item in form page.
+     *
+     * @var bool
      */
-    protected $tab;
+    protected $allowDeletion = true;
 
     /**
      * Builder constructor.
@@ -105,22 +101,6 @@ class Builder
     }
 
     /**
-     * @param Tab $tab
-     */
-    public function setTab(Tab $tab)
-    {
-        $this->tab = $tab;
-    }
-
-    /**
-     * @return Tab
-     */
-    public function getTab()
-    {
-        return $this->tab;
-    }
-
-    /**
      * Get fields of this builder.
      *
      * @return Collection
@@ -131,19 +111,11 @@ class Builder
     }
 
     /**
-     * @param $fields
-     */
-    public function mergeFields($fields)
-    {
-        $this->fields = $this->fields->merge($fields);
-    }
-
-    /**
      * Add or get options.
      *
      * @param array $options
      *
-     * @return array|null
+     * @return array|void
      */
     public function options($options = [])
     {
@@ -172,6 +144,28 @@ class Builder
         }
 
         return '';
+    }
+
+    /**
+     * Disable deletion in form page.
+     *
+     * @return $this
+     */
+    public function disableDeletion()
+    {
+        $this->allowDeletion = false;
+
+        return $this;
+    }
+
+    /**
+     * If allow deletion in form page.
+     *
+     * @return bool
+     */
+    public function allowDeletion()
+    {
+        return $this->allowDeletion;
     }
 
     /**
@@ -243,71 +237,15 @@ class Builder
     /**
      * Build submit button.
      *
-     * @return string
+     * @return string|void
      */
     public function submit()
     {
         if ($this->mode == self::MODE_VIEW) {
-            return '';
-        }
-
-        return '<button type="submit" class="btn btn-info pull-right">'.trans('admin::lang.submit').'</button>';
-    }
-
-    /**
-     * Add field for store redirect url after update or store.
-     *
-     * @return void
-     */
-    protected function addRedirectUrlField()
-    {
-        $previous = URL::previous();
-
-        if (!$previous || $previous == URL::current()) {
             return;
         }
 
-        $hidden = new Form\Field\Hidden(static::PREVIOUS_URL_KEY);
-
-        $this->fields->push($hidden->value($previous));
-    }
-
-    /**
-     * Render
-     *
-     * @return string
-     */
-    protected function renderTabForm()
-    {
-        $tabs = $this->tab->getTabs()->map(function ($tab) {
-
-            $form = new Form($this->form->model(), $tab['content']);
-
-            // In edit mode.
-            if ($this->isMode(static::MODE_EDIT)) {
-                $form->edit($this->id);
-            }
-
-            return array_merge($tab, compact('form'));
-        });
-
-        $script = <<<SCRIPT
-
-var url = document.location.toString();
-if (url.match('#')) {
-    $('.nav-tabs a[href="#' + url.split('#')[1] + '"]').tab('show');
-}
-
-// Change hash for page-reload
-$('.nav-tabs a').on('shown.bs.tab', function (e) {
-    window.location.hash = e.target.hash;
-});
-
-SCRIPT;
-
-        Admin::script($script);
-
-        return view('admin::form.tab', ['form' => $this, 'tabs' => $tabs])->render();
+        return '<button type="submit" class="btn btn-info pull-right">'.trans('admin::lang.submit').'</button>';
     }
 
     /**
@@ -315,15 +253,29 @@ SCRIPT;
      *
      * @return string
      */
-    protected function renderSimpleForm()
+    public function render()
     {
+        $confirm = trans('admin::lang.delete_confirm');
+        $token = csrf_token();
+
         $slice = $this->mode == static::MODE_CREATE ? -1 : -2;
 
+        $location = '/'.trim($this->form->resource($slice), '/');
+
         $script = <<<SCRIPT
-$('.form-history-back').on('click', function () {
-    event.preventDefault();
-    history.back(1);
-});
+            $('.item_delete').click(function() {
+                var id = $(this).data('id');
+                if(confirm('{$confirm}')) {
+                    $.post('{$this->form->resource($slice)}/' + id, {_method:'delete','_token':'{$token}'}, function(data){
+                        $.pjax({
+                            timeout: 2000,
+                            url: '$location',
+                            container: '#pjax-container'
+                          });
+                        return false;
+                    });
+                }
+            });
 SCRIPT;
 
         Admin::script($script);
@@ -334,33 +286,11 @@ SCRIPT;
             'resource' => $this->form->resource($slice),
         ];
 
-        $this->addRedirectUrlField();
-
-        return view('admin::form', $vars)->render();
-    }
-
-    /**
-     * @return string
-     */
-    public function render()
-    {
-        if ($this->tab) {
-            return $this->renderTabForm();
+        if ($this->mode == static::MODE_CREATE) {
+            $this->disableDeletion();
         }
 
-        return $this->renderSimpleForm();
-    }
-
-    /**
-     * @return mixed
-     */
-    public function renderWithoutForm()
-    {
-        return preg_replace(
-            ['/<form[^>]+>/', '/<\/form>/'],
-            ['<div class="form-horizontal">', '</div>'],
-            $this->renderSimpleForm()
-        );
+        return view('admin::form', $vars)->render();
     }
 
     /**

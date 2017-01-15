@@ -5,7 +5,6 @@ namespace Encore\Admin\Form\Field;
 use Encore\Admin\Facades\Admin;
 use Encore\Admin\Form\Field;
 use Illuminate\Contracts\Support\Arrayable;
-use Illuminate\Support\Str;
 
 class Select extends Field
 {
@@ -20,7 +19,7 @@ class Select extends Field
     public function render()
     {
         if (empty($this->script)) {
-            $this->script = "$(\".{$this->getElementClass()}\").select2({allowClear: true});";
+            $this->script = "$(\"#{$this->id}\").select2({allowClear: true});";
         }
 
         if (is_callable($this->options)) {
@@ -68,19 +67,12 @@ class Select extends Field
      */
     public function load($field, $source)
     {
-        if (Str::contains($field, '.')) {
-            $field = $this->formatName($field);
-            $class = str_replace(['[', ']'], '_', $field);
-        } else {
-            $class = $field;
-        }
-
         $script = <<<EOT
 
-$(".{$this->getElementClass()}").change(function () {
+$("#{$this->id}").change(function () {
     $.get("$source?q="+this.value, function (data) {
-        $(".$class option").remove();
-        $(".$class").select2({data: data});
+        $("#$field option").remove();
+        $("#$field").select2({data: data});
     });
 });
 EOT;
@@ -108,7 +100,7 @@ EOT;
         $this->script = <<<EOT
 
 $.ajax($ajaxOptions).done(function(data) {
-  $(".{$this->getElementClass()}").select2({data: data});
+  $("#{$this->id}").select2({data: data});
 });
 
 EOT;
@@ -127,7 +119,7 @@ EOT;
     {
         $this->script = <<<EOT
 
-$(".{$this->getElementClass()}").select2({
+$("#{$this->id}").select2({
   ajax: {
     url: "$url",
     dataType: 'json',
