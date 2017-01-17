@@ -3,15 +3,15 @@
         <h3 class="box-title">{{ $form->title() }}</h3>
 
         <div class="box-tools">
-            @if($form->allowDeletion())
-            <div class="btn-group pull-right">
-                <a href="javascript:void(0);" class="btn btn-sm btn-warning item_delete" data-id="{{ $id }}"><i class="fa fa-trash"></i>&nbsp;{{ trans('admin::lang.delete') }}</a>
-            </div>
-            @endif
 
             <div class="btn-group pull-right" style="margin-right: 10px">
                 <a href="{{ $resource }}" class="btn btn-sm btn-default"><i class="fa fa-list"></i>&nbsp;{{ trans('admin::lang.list') }}</a>
             </div>
+
+            <div class="btn-group pull-right" style="margin-right: 10px">
+                <a class="btn btn-sm btn-default form-history-back"><i class="fa fa-arrow-left"></i>&nbsp;{{ trans('admin::lang.back') }}</a>
+            </div>
+
         </div>
     </div>
     <!-- /.box-header -->
@@ -19,9 +19,13 @@
     {!! $form->open(['class' => "form-horizontal"]) !!}
         <div class="box-body">
 
-            @foreach($form->fields() as $field)
-                {!! $field->render() !!}
-            @endforeach
+            @if(!$tabObj->isEmpty())
+                @include('admin::form.tab', compact('tabObj'))
+            @else
+                @foreach($form->fields() as $field)
+                    {!! $field->render() !!}
+                @endforeach
+            @endif
 
         </div>
         <!-- /.box-body -->
@@ -43,6 +47,11 @@
             </div>
 
         </div>
+
+        @foreach($form->getHiddenFields() as $hiddenField)
+            {!! $hiddenField->render() !!}
+        @endforeach
+
         <!-- /.box-footer -->
     {!! $form->close() !!}
 </div>
