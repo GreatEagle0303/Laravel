@@ -12,17 +12,6 @@ class Currency extends Field
         '/packages/admin/AdminLTE/plugins/input-mask/jquery.inputmask.bundle.min.js',
     ];
 
-    /**
-     * @see https://github.com/RobinHerbots/Inputmask#options
-     *
-     * @var array
-     */
-    protected $options = [
-        'radixPoint'            => '.',
-        'prefix'                => '',
-        'removeMaskOnSubmit'    => true,
-    ];
-
     public function symbol($symbol)
     {
         $this->symbol = $symbol;
@@ -32,16 +21,14 @@ class Currency extends Field
 
     public function prepare($value)
     {
-        return (float) $value;
+        return (float) str_replace(',', '', $value);
     }
 
     public function render()
     {
-        $options = json_encode($this->options);
-
         $this->script = <<<EOT
 
-$('.{$this->getElementClass()}').inputmask("currency", $options);
+$('#{$this->id}').inputmask("currency", {radixPoint: '.', prefix:''})
 
 EOT;
 

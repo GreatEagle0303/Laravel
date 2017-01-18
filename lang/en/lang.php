@@ -13,7 +13,6 @@ return [
     'new'           => 'New',
     'create'        => 'Create',
     'delete'        => 'Delete',
-    'remove'        => 'Remove',
     'edit'          => 'Edit',
     'view'          => 'View',
     'reset'         => 'Reset',
@@ -27,12 +26,11 @@ return [
     'filter'        => 'Filter',
     'close'         => 'Close',
     'show'          => 'Show',
-    'entries'       => 'entries',
+    'items'         => 'items',
 
     'action'           => 'Action',
     'title'            => 'Title',
     'description'      => 'Description',
-    'back'             => 'Back',
     'back_to_list'     => 'Back to List',
     'submit'           => 'Submit',
     'menu'             => 'Menu',
@@ -42,13 +40,10 @@ return [
     'delete_confirm'   => 'Are you sure to delete this item ?',
     'delete_succeeded' => 'Delete succeeded !',
     'delete_failed'    => 'Delete failed !',
-    'update_succeeded' => 'Update succeeded !',
-    'save_succeeded'   => 'Save succeeded !',
-    'refresh_succeeded'=> 'Refresh succeeded !',
 
-    'choose'        => 'Select',
-    'choose_file'   => 'Select file',
-    'choose_image'  => 'Select image',
+    'choose'        => 'Choose',
+    'choose_file'   => 'Choose file',
+    'choose_image'  => 'Choose image',
 
     'more'          => 'More',
     'deny'          => 'Permission denied',
@@ -69,8 +64,4 @@ return [
 
     'operation_log'       => 'Operation log',
     'parent_select_error' => 'Parent select error',
-
-    'pagination'    => [
-        'range'  => 'Showing :first to :last of :total entries',
-    ],
 ];
