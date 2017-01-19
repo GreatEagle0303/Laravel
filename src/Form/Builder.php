@@ -5,12 +5,19 @@ namespace Encore\Admin\Form;
 use Encore\Admin\Admin;
 use Encore\Admin\Form;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Str;
 
 /**
  * Class Builder.
  */
 class Builder
 {
+    /**
+     *  Previous url key.
+     */
+    const PREVIOUS_URL_KEY = '_previous_';
+
     /**
      * @var mixed
      */
@@ -22,6 +29,11 @@ class Builder
     protected $form;
 
     /**
+     * @var
+     */
+    protected $action;
+
+    /**
      * @var Collection
      */
     protected $fields;
@@ -29,7 +41,7 @@ class Builder
     /**
      * @var array
      */
-    protected $options = ['title' => 'Edit'];
+    protected $options = [];
 
     /**
      * Modes constants.
@@ -46,11 +58,9 @@ class Builder
     protected $mode = 'create';
 
     /**
-     * Allow delete item in form page.
-     *
-     * @var bool
+     * @var array
      */
-    protected $allowDeletion = true;
+    protected $hiddenFields = [];
 
     /**
      * Builder constructor.
@@ -101,6 +111,50 @@ class Builder
     }
 
     /**
+     * @return string
+     */
+    public function getResource()
+    {
+        if ($this->mode == self::MODE_CREATE) {
+            return $this->form->resource(-1);
+        }
+
+        return $this->form->resource();
+    }
+
+    /**
+     * Set form action.
+     *
+     * @param string $action
+     */
+    public function setAction($action)
+    {
+        $this->action = $action;
+    }
+
+    /**
+     * Get Form action.
+     *
+     * @return string
+     */
+    public function getAction()
+    {
+        if ($this->action) {
+            return $this->action;
+        }
+
+        if ($this->isMode(static::MODE_EDIT)) {
+            return $this->form->resource().'/'.$this->id;
+        }
+
+        if ($this->isMode(static::MODE_CREATE)) {
+            return $this->form->resource(-1);
+        }
+
+        return '';
+    }
+
+    /**
      * Get fields of this builder.
      *
      * @return Collection
@@ -111,11 +165,29 @@ class Builder
     }
 
     /**
+     * @return array
+     */
+    public function getHiddenFields()
+    {
+        return $this->hiddenFields;
+    }
+
+    /**
+     * @param Field $field
+     *
+     * @return void
+     */
+    public function addHiddenField(Field $field)
+    {
+        $this->hiddenFields[] = $field;
+    }
+
+    /**
      * Add or get options.
      *
      * @param array $options
      *
-     * @return array|void
+     * @return array|null
      */
     public function options($options = [])
     {
@@ -147,28 +219,6 @@ class Builder
     }
 
     /**
-     * Disable deletion in form page.
-     *
-     * @return $this
-     */
-    public function disableDeletion()
-    {
-        $this->allowDeletion = false;
-
-        return $this;
-    }
-
-    /**
-     * If allow deletion in form page.
-     *
-     * @return bool
-     */
-    public function allowDeletion()
-    {
-        return $this->allowDeletion;
-    }
-
-    /**
      * Determine if form fields has files.
      *
      * @return bool
@@ -185,6 +235,24 @@ class Builder
     }
 
     /**
+     * Add field for store redirect url after update or store.
+     *
+     * @return void
+     */
+    protected function addRedirectUrlField()
+    {
+        $previous = URL::previous();
+
+        if (!$previous || $previous == URL::current()) {
+            return;
+        }
+
+        if (Str::contains($previous, url($this->getResource()))) {
+            $this->addHiddenField((new Form\Field\Hidden(static::PREVIOUS_URL_KEY))->value($previous));
+        }
+    }
+
+    /**
      * Open up a new HTML form.
      *
      * @param array $options
@@ -196,14 +264,12 @@ class Builder
         $attributes = [];
 
         if ($this->mode == self::MODE_EDIT) {
-            $attributes['action'] = $this->form->resource().'/'.$this->id;
-            $this->form->hidden('_method')->value('PUT');
+            $this->addHiddenField((new Form\Field\Hidden('_method'))->value('PUT'));
         }
 
-        if ($this->mode == self::MODE_CREATE) {
-            $attributes['action'] = $this->form->resource(-1);
-        }
+        $this->addRedirectUrlField();
 
+        $attributes['action'] = $this->getAction();
         $attributes['method'] = array_get($options, 'method', 'post');
         $attributes['accept-charset'] = 'UTF-8';
 
@@ -237,15 +303,37 @@ class Builder
     /**
      * Build submit button.
      *
-     * @return string|void
+     * @return string
      */
     public function submit()
     {
         if ($this->mode == self::MODE_VIEW) {
-            return;
+            return '';
         }
 
         return '<button type="submit" class="btn btn-info pull-right">'.trans('admin::lang.submit').'</button>';
+    }
+
+    /**
+     * Remove reserved fields like `id` `created_at` `updated_at` in form fields.
+     *
+     * @return void
+     */
+    protected function removeReservedFields()
+    {
+        if (!$this->isMode(static::MODE_CREATE)) {
+            return;
+        }
+
+        $reservedColumns = [
+            $this->form->model()->getKeyName(),
+            $this->form->model()->getCreatedAtColumn(),
+            $this->form->model()->getUpdatedAtColumn(),
+        ];
+
+        $this->fields = $this->fields()->reject(function (Field $field) use ($reservedColumns) {
+            return in_array($field->column(), $reservedColumns);
+        });
     }
 
     /**
@@ -255,42 +343,56 @@ class Builder
      */
     public function render()
     {
-        $confirm = trans('admin::lang.delete_confirm');
-        $token = csrf_token();
+        $this->removeReservedFields();
 
-        $slice = $this->mode == static::MODE_CREATE ? -1 : -2;
+        $tabObj = $this->form->getTab();
 
-        $location = '/'.trim($this->form->resource($slice), '/');
+        $script = <<<'SCRIPT'
+        
+$('.form-history-back').on('click', function () {
+    event.preventDefault();
+    history.back(1);
+});
 
-        $script = <<<SCRIPT
-            $('.item_delete').click(function() {
-                var id = $(this).data('id');
-                if(confirm('{$confirm}')) {
-                    $.post('{$this->form->resource($slice)}/' + id, {_method:'delete','_token':'{$token}'}, function(data){
-                        $.pjax({
-                            timeout: 2000,
-                            url: '$location',
-                            container: '#pjax-container'
-                          });
-                        return false;
-                    });
-                }
-            });
 SCRIPT;
+
+        if (!$tabObj->isEmpty()) {
+            $script .= <<<'SCRIPT'
+
+var url = document.location.toString();
+if (url.match('#')) {
+    $('.nav-tabs a[href="#' + url.split('#')[1] + '"]').tab('show');
+}
+        
+// Change hash for page-reload
+$('.nav-tabs a').on('shown.bs.tab', function (e) {
+    window.location.hash = e.target.hash;
+});
+
+if ($('.has-error').length) {
+    $('.has-error').parent().each(function () {
+        var tabId = '#'+$(this).attr('id');
+        $('li a[href="'+tabId+'"] i').removeClass('hide');
+    });
+    
+    var first = $('.has-error:first').parent().attr('id');
+    $('li a[href="#'+first+'"]').tab('show');
+}
+
+SCRIPT;
+        }
 
         Admin::script($script);
 
-        $vars = [
-            'id'       => $this->id,
+        $slice = $this->mode == static::MODE_CREATE ? -1 : -2;
+
+        $data = [
             'form'     => $this,
             'resource' => $this->form->resource($slice),
+            'tabObj'   => $tabObj,
         ];
 
-        if ($this->mode == static::MODE_CREATE) {
-            $this->disableDeletion();
-        }
-
-        return view('admin::form', $vars)->render();
+        return view('admin::form', $data)->render();
     }
 
     /**

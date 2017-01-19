@@ -25,9 +25,6 @@ class ImageUploadTest extends TestCase
         $this->visit('admin/images/create')
             ->see('Upload image')
             ->seeInElement('h3[class=box-title]', 'Create')
-            ->see('ID')
-            ->see('Created At')
-            ->see('Updated At')
             ->seeElement('input[name=image1]')
             ->seeElement('input[name=image2]')
             ->seeElement('input[name=image3]')
@@ -35,7 +32,6 @@ class ImageUploadTest extends TestCase
             ->seeElement('input[name=image5]')
             ->seeElement('input[name=image6]')
             ->seeInElement('a[href="/admin/images"]', 'List')
-            ->dontSeeElement('a[class*=item_delete]')
             ->seeElement('input[type=reset][value=Reset]')
             ->seeInElement('button[type=submit]', 'Submit');
     }
@@ -112,7 +108,6 @@ class ImageUploadTest extends TestCase
             ->seeElement('input[name=image5]')
             ->seeElement('input[name=image6]')
             ->seeInElement('a[href="/admin/images"]', 'List')
-            ->seeInElement('a[class*=item_delete]', 'Delete')
             ->seeElement('input[type=reset][value=Reset]')
             ->seeInElement('button[type=submit]', 'Submit');
 

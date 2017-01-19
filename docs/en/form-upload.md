@@ -1,27 +1,10 @@
 # file/image upload
 
-[model-form](/docs/zh/model-form.md) can build file and image upload field with following codes
+[model-form](/docs/zh/model-form.md) can build file and image  upload field with following codes
 
 ```php
 $form->file('file_column');
 $form->image('image_column');
-```
-
-### Change store path and name
-
-```php
-
-// change upload path
-$form->image('picture')->move('public/upload/image1/');
-
-// use a unique name (md5(uniqid()).extension)
-$form->image('picture')->uniqueName();
-
-// specify filename
-$form->image('picture')->name(function ($file) {
-    return 'test.'.$file->guessExtension();
-});
-
 ```
 
 [model-form](/docs/zh/model-form.md) both support for local and cloud storage upload
@@ -89,7 +72,7 @@ Also configure the disk, in the `config/filesystems.php` add an item:
          ],
         'access_key'=> '',  //AccessKey
         'secret_key'=> '',  //SecretKey
-        'bucket'    => '',  //Bucket
+        'bucket'    => '',  //Bucket名字
         'notify_url'=> '',  //
     ],
 ],

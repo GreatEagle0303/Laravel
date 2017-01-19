@@ -24,14 +24,14 @@ Inspired by [SleepingOwlAdmin](https://github.com/sleeping-owl/admin) and [rapyd
 首先确保安装好了`laravel`，并且数据库连接设置正确。
 
 ```
-Laravel 5.1
-composer require encore/laravel-admin "1.1.*"
-
 Laravel 5.2
-composer require encore/laravel-admin "1.2.*"
+composer require encore/laravel-admin "dev-master"
 
 Laravel 5.3
-composer require encore/laravel-admin "1.3.*"
+composer require encore/laravel-admin "1.3.x-dev"
+
+Laravel 5.1
+composer require encore/laravel-admin "1.1.x-dev"
 ```
 
 在`config/app.php`加入`ServiceProvider`:
@@ -40,16 +40,10 @@ composer require encore/laravel-admin "1.3.*"
 Encore\Admin\Providers\AdminServiceProvider::class
 ```
 
-然后运行下面的命令来发布资源：
+然后运行下面的命令完成安装：
 
 ```
 php artisan vendor:publish --tag=laravel-admin
-```
-
-在该命令会生成配置文件`config/admin.php`，可以在里面修改安装的地址、数据库连接、以及表名。
-
-然后运行下面的命令完成安装：
-```
 php artisan admin:install
 ```
 
@@ -68,15 +62,9 @@ php artisan admin:install
 - [菜单配置](/docs/zh/menu.md)
 - [显示布局](/docs/zh/layout.md)
 - [数据模型表格](/docs/zh/model-grid.md)
-  - [列操作使用和扩展](/docs/zh/model-grid-actions.md)
-  - [列的使用和扩展](/docs/zh/model-grid-column.md)
-  - [自定义工具](/docs/zh/grid-custom-tools.md)
 - [数据模型表单](/docs/zh/model-form.md)
   - [图片/文件上传](/docs/zh/form-upload.md)
-  - [form组件使用](/docs/zh/model-form-fields.md)
   - [form组件管理](/docs/zh/field-management.md)
-  - [保存回调](/docs/zh/model-form-callback.md)
-- [数据模型树](/docs/zh/model-tree.md)
 - [组件](/docs/zh/widgets/table.md)
   - [表格](/docs/zh/widgets/table.md)
   - [表单](/docs/zh/widgets/form.md)
@@ -87,7 +75,6 @@ php artisan admin:install
   - [折叠容器](/docs/zh/widgets/collapse.md)
   - 数据图表 TODO
 - [权限控制](/docs/zh/permission.md)
-- [常见问题](/docs/zh/qa.md)
 
 目录结构
 ------------
@@ -98,15 +85,12 @@ app/Admin
 ├── Controllers
 │   ├── ExampleController.php
 │   └── HomeController.php
-├── bootstrap.php
 └── routes.php
 ```
 
 `app/Admin/routes.php`文件用来配置后台路由，详细使用请阅读[路由配置](/docs/zh/router.md)。
 
-`app/Admin/bootstrap.php` 是`laravel-admin`的启动文件, 使用方法请参考文件里面的注释.
-
-`app/Admin/Controllers`目录用来存放后台控制器文件，该目录下的`HomeController.php`文件是后台首页的显示控制器，`ExampleController.php`为实例文件。
+`app/Admin/Controllers`目录用来存放后台路由器文件，该目录下的`HomeController.php`文件是后台首页的显示控制器，`ExampleController.php`为实例文件。
 
 快速开始
 ------------
@@ -134,9 +118,6 @@ CREATE TABLE `users` (
 使用下面的命令来创建一个对应`App\User`模型的路由器
 ```php
 php artisan admin:make UserController --model=App\\User
-
-// 在windows系统中
-php artisan admin:make UserController --model=App\User
 ```
 
 上面的命令会创建路由器文件`app/Admin/Controllers/UserController.php`.
@@ -165,6 +146,7 @@ $router->resource('users', UserController::class);
 + [Laravel](https://laravel.com/)
 + [AdminLTE](https://almsaeedstudio.com/)
 + [Datetimepicker](http://eonasdan.github.io/bootstrap-datetimepicker/)
++ [CodeMirror](https://codemirror.net/)
 + [font-awesome](http://fontawesome.io)
 + [moment](http://momentjs.com/)
 + [Google map](https://www.google.com/maps)
@@ -172,10 +154,9 @@ $router->resource('users', UserController::class);
 + [bootstrap-fileinput](https://github.com/kartik-v/bootstrap-fileinput)
 + [jquery-pjax](https://github.com/defunkt/jquery-pjax)
 + [Nestable](http://dbushell.github.io/Nestable/)
-+ [toastr](http://codeseven.github.io/toastr/)
++ [noty](http://ned.im/noty/)
 + [X-editable](http://github.com/vitalets/x-editable)
 + [bootstrap-number-input](https://github.com/wpic/bootstrap-number-input)
-+ [fontawesome-iconpicker](https://github.com/itsjavi/fontawesome-iconpicker)
 
 交流
 ------------

@@ -96,7 +96,7 @@ class File extends Field
      */
     protected function initStorage()
     {
-        $this->storage = Storage::disk(config('admin.upload.disk'));
+        $this->disk(config('admin.upload.disk'));
     }
 
     /**
@@ -152,6 +152,20 @@ class File extends Field
     }
 
     /**
+     * Set disk for storage.
+     *
+     * @param string $disk Disks defined in `config/filesystems.php`.
+     *
+     * @return $this
+     */
+    public function disk($disk)
+    {
+        $this->storage = Storage::disk($disk);
+
+        return $this;
+    }
+
+    /**
      * Specify the directory and name for uplaod file.
      *
      * @param string      $directory
@@ -171,8 +185,10 @@ class File extends Field
     /**
      * {@inheritdoc}
      */
-    public function validate(array $input)
+    public function getValidator(array $input)
     {
+        $rules = $attributes = [];
+
         if (!$fieldRules = $this->getRules()) {
             return false;
         }
@@ -181,16 +197,14 @@ class File extends Field
             return false;
         }
 
-        $value = array_get($input, $this->column);
+        $rules[$this->column] = $fieldRules;
+        $attributes[$this->column] = $this->label;
 
         if ($this->multiple) {
-            list($rules, $data) = $this->hydrateFiles($value);
-        } else {
-            $data = [$this->column => $value];
-            $rules = [$this->column => $this->getRules()];
+            list($rules, $input) = $this->hydrateFiles(array_get($input, $this->column));
         }
 
-        return Validator::make($data, $rules);
+        return Validator::make($input, $rules, [], $attributes);
     }
 
     /**
@@ -202,14 +216,14 @@ class File extends Field
      */
     protected function hydrateFiles(array $value)
     {
-        $data = $rules = [];
+        $rules = $input = [];
 
         foreach ($value as $key => $file) {
             $rules[$this->column.$key] = $this->getRules();
-            $data[$this->column.$key] = $file;
+            $input[$this->column.$key] = $file;
         }
 
-        return [$rules, $data];
+        return [$rules, $input];
     }
 
     /**
@@ -247,8 +261,8 @@ class File extends Field
      */
     public function prepare($files)
     {
-        if (is_null($files)) {
-            if ($this->isDeleteRequest()) {
+        if (!$files instanceof UploadedFile && !is_array($files)) {
+            if ($this->handleDeleteRequest()) {
                 return '';
             }
 
@@ -418,17 +432,29 @@ EOT;
 
         $options = json_encode($this->options);
 
+        $class = $this->getElementClass();
+
         $this->script = <<<EOT
 
-$("#{$this->id}").fileinput({$options});
+$("input.{$class}").fileinput({$options});
 
-$("#{$this->id}").on('filecleared', function(event) {
-    $("#{$this->id}_action").val(1);
+$("input.{$class}").on('filecleared', function(event) {
+    $(".{$class}_action").val(1);
 });
 
 EOT;
 
-        return parent::render()->with(['multiple' => $this->multiple]);
+        return parent::render()->with(['multiple' => $this->multiple, 'actionName' => $this->getActionName()]);
+    }
+
+    /**
+     * Get action element name.
+     *
+     * @return array|mixed|string
+     */
+    protected function getActionName()
+    {
+        return $this->formatName($this->column.'_action');
     }
 
     /**
@@ -436,9 +462,9 @@ EOT;
      *
      * @return bool
      */
-    public function isDeleteRequest()
+    public function handleDeleteRequest()
     {
-        $action = Input::get($this->id.'_action');
+        $action = Input::get($this->column.'_action');
 
         if ($action == static::ACTION_REMOVE) {
             $this->destroy();
