@@ -31,6 +31,7 @@ class MenuTest extends TestCase
         $this->visit('admin/auth/menu')
             ->seePageIs('admin/auth/menu')
             ->see('Menu')
+            ->see('Tips')
             ->submitForm('Submit', $item)
             ->seePageIs('admin/auth/menu')
             ->seeInDatabase(config('admin.database.menu_table'), $item)

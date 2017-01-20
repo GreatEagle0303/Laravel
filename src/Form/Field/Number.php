@@ -12,17 +12,15 @@ class Number extends Field
 
     public function render()
     {
-        $this->default((int) $this->default);
+        $this->default(0);
 
         $this->script = <<<EOT
 
-$('.{$this->getElementClass()}:not(.initialized)')
-    .addClass('initialized')
-    .bootstrapNumber({
-        upClass: 'success',
-        downClass: 'primary',
-        center: true
-    });
+$('#{$this->id}').bootstrapNumber({
+	upClass: 'success',
+	downClass: 'primary',
+	center: true
+});
 
 EOT;
 

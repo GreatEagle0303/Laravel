@@ -18,6 +18,9 @@ class FileUploadTest extends TestCase
         $this->visit('admin/files/create')
             ->see('Upload file')
             ->seeInElement('h3[class=box-title]', 'Create')
+            ->see('ID')
+            ->see('Created At')
+            ->see('Updated At')
             ->seeElement('input[name=file1]')
             ->seeElement('input[name=file2]')
             ->seeElement('input[name=file3]')
@@ -25,6 +28,7 @@ class FileUploadTest extends TestCase
             ->seeElement('input[name=file5]')
             ->seeElement('input[name=file6]')
             ->seeInElement('a[href="/admin/files"]', 'List')
+            ->dontSeeElement('a[class*=item_delete]')
             ->seeElement('input[type=reset][value=Reset]')
             ->seeInElement('button[type=submit]', 'Submit');
     }
@@ -89,6 +93,7 @@ class FileUploadTest extends TestCase
             ->seeElement('input[name=file5]')
             ->seeElement('input[name=file6]')
             ->seeInElement('a[href="/admin/files"]', 'List')
+            ->seeInElement('a[class*=item_delete]', 'Delete')
             ->seeElement('input[type=reset][value=Reset]')
             ->seeInElement('button[type=submit]', 'Submit');
 

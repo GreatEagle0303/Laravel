@@ -13,12 +13,8 @@ class MultipleSelect extends Select
         }
 
         if (is_array($relations)) {
-            if (is_string(current($relations))) {
-                $this->value = $relations;
-            } else {
-                foreach ($relations as $relation) {
-                    $this->value[] = array_pop($relation['pivot']);
-                }
+            foreach ($relations as $relation) {
+                $this->value[] = array_pop($relation['pivot']);
             }
         }
     }
@@ -32,12 +28,8 @@ class MultipleSelect extends Select
         }
 
         if (is_array($relations)) {
-            if (is_string(current($relations))) {
-                $this->original = $relations;
-            } else {
-                foreach ($relations as $relation) {
-                    $this->original[] = array_pop($relation['pivot']);
-                }
+            foreach ($relations as $relation) {
+                $this->original[] = array_pop($relation['pivot']);
             }
         }
     }
