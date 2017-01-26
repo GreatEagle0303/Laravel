@@ -57,6 +57,20 @@ class Field
     protected $column = '';
 
     /**
+     * Form element name.
+     *
+     * @var string
+     */
+    protected $elementName = '';
+
+    /**
+     * Form element name.
+     *
+     * @var string
+     */
+    protected $elementClass = '';
+
+    /**
      * Variables of elements.
      *
      * @var array
@@ -125,6 +139,20 @@ class Field
      * @var array
      */
     protected $help = [];
+
+    /**
+     * Key for errors.
+     *
+     * @var mixed
+     */
+    protected $errorKey;
+
+    /**
+     * Placeholder for this field.
+     *
+     * @var string|array
+     */
+    protected $placeholder;
 
     /**
      * Field constructor.
@@ -217,14 +245,35 @@ class Field
     }
 
     /**
+     * Set form element name.
+     *
+     * @param string $name
+     *
+     * @return $this
+     *
+     * @author Edwin Hui
+     */
+    public function setElementName($name)
+    {
+        $this->elementName = $name;
+
+        return $this;
+    }
+
+    /**
      * Fill data to the field.
      *
-     * @param $data
+     * @param array $data
      *
      * @return void
      */
     public function fill($data)
     {
+        // Field value is already setted.
+//        if (!is_null($this->value)) {
+//            return;
+//        }
+
         if (is_array($this->column)) {
             foreach ($this->column as $key => $column) {
                 $this->value[$key] = array_get($data, $column);
@@ -291,7 +340,7 @@ class Field
      *
      * @param null $rules
      *
-     * @return $this|array
+     * @return mixed
      */
     public function rules($rules = null)
     {
@@ -306,9 +355,38 @@ class Field
         return $this;
     }
 
+    /**
+     * Get field validation rules.
+     *
+     * @return string
+     */
     protected function getRules()
     {
         return $this->rules;
+    }
+
+    /**
+     * Get key for error message.
+     *
+     * @return string
+     */
+    public function getErrorKey()
+    {
+        return $this->errorKey ?: $this->column;
+    }
+
+    /**
+     * Set key for error message.
+     *
+     * @param string $key
+     *
+     * @return $this
+     */
+    public function setErrorKey($key)
+    {
+        $this->errorKey = $key;
+
+        return $this;
     }
 
     /**
@@ -321,12 +399,40 @@ class Field
     public function value($value = null)
     {
         if (is_null($value)) {
-            return is_null($this->value) ? $this->default : $this->value;
+            return is_null($this->value) ? $this->getDefault() : $this->value;
         }
 
         $this->value = $value;
 
         return $this;
+    }
+
+    /**
+     * Set default value for field.
+     *
+     * @param $default
+     *
+     * @return $this
+     */
+    public function setDefault($default)
+    {
+        $this->default = $default;
+
+        return $this;
+    }
+
+    /**
+     * Get default value.
+     *
+     * @return mixed
+     */
+    public function getDefault()
+    {
+        if ($this->default instanceof \Closure) {
+            return call_user_func($this->default, $this->form);
+        }
+
+        return $this->default;
     }
 
     /**
@@ -375,15 +481,15 @@ class Field
     }
 
     /**
-     * Validate input field data.
+     * Get validator for this field.
      *
      * @param array $input
      *
      * @return bool|Validator
      */
-    public function validate(array $input)
+    public function getValidator(array $input)
     {
-        $data = $rules = [];
+        $rules = $attributes = [];
 
         if (!$fieldRules = $this->getRules()) {
             return false;
@@ -394,15 +500,10 @@ class Field
                 return false;
             }
 
-            $value = array_get($input, $this->column);
+            $input = $this->sanitizeInput($input, $this->column);
 
-            // remove empty options from multiple select.
-            if ($this instanceof Field\MultipleSelect) {
-                $value = array_filter($value);
-            }
-
-            $data[$this->label] = $value;
-            $rules[$this->label] = $fieldRules;
+            $rules[$this->column] = $fieldRules;
+            $attributes[$this->column] = $this->label;
         }
 
         if (is_array($this->column)) {
@@ -410,12 +511,31 @@ class Field
                 if (!array_key_exists($column, $input)) {
                     continue;
                 }
-                $data[$this->label.$key] = array_get($input, $column);
-                $rules[$this->label.$key] = $fieldRules;
+                $input[$column.$key] = array_get($input, $column);
+                $rules[$column.$key] = $fieldRules;
+                $attributes[$column.$key] = $this->label."[$column]";
             }
         }
 
-        return Validator::make($data, $rules);
+        return Validator::make($input, $rules, [], $attributes);
+    }
+
+    /**
+     * Sanitize input data.
+     *
+     * @param array  $input
+     * @param string $column
+     *
+     * @return array
+     */
+    protected function sanitizeInput($input, $column)
+    {
+        if ($this instanceof Field\MultipleSelect) {
+            $value = array_get($input, $column);
+            array_set($input, $column, array_filter($value));
+        }
+
+        return $input;
     }
 
     /**
@@ -448,6 +568,30 @@ class Field
     }
 
     /**
+     * Set field placeholder.
+     *
+     * @param string $placeholder
+     *
+     * @return Field
+     */
+    public function placeholder($placeholder = '')
+    {
+        $this->placeholder = $placeholder;
+
+        return $this;
+    }
+
+    /**
+     * Get placeholder.
+     *
+     * @return string
+     */
+    public function getPlaceholder()
+    {
+        return $this->placeholder ?: trans('admin::lang.input').' '.$this->label;
+    }
+
+    /**
      * Format the field attributes.
      *
      * @return string
@@ -457,10 +601,40 @@ class Field
         $html = [];
 
         foreach ($this->attributes as $name => $value) {
-            $html[] = "$name=\"$value\"";
+            $html[] = $name.'="'.e($value).'"';
         }
 
         return implode(' ', $html);
+    }
+
+    /**
+     * Set form element class.
+     *
+     * @param string $class
+     *
+     * @return $this
+     */
+    public function setElementClass($class)
+    {
+        $this->elementClass = $class;
+
+        return $this;
+    }
+
+    /**
+     * Get element class.
+     *
+     * @return string
+     */
+    protected function getElementClass()
+    {
+        if (!$this->elementClass) {
+            $name = $this->elementName ?: $this->formatName($this->column);
+
+            $this->elementClass = str_replace(['[', ']'], '_', $name);
+        }
+
+        return $this->elementClass;
     }
 
     /**
@@ -471,12 +645,15 @@ class Field
     protected function variables()
     {
         $this->variables['id'] = $this->id;
-        $this->variables['name'] = $this->formatName($this->column);
+        $this->variables['name'] = $this->elementName ?: $this->formatName($this->column);
         $this->variables['value'] = $this->value();
         $this->variables['label'] = $this->label;
         $this->variables['column'] = $this->column;
         $this->variables['attributes'] = $this->formatAttributes();
         $this->variables['help'] = $this->help;
+        $this->variables['class'] = $this->getElementClass();
+        $this->variables['errorKey'] = $this->getErrorKey();
+        $this->variables['placeholder'] = $this->getPlaceholder();
 
         return $this->variables;
     }
@@ -495,6 +672,11 @@ class Field
         $class = explode('\\', get_called_class());
 
         return 'admin::form.'.strtolower(end($class));
+    }
+
+    public function getScript()
+    {
+        return $this->script;
     }
 
     /**
@@ -518,9 +700,7 @@ class Field
     public function __call($method, $arguments)
     {
         if ($method === 'default') {
-            $this->default = $arguments[0];
-
-            return $this;
+            return $this->setDefault(array_get($arguments, 0));
         }
     }
 }

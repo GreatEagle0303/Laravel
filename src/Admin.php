@@ -5,6 +5,7 @@ namespace Encore\Admin;
 use Closure;
 use Encore\Admin\Auth\Database\Menu;
 use Encore\Admin\Layout\Content;
+use Encore\Admin\Widgets\Navbar;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
@@ -15,6 +16,11 @@ use InvalidArgumentException;
  */
 class Admin
 {
+    /**
+     * @var Navbar
+     */
+    protected $navbar;
+
     /**
      * @var array
      */
@@ -47,6 +53,7 @@ class Admin
     {
         if (!static::$initialized) {
             Form::registerBuiltinFields();
+            Grid::registerColumnDisplayer();
 
             static::$initialized = true;
         }
@@ -98,9 +105,9 @@ class Admin
      *
      * @return Tree
      */
-    public function tree($model)
+    public function tree($model, Closure $callable = null)
     {
-        return new Tree($this->getModel($model));
+        return new Tree($this->getModel($model), $callable);
     }
 
     /**
@@ -108,7 +115,7 @@ class Admin
      *
      * @return Content
      */
-    public function content(Closure $callable)
+    public function content(Closure $callable = null)
     {
         static::init();
         static::bootstrap();
@@ -233,7 +240,7 @@ class Admin
      */
     public function menu()
     {
-        return Menu::toTree();
+        return (new Menu())->toTree();
     }
 
     /**
@@ -247,10 +254,37 @@ class Admin
     }
 
     /**
+     * Get current login user.
+     *
      * @return mixed
      */
     public function user()
     {
         return Auth::guard('admin')->user();
+    }
+
+    /**
+     * Set navbar.
+     *
+     * @param Closure $builder
+     */
+    public function navbar(Closure $builder)
+    {
+        call_user_func($builder, $this->getNavbar());
+    }
+
+    /**
+     * Get navbar object.
+     *
+     * @return Navbar
+     */
+    public function getNavbar()
+    {
+        if (is_null($this->navbar)) {
+            $this->navbar = new Navbar();
+        }
+
+        return $this->navbar;
+
     }
 }

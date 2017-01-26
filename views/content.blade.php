@@ -11,6 +11,10 @@
 
     <section class="content">
 
+        @include('admin::partials.error')
+        @include('admin::partials.success')
+        @include('admin::partials.exception')
+
         {!! $content !!}
 
     </section>
