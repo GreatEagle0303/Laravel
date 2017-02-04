@@ -43,8 +43,8 @@ class LogController extends Controller
 
                 $grid->created_at(trans('admin::lang.created_at'));
 
-                $grid->actions(function (Grid\Displayers\Actions $actions) {
-                    $actions->disableEdit();
+                $grid->rows(function ($row) {
+                    $row->actions('delete');
                 });
 
                 $grid->disableCreation();

@@ -70,11 +70,6 @@ echo $grid;
 
 ## Basic Usage
 
-#### Set the table title
-```php
-$grid->title('Movie list');
-```
-
 #### Add a column
 ```php
 
@@ -102,24 +97,41 @@ $grid->model()->take(100);
 
 ```php
 // The default is 15 per page
-$grid->paginate(15);
+$grid->paginate(20);
 ```
 
-#### Modify the display output
+#### Modify the display output of column
 
 ```php
-$grid->text()->value(function($text) {
+$grid->text()->display(function($text) {
     return str_limit($text, 30, '...');
 });
 
-$grid->name()->value(function ($name) {
+$grid->name()->display(function ($name) {
     return "<span class='label'>$name</span>";
 });
 
-$grid->email()->value(function ($email) {
+$grid->email()->display(function ($email) {
     return "mailto:$email";
 });
 
+// column not in table
+$grid->column('column_not_in_table')->display(function () {
+    return 'blablabla....';
+});
+
+```
+
+The closure passed to method `display()` is bind to row data object, you can use other column data in current row.
+
+```php
+$grid->first_name();
+$grid->last_name();
+
+// column not in table
+$grid->column('full_name')->display(function () {
+    return $this->first_name.' '.$this->last_name;
+});
 ```
 
 #### Disable the create button 
@@ -127,9 +139,14 @@ $grid->email()->value(function ($email) {
 $grid->disableCreation();
 ```
 
-#### Disable the batch delete button
+#### Disable Pagination
 ```php
-$grid->disableBatchDeletion();
+$grid->disablePagination();
+```
+
+#### Disable data filter
+```php
+$grid->disableFilter();
 ```
 
 #### Disable the export button
@@ -137,36 +154,14 @@ $grid->disableBatchDeletion();
 $grid->disableExport();
 ```
 
-#### Modify the row action button
+#### Enable orderable grid
 ```php
-//Opens the edit and delete operations
-$grid->actions('edit|delete');
-
-//Close all operations
-$grid->disableActions();
+$grid->orderable();
 ```
 
-#### Column control 
+#### Set options for perPage selector
 ```php
-$grid->rows(function($row){
-
-    //add style to lines which Id less than 10 
-    if($row->id < 10) {
-        $row->style('color:red');
-    }
-
-    // Open the edit operation for specified column
-    if($row->id % 3) {
-        $row->action('edit');
-    }
-
-    //Specifies the column to add a custom action button
-    if($row->id % 2) {
-        $row->actions()->add(function ($row) {
-            return "<a class=\"btn btn-xs btn-danger\">btn</a>";
-        });
-    }
-});
+$grid->perPages([10, 20, 30, 40, 50]);
 ```
 
 #### Add query filters
@@ -202,6 +197,17 @@ $grid->filter(function($filter){
         $query->whereRaw("`rate` >= 6 AND `created_at` = {$this->input}");
 
     }, 'Text');
+    
+    // relation filter, filter columns in relation `profile`
+    $filter->where(function ($query) {
+
+        $input = $this->input;
+
+        $query->whereHas('profile', function ($query) use ($input) {
+            $query->where('address', 'like', "%{$input}%")->orWhere('email', 'like', "%{$input}%");
+        });
+
+    }, 'Address or Email');
 });
 ```
 

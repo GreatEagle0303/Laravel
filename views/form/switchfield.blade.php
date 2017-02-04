@@ -1,13 +1,13 @@
-<div class="form-group {!! !$errors->has($errorKey) ?: 'has-error' !!}">
+<div class="form-group {!! !$errors->has($label) ?: 'has-error' !!}">
 
-    <label for="{{$id}}" class="col-sm-2 col-lg-2 control-label">{{$label}}</label>
+    <label for="{{$id}}" class="col-sm-2 control-label">{{$label}}</label>
 
-    <div class="col-sm-10 col-lg-8">
+    <div class="col-sm-6">
 
         @include('admin::form.error')
 
-        <input type="checkbox" class="{{$class}}_checkbox" {{ old($column, $value) == 'on' ? 'checked' : '' }} {!! $attributes !!} />
-        <input type="hidden" class="{{$class}}" name="{{$name}}" class="" value="{{ old($column, $value) }}" />
+        <input type="checkbox" id="{{$id}}_checkbox" {{ old($column, $value) == 'on' ? 'checked' : '' }} {!! $attributes !!} />
+        <input type="hidden" id="{{$id}}" name="{{$name}}" class="" value="{{ old($column, $value) }}" />
 
         @include('admin::form.help-block')
 

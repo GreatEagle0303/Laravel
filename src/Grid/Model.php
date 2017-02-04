@@ -3,8 +3,6 @@
 namespace Encore\Admin\Grid;
 
 use Illuminate\Database\Eloquent\Model as EloquentModel;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Pagination\AbstractPaginator;
 use Illuminate\Support\Collection;
@@ -65,13 +63,6 @@ class Model
      * @var string
      */
     protected $sortName = '_sort';
-
-    /**
-     * Collection callback.
-     *
-     * @var \Closure
-     */
-    protected $collectionCallback;
 
     /**
      * Create a new grid model instance.
@@ -154,20 +145,6 @@ class Model
     }
 
     /**
-     * Set collection callback.
-     *
-     * @param \Closure $callback
-     *
-     * @return $this
-     */
-    public function collection(\Closure $callback = null)
-    {
-        $this->collectionCallback = $callback;
-
-        return $this;
-    }
-
-    /**
      * Build.
      *
      * @return array
@@ -175,13 +152,7 @@ class Model
     public function buildData()
     {
         if (empty($this->data)) {
-            $collection = $this->get();
-
-            if ($this->collectionCallback) {
-                $collection = call_user_func($this->collectionCallback, $collection);
-            }
-
-            $this->data = $collection->toArray();
+            $this->data = $this->get()->toArray();
         }
 
         return $this->data;
@@ -279,12 +250,12 @@ class Model
     {
         if ($perPage = app('request')->input($this->perPageName)) {
             if (is_array($paginate)) {
-                $paginate['arguments'][0] = (int) $perPage;
+                $paginate['arguments'][0] = $perPage;
 
                 return $paginate['arguments'];
             }
 
-            $this->perPage = (int) $perPage;
+            $this->perPage = $perPage;
         }
 
         return [$this->perPage];
@@ -378,39 +349,20 @@ class Model
     }
 
     /**
-     * Build join parameters for related model.
-     *
-     * `HasOne` and `BelongsTo` relation has different join parameters.
+     * Build join parameters.
      *
      * @param Relation $relation
-     *
-     * @throws \Exception
      *
      * @return array
      */
     protected function joinParameters(Relation $relation)
     {
-        $relatedTable = $relation->getRelated()->getTable();
-
-        if ($relation instanceof BelongsTo) {
-            return [
-                $relatedTable,
-                $relation->getForeignKey(),
-                '=',
-                $relatedTable.'.'.$relation->getRelated()->getKeyName(),
-            ];
-        }
-
-        if ($relation instanceof HasOne) {
-            return [
-                $relatedTable,
-                $relation->getQualifiedParentKeyName(),
-                '=',
-                $relation->getForeignKey(),
-            ];
-        }
-
-        throw new \Exception('Related sortable only support `HasOne` and `BelongsTo` relation.');
+        return [
+            $relation->getRelated()->getTable(),
+            $relation->getQualifiedParentKeyName(),
+            '=',
+            $relation->getForeignKey(),
+        ];
     }
 
     /**

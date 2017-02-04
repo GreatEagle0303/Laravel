@@ -19,7 +19,6 @@ class CreateAdminTables extends Migration
             $table->string('username', 190)->unique();
             $table->string('password', 60);
             $table->string('name');
-            $table->string('avatar')->nullable();
             $table->string('remember_token', 100)->nullable();
             $table->timestamps();
         });
@@ -83,7 +82,7 @@ class CreateAdminTables extends Migration
             $table->string('path');
             $table->string('method', 10);
             $table->string('ip', 15);
-            $table->text('input');
+            $table->longText('input');
             $table->index('user_id');
             $table->timestamps();
         });

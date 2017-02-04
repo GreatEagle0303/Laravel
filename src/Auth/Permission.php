@@ -3,8 +3,6 @@
 namespace Encore\Admin\Auth;
 
 use Encore\Admin\Facades\Admin;
-use Encore\Admin\Middleware\PjaxMiddleware;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class Permission
@@ -76,12 +74,11 @@ class Permission
      */
     protected static function error()
     {
-        $pjaxMiddleware = new PjaxMiddleware();
+        $content = Admin::content(function ($content) {
+            $content->body(view('admin::deny'));
+        });
 
-        $pjaxMiddleware->handle(Request::capture(), function () {
-            return response(Admin::content()->withError(trans('admin::lang.deny')));
-        })->send();
-
+        response($content)->send();
         exit;
     }
 
