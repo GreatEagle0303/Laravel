@@ -7,23 +7,6 @@ $form->file('file_column');
 $form->image('image_column');
 ```
 
-### 修改存储路径或文件名
-
-```php
-
-// 修改上传目录
-$form->image('picture')->move('public/upload/image1/');
-
-// 使用随机生成文件名 (md5(uniqid()).extension)
-$form->image('picture')->uniqueName();
-
-// 自定义文件名
-$form->image('picture')->name(function ($file) {
-    return 'test.'.$file->guessExtension();
-});
-
-```
-
 [model-form](/docs/zh/model-form.md)支持本地和云存储的文件上传
 
 ### 本地上传
@@ -72,7 +55,7 @@ $form->image('picture')->name(function ($file) {
 
 ### 云盘上传
 
-如果需要上传到云存储，需要安装对应`laravel storage`的适配器，拿七牛云存储举例
+如果需要上传到云存储，需要安装兼容`laravel storage`操作方式的driver，拿七牛云存储举例
 
 首先安装 [zgldh/qiniu-laravel-storage](https://github.com/zgldh/qiniu-laravel-storage)
 

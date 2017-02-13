@@ -16,6 +16,7 @@
 
     {!! Admin::css() !!}
     <link rel="stylesheet" href="{{ asset("/packages/admin/nestable/nestable.css") }}">
+    <link rel="stylesheet" href="{{ asset("/packages/admin/toastr/build/toastr.min.css") }}">
     <link rel="stylesheet" href="{{ asset("/packages/admin/bootstrap3-editable/css/bootstrap-editable.css") }}">
     <link rel="stylesheet" href="{{ asset("/packages/admin/google-fonts/fonts.css") }}">
     <link rel="stylesheet" href="{{ asset("/packages/admin/AdminLTE/dist/css/AdminLTE.min.css") }}">
@@ -55,12 +56,15 @@
 <!-- REQUIRED JS SCRIPTS -->
 <script src="{{ asset ("/packages/admin/AdminLTE/plugins/chartjs/Chart.min.js") }}"></script>
 <script src="{{ asset ("/packages/admin/nestable/jquery.nestable.js") }}"></script>
-<script src="{{ asset ("/packages/admin/noty/jquery.noty.packaged.min.js") }}"></script>
+<script src="{{ asset ("/packages/admin/toastr/build/toastr.min.js") }}"></script>
 <script src="{{ asset ("/packages/admin/bootstrap3-editable/js/bootstrap-editable.min.js") }}"></script>
 
 {!! Admin::js() !!}
 
 <script>
+
+    function LA() {}
+    LA.token = "{{ csrf_token() }}";
 
     $.fn.editable.defaults.params = function (params) {
         params._token = '{{ csrf_token() }}';
@@ -69,48 +73,21 @@
         return params;
     };
 
-    $.noty.defaults.layout = 'topRight';
-    $.noty.defaults.theme = 'relax';
+    toastr.options = {
+        closeButton: true,
+        progressBar: true,
+        showMethod: 'slideDown',
+        timeOut: 4000
+    };
 
     $.pjax.defaults.timeout = 5000;
+    $.pjax.defaults.maxCacheLength = 0;
     $(document).pjax('a:not(a[target="_blank"])', {
         container: '#pjax-container'
     });
 
     $(document).on('submit', 'form[pjax-container]', function(event) {
         $.pjax.submit(event, '#pjax-container')
-    });
-
-    $(document).on('pjax:error', function(event, xhr) {
-
-        var message = '';
-
-        try{
-            response = JSON.parse(xhr.responseText);
-            message = response.message || 'error';
-        }catch(e){
-
-            if (xhr.status == 0) {
-                return;
-            }
-
-            noty({
-                text: "<strong>Warning!</strong><br/>"+xhr.statusText,
-                type:'warning',
-                timeout: 5000
-            });
-            return false;
-        }
-
-        if (message) {
-            noty({
-                text: "<strong>Warning!</strong><br/>"+message,
-                type:'warning',
-                timeout: 5000
-            });
-        }
-
-        return false;
     });
 
     $(document).on("pjax:popstate", function() {

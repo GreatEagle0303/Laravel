@@ -57,21 +57,11 @@ $grid = Admin::form(Movie::class, function(Form $grid){
     // Display two time column 
     $form->display('created_at', 'Created time');
     $form->display('updated_at', 'Updated time');
-    
-    // remove delete btn.
-    $form->disableDeletion();
 });
 
 // Displays the form content
 echo $form;
 
-```
-
-## Other methods
-
-### Ignore fields to store
-```php
-$form->ignore('column1', 'column2', 'column3');
 ```
 
 # Basic Usage
@@ -90,60 +80,23 @@ $form->text($column, [$label])->rules('required|min:10');
 $form->select($column[, $label])->options([1 => 'foo', 2 => 'bar', 'val' => 'Option name']);
 ```
 
-If have too many options, you can load option by ajax
-
+Or load option by ajax
 ```php
-$form->select('user_id')->options(function ($id) {
-    $user = User::find($id);
-
-    if ($user) {
-        return [$user->id => $user->name];
-    }
-})->ajax('/admin/api/users');
+$form->select($column[, $label])->options('/admin/demo/options');
 ```
 
-The controller method for url `/admin/api/users` is:
-
-```php
-public function users(Request $request)
-{
-    $q = $request->get('q');
-
-    return User::where('name', 'like', "%$q%")->paginate(null, ['id', 'name as text']);
-}
-
+The json format returned from url `/admin/demo/options`:
 ```
-
-The json returned from url `/admin/demo/options`:
-```
-{
-    "total": 4,
-    "per_page": 15,
-    "current_page": 1,
-    "last_page": 1,
-    "next_page_url": null,
-    "prev_page_url": null,
-    "from": 1,
-    "to": 3,
-    "data": [
-        {
-            "id": 9,
-            "text": "xxx"
-        },
-        {
-            "id": 21,
-            "text": "xxx"
-        },
-        {
-            "id": 42,
-            "text": "xxx"
-        },
-        {
-            "id": 48,
-            "text": "xxx"
-        }
-    ]
-}
+[
+    {
+        "id": 1,
+        "text": "hello"
+    },
+    {
+        "id": 2,
+        "text": "world"
+    },
+]
 ```
 
 #### Multiple select
@@ -151,83 +104,28 @@ The json returned from url `/admin/demo/options`:
 $form->multipleSelect($column[, $label])->options([1 => 'foo', 2 => 'bar', 'val' => 'Option name']);
 ```
 
-You can store value of multiple select in two ways, one is `many-to-many` relation.
-
+Or load option by ajax
+```php
+$form->multipleSelect($column[, $label])->options('/admin/demo/options');
 ```
 
-class Post extends Models
-{
-    public function tags()
+The json format returned from url `/admin/demo/options`:
+```
+[
     {
-        return $this->belongsToMany(Tag::class);
-    }
-}
-
-$form->multipleSelect('tags')->options(Tag::all()->pluck('name', 'id'));
-
-```
-
-The other is store values as string format separated by `,`.
-
-If have too many options, you can load option by ajax
-
-```php
-$form->select('user_id')->options(function ($id) {
-    $user = User::find($id);
-
-    if ($user) {
-        return [$user->id => $user->name];
-    }
-})->ajax('/admin/api/users');
-```
-
-The controller method for url `/admin/api/users` is:
-
-```php
-public function users(Request $request)
-{
-    $q = $request->get('q');
-
-    return User::where('name', 'like', "%$q%")->paginate(null, ['id', 'name as text']);
-}
-
-```
-
-The json returned from url `/admin/demo/options`:
-```
-{
-    "total": 4,
-    "per_page": 15,
-    "current_page": 1,
-    "last_page": 1,
-    "next_page_url": null,
-    "prev_page_url": null,
-    "from": 1,
-    "to": 3,
-    "data": [
-        {
-            "id": 9,
-            "text": "xxx"
-        },
-        {
-            "id": 21,
-            "text": "xxx"
-        },
-        {
-            "id": 42,
-            "text": "xxx"
-        },
-        {
-            "id": 48,
-            "text": "xxx"
-        }
-    ]
-}
+        "id": 1,
+        "text": "hello"
+    },
+    {
+        "id": 2,
+        "text": "world"
+    },
+]
 ```
 
 #### textarea:
 ```php
-$form->textarea($column[, $label])->rows(10);
+$form->textarea($column[, $label]);
 ```
 
 #### radio
@@ -236,10 +134,7 @@ $form->radio($column[, $label])->values(['m' => 'Female', 'f'=> 'Male'])->defaul
 ```
 
 #### checkbox
-
-`checkbox` can store values in two ways, see[multiple select](#Multiple select)
-
-The `options ()` method is used to set options:
+The `values ()` method is used to set options:
 ```php
 $form->checkbox($column[, $label])->values([1 => 'foo', 2 => 'bar', 'val' => 'Option name']);
 ```
@@ -286,7 +181,7 @@ $form->time($column[, $label])->format('HH:mm:ss');
 ```php
 $form->date($column[, $label]);
 
-// Date format setting，more format please see http://momentjs.com/docs/#/displaying/format/
+// 设置日期格式，更多格式参考http://momentjs.com/docs/#/displaying/format/
 $form->date($column[, $label])->format('YYYY-MM-DD');
 ```
 
@@ -336,9 +231,6 @@ $form->rate($column[, $label]);
 ```
 
 #### image upload
-
-Before use upload field, you must complete upload configuration, see [image/file upload](/docs/en/form-upload.md).
-
 You can use compression, crop, add watermarks and other methods, please refer to [[Intervention] (http://image.intervention.io/getting_started/introduction)], picture upload directory in the file `config / admin.php` `Upload.image` configuration, if the directory does not exist, you need to create the directory and open write permissions:
 ```php
 $form->image($column[, $label]);
@@ -351,15 +243,9 @@ $form->image($column[, $label])->crop(int $width, int $height, [int $x, int $y])
 
 // Add a watermark
 $form->image($column[, $label])->insert($watermark, 'center');
-
-// multiple image upload, the path of images will store in database with JSON format
-$form->image($column[, $label])->multiple();
 ```
 
 #### file upload
-
-Before use upload field, you must complete upload configuration, see [image/file upload](/docs/en/form-upload.md).
-
 The file upload directory is configured in `upload.file` in the file `config/admin.php`. If the directory does not exist, it needs to be created and write-enabled.
 ```php
 $form->file($column[, $label]);
@@ -369,15 +255,9 @@ $form->file($column[, $label])->move($dir, $name);
 
 // And set the upload file type
 $form->file($column[, $label])->rules('mimes:doc,docx,xlsx');
-
-// multiple file upload, the path of files will store in database with JSON format
-$form->file($column[, $label])->multiple();
 ```
 
 #### map
-
-The map field refers to the network resource, and if there is a problem with the network refer to [form Component Management](/docs/en/field-management.md) to remove the component.
-
 Used to select the latitude and longitude, `$ latitude`,` $ longitude` for the latitude and longitude field, using Tencent map when `locale` set of laravel is` zh_CN`, otherwise use Google Maps:
 ```php
 $form->map($latitude, $longitude, $label);
@@ -396,11 +276,13 @@ $form->slider($column[, $label])->options(['max' => 100, 'min' => 1, 'step' => 1
 ```
 
 #### rich text editor
-
-The editor field refers to the network resource, and if there is a problem with the network refer to [form Component Management](/docs/en/field-management.md) to remove the component.
-
 ```php
 $form->editor($column[, $label]);
+```
+
+#### json editor
+```php
+$form->json($column[, $label]);
 ```
 
 #### hidden field
@@ -423,12 +305,6 @@ $form->display($column[, $label]);
 #### divide
 ```php
 $form->divide();
-```
-
-#### Html
-insert html，the argument passed in could be objects which impletements `Htmlable`、`Renderable`, or has method `__toString()`
-```php
-$form->html('html contents');
 ```
 
 #### saving callback
