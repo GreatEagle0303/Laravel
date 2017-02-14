@@ -5,7 +5,6 @@ namespace Encore\Admin;
 use Closure;
 use Encore\Admin\Auth\Database\Menu;
 use Encore\Admin\Layout\Content;
-use Encore\Admin\Widgets\Navbar;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
@@ -16,11 +15,6 @@ use InvalidArgumentException;
  */
 class Admin
 {
-    /**
-     * @var Navbar
-     */
-    protected $navbar;
-
     /**
      * @var array
      */
@@ -53,7 +47,6 @@ class Admin
     {
         if (!static::$initialized) {
             Form::registerBuiltinFields();
-            Grid::registerColumnDisplayer();
 
             static::$initialized = true;
         }
@@ -105,9 +98,9 @@ class Admin
      *
      * @return Tree
      */
-    public function tree($model, Closure $callable = null)
+    public function tree($model)
     {
-        return new Tree($this->getModel($model), $callable);
+        return new Tree($this->getModel($model));
     }
 
     /**
@@ -115,7 +108,7 @@ class Admin
      *
      * @return Content
      */
-    public function content(Closure $callable = null)
+    public function content(Closure $callable)
     {
         static::init();
         static::bootstrap();
@@ -152,10 +145,7 @@ class Admin
     {
         $directory = config('admin.directory');
 
-        return ltrim(implode('\\',
-              array_map('ucfirst',
-                  explode(DIRECTORY_SEPARATOR, str_replace(app()->basePath(), '', $directory)))), '\\')
-              . '\\Controllers';
+        return 'App\\'.ucfirst(basename($directory)).'\\Controllers';
     }
 
     /**
@@ -243,7 +233,7 @@ class Admin
      */
     public function menu()
     {
-        return (new Menu())->toTree();
+        return Menu::toTree();
     }
 
     /**
@@ -257,37 +247,10 @@ class Admin
     }
 
     /**
-     * Get current login user.
-     *
      * @return mixed
      */
     public function user()
     {
         return Auth::guard('admin')->user();
-    }
-
-    /**
-     * Set navbar.
-     *
-     * @param Closure $builder
-     */
-    public function navbar(Closure $builder)
-    {
-        call_user_func($builder, $this->getNavbar());
-    }
-
-    /**
-     * Get navbar object.
-     *
-     * @return Navbar
-     */
-    public function getNavbar()
-    {
-        if (is_null($this->navbar)) {
-            $this->navbar = new Navbar();
-        }
-
-        return $this->navbar;
-
     }
 }

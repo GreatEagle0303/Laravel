@@ -2,10 +2,12 @@
 
 namespace Encore\Admin\Form\Field;
 
-use Illuminate\Contracts\Support\Arrayable;
+use Encore\Admin\Form\Field;
 
-class Checkbox extends MultipleSelect
+class Checkbox extends Field
 {
+    protected $values;
+
     protected static $css = [
         '/packages/admin/AdminLTE/plugins/iCheck/all.css',
     ];
@@ -14,31 +16,42 @@ class Checkbox extends MultipleSelect
         'packages/admin/AdminLTE/plugins/iCheck/icheck.min.js',
     ];
 
-    /**
-     * Set options.
-     *
-     * @param array|callable|string $options
-     *
-     * @return $this|mixed
-     */
-    public function options($options = [])
+    public function fill($data)
     {
-        if ($options instanceof Arrayable) {
-            $options = $options->toArray();
-        }
+        $relations = array_get($data, $this->column);
 
-        $this->options = (array) $options;
+        foreach ($relations as $relation) {
+            $this->value[] = array_pop($relation['pivot']);
+        }
+    }
+
+    public function setOriginal($data)
+    {
+        $relations = array_get($data, $this->column);
+
+        foreach ($relations as $relation) {
+            $this->original[] = array_pop($relation['pivot']);
+        }
+    }
+
+    public function render()
+    {
+        $this->options['checkboxClass'] = 'icheckbox_minimal-blue';
+
+        $this->script = "$('.{$this->column}').iCheck(".json_encode($this->options).');';
+
+        return parent::render()->with(['values' => $this->values]);
+    }
+
+    public function values($values)
+    {
+        $this->values = $values;
 
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function render()
+    public function prepare($value)
     {
-        $this->script = "$('.{$this->getElementClass()}').iCheck({checkboxClass:'icheckbox_minimal-blue'});";
-
-        return parent::render();
+        return array_filter($value);
     }
 }

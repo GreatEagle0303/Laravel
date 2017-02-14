@@ -2,24 +2,14 @@
 
 namespace Encore\Admin\Form\Field;
 
-class Currency extends Text
+use Encore\Admin\Form\Field;
+
+class Currency extends Field
 {
     protected $symbol = '$';
 
     protected static $js = [
         '/packages/admin/AdminLTE/plugins/input-mask/jquery.inputmask.bundle.min.js',
-    ];
-
-    /**
-     * @see https://github.com/RobinHerbots/Inputmask#options
-     *
-     * @var array
-     */
-    protected $options = [
-        'alias'                 => 'currency',
-        'radixPoint'            => '.',
-        'prefix'                => '',
-        'removeMaskOnSubmit'    => true,
     ];
 
     public function symbol($symbol)
@@ -31,22 +21,17 @@ class Currency extends Text
 
     public function prepare($value)
     {
-        return (float) $value;
+        return (float) str_replace(',', '', $value);
     }
 
     public function render()
     {
-        $options = json_encode($this->options);
-
         $this->script = <<<EOT
 
-$('.{$this->getElementClass()}').inputmask($options);
+$('#{$this->id}').inputmask("currency", {radixPoint: '.', prefix:''})
 
 EOT;
 
-        $this->prepend($this->symbol)
-            ->defaultAttribute('style', 'width: 120px');
-
-        return parent::render();
+        return parent::render()->with(['symbol' => $this->symbol]);
     }
 }

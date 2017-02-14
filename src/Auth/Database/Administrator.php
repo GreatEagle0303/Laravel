@@ -2,7 +2,6 @@
 
 namespace Encore\Admin\Auth\Database;
 
-use Encore\Admin\Traits\AdminBuilder;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Database\Eloquent\Model;
@@ -14,9 +13,9 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Administrator extends Model implements AuthenticatableContract
 {
-    use Authenticatable, AdminBuilder;
+    use Authenticatable;
 
-    protected $fillable = ['username', 'password', 'name', 'avatar'];
+    protected $fillable = ['username', 'password', 'name'];
 
     /**
      * Create a new Eloquent model instance.
@@ -32,22 +31,6 @@ class Administrator extends Model implements AuthenticatableContract
         $this->setTable(config('admin.database.users_table'));
 
         parent::__construct($attributes);
-    }
-
-    /**
-     * Get avatar attribute.
-     *
-     * @param string $avatar
-     *
-     * @return string
-     */
-    public function getAvatarAttribute($avatar)
-    {
-        if ($avatar) {
-            return rtrim(config('admin.upload.host'), '/').'/'.trim($avatar, '/');
-        }
-
-        return asset('/packages/admin/AdminLTE/dist/img/user2-160x160.jpg');
     }
 
     /**
