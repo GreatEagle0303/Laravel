@@ -6,6 +6,7 @@ use Encore\Admin\Form\Field;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\MessageBag;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -96,7 +97,7 @@ class File extends Field
      */
     protected function initStorage()
     {
-        $this->storage = Storage::disk(config('admin.upload.disk'));
+        $this->disk(config('admin.upload.disk'));
     }
 
     /**
@@ -152,6 +153,29 @@ class File extends Field
     }
 
     /**
+     * Set disk for storage.
+     *
+     * @param string $disk Disks defined in `config/filesystems.php`.
+     *
+     * @return $this
+     */
+    public function disk($disk)
+    {
+        if (!array_key_exists($disk, config('filesystems.disks'))) {
+            $error = new MessageBag([
+                'title'   => 'Config error.',
+                'message' => "Disk [$disk] not configured, please add a disk config in `config/filesystems.php`.",
+            ]);
+
+            return session()->flash('error', $error);
+        }
+
+        $this->storage = Storage::disk($disk);
+
+        return $this;
+    }
+
+    /**
      * Specify the directory and name for uplaod file.
      *
      * @param string      $directory
@@ -171,26 +195,22 @@ class File extends Field
     /**
      * {@inheritdoc}
      */
-    public function validate(array $input)
+    public function getValidator(array $input)
     {
+        $rules = $attributes = [];
+
         if (!$fieldRules = $this->getRules()) {
             return false;
         }
 
-        if (!array_has($input, $this->column)) {
-            return false;
-        }
-
-        $value = array_get($input, $this->column);
+        $rules[$this->column] = $fieldRules;
+        $attributes[$this->column] = $this->label;
 
         if ($this->multiple) {
-            list($rules, $data) = $this->hydrateFiles($value);
-        } else {
-            $data = [$this->column => $value];
-            $rules = [$this->column => $this->getRules()];
+            list($rules, $input) = $this->hydrateFiles(array_get($input, $this->column, []));
         }
 
-        return Validator::make($data, $rules);
+        return Validator::make($input, $rules, [], $attributes);
     }
 
     /**
@@ -202,14 +222,14 @@ class File extends Field
      */
     protected function hydrateFiles(array $value)
     {
-        $data = $rules = [];
+        $rules = $input = [];
 
         foreach ($value as $key => $file) {
             $rules[$this->column.$key] = $this->getRules();
-            $data[$this->column.$key] = $file;
+            $input[$this->column.$key] = $file;
         }
 
-        return [$rules, $data];
+        return [$rules, $input];
     }
 
     /**
@@ -247,8 +267,8 @@ class File extends Field
      */
     public function prepare($files)
     {
-        if (is_null($files)) {
-            if ($this->isDeleteRequest()) {
+        if (!$files instanceof UploadedFile && !is_array($files)) {
+            if ($this->handleDeleteRequest()) {
                 return '';
             }
 
@@ -307,6 +327,20 @@ class File extends Field
     }
 
     /**
+     * Get directory for store file.
+     *
+     * @return mixed|string
+     */
+    public function getDirectory()
+    {
+        if ($this->directory instanceof \Closure) {
+            return call_user_func($this->directory, $this->form);
+        }
+
+        return $this->directory;
+    }
+
+    /**
      * Upload file and delete original file.
      *
      * @param UploadedFile $file
@@ -317,7 +351,7 @@ class File extends Field
     {
         $this->renameIfExists($file);
 
-        $target = $this->directory.'/'.$this->name;
+        $target = $this->getDirectory().'/'.$this->name;
 
         $this->storage->put($target, file_get_contents($file->getRealPath()));
 
@@ -333,7 +367,11 @@ class File extends Field
      */
     protected function preview()
     {
-        $files = json_decode($this->value, true);
+        $files = $this->value;
+
+        if (is_string($this->value)) {
+            $files = json_decode($this->value, true);
+        }
 
         if (!is_array($files)) {
             $files = [$this->value];
@@ -393,7 +431,9 @@ EOT;
         }
 
         if ($this->multiple) {
-            $caption = json_decode($caption, true);
+            if (is_string($caption)) {
+                $caption = json_decode($caption, true);
+            }
         } else {
             $caption = [$caption];
         }
@@ -411,6 +451,8 @@ EOT;
     public function render()
     {
         $this->options['initialCaption'] = $this->initialCaption($this->value);
+        $this->options['removeLabel'] = trans('admin::lang.remove');
+        $this->options['browseLabel'] = trans('admin::lang.browse');
 
         if (!empty($this->value)) {
             $this->options['initialPreview'] = $this->preview();
@@ -418,17 +460,29 @@ EOT;
 
         $options = json_encode($this->options);
 
+        $class = $this->getElementClass();
+
         $this->script = <<<EOT
 
-$("#{$this->id}").fileinput({$options});
+$("input.{$class}").fileinput({$options});
 
-$("#{$this->id}").on('filecleared', function(event) {
-    $("#{$this->id}_action").val(1);
+$("input.{$class}").on('filecleared', function(event) {
+    $(".{$class}_action").val(1);
 });
 
 EOT;
 
-        return parent::render()->with(['multiple' => $this->multiple]);
+        return parent::render()->with(['multiple' => $this->multiple, 'actionName' => $this->getActionName()]);
+    }
+
+    /**
+     * Get action element name.
+     *
+     * @return array|mixed|string
+     */
+    protected function getActionName()
+    {
+        return $this->formatName($this->column.'_action');
     }
 
     /**
@@ -436,9 +490,9 @@ EOT;
      *
      * @return bool
      */
-    public function isDeleteRequest()
+    public function handleDeleteRequest()
     {
-        $action = Input::get($this->id.'_action');
+        $action = Input::get($this->column.'_action');
 
         if ($action == static::ACTION_REMOVE) {
             $this->destroy();
@@ -470,7 +524,7 @@ EOT;
      */
     public function renameIfExists(UploadedFile $file)
     {
-        if ($this->storage->exists("$this->directory/$this->name")) {
+        if ($this->storage->exists("{$this->getDirectory()}/$this->name")) {
             $this->name = $this->generateUniqueName($file);
         }
     }
@@ -482,7 +536,11 @@ EOT;
      */
     public function destroy()
     {
-        $files = json_decode($this->original, true);
+        $files = $this->original;
+
+        if (is_string($this->original)) {
+            $files = json_decode($this->original, true);
+        }
 
         if (!is_array($files)) {
             $files = [$this->original];
