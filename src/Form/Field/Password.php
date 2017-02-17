@@ -2,13 +2,8 @@
 
 namespace Encore\Admin\Form\Field;
 
-class Password extends Text
-{
-    public function render()
-    {
-        $this->prepend('<i class="fa fa-eye-slash"></i>')
-            ->defaultAttribute('type', 'password');
+use Encore\Admin\Form\Field;
 
-        return parent::render();
-    }
+class Password extends Field
+{
 }
