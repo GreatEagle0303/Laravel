@@ -34,8 +34,8 @@ $grid = Admin::grid(Movie::class, function(Grid $grid){
     // 第二列显示title字段，由于title字段名和Grid对象的title方法冲突，所以用Grid的column()方法代替
     $grid->column('title');
     
-    // 第三列显示director字段，通过value($callback)方法设置这一列的显示内容为users表中对应的用户名
-    $grid->director()->value(function($userId) {
+    // 第三列显示director字段，通过display($callback)方法设置这一列的显示内容为users表中对应的用户名
+    $grid->director()->display(function($userId) {
         return User::find($userId)->name;
     });
     
@@ -45,8 +45,8 @@ $grid = Admin::grid(Movie::class, function(Grid $grid){
     // 第五列显示为rate字段
     $grid->rate();
 
-    // 第六列显示released字段，通过value($callback)方法来格式化显示输出
-    $grid->released('上映?')->value(function ($released) {
+    // 第六列显示released字段，通过display($callback)方法来格式化显示输出
+    $grid->released('上映?')->display(function ($released) {
         return $released ? '是' : '否';
     });
 
@@ -63,17 +63,9 @@ $grid = Admin::grid(Movie::class, function(Grid $grid){
     });
 });
 
-// 显示表格内容
-echo $grid;
-
 ```
 
-## Basic Usage
-
-#### 设置表格title
-```php
-$grid->title('电影列表');
-```
+## 基本使用方法
 
 #### 添加列
 ```php
@@ -107,19 +99,36 @@ $grid->paginate(15);
 
 #### 修改显示输出
 
+
 ```php
-$grid->text()->value(function($text) {
+$grid->text()->display(function($text) {
     return str_limit($text, 30, '...');
 });
 
-$grid->name()->value(function ($name) {
+$grid->name()->display(function ($name) {
     return "<span class='label'>$name</span>";
 });
 
-$grid->email()->value(function ($email) {
+$grid->email()->display(function ($email) {
     return "mailto:$email";
 });
 
+// 添加不存在的字段
+$grid->column('column_not_in_table')->display(function () {
+    return 'blablabla....';
+});
+```
+
+`display()`方法接收的匿名函数绑定了当前行的数据对象，可以在里面调用当前行的其它字段数据
+
+```php
+$grid->first_name();
+$grid->last_name();
+
+// 不存的字段列
+$grid->column('full_name')->display(function () {
+    return $this->first_name.' '.$this->last_name;
+});
 ```
 
 #### 禁用创建按钮
@@ -127,56 +136,24 @@ $grid->email()->value(function ($email) {
 $grid->disableCreation();
 ```
 
+#### 禁用分页条
+```php
+$grid->disablePagination();
+```
+
+#### 禁用查询过滤器
+```php
+$grid->disableFilter();
+```
+
 #### 禁用导出数据按钮
 ```php
 $grid->disableExport();
 ```
 
-#### 禁用批量删除按钮
+#### 设置分页选择器选项
 ```php
-$grid->disableBatchDeletion();
-```
-#### 修改行操作按钮
-```php
-//开启编辑和删除操作
-$grid->actions('edit|delete');
-
-//关闭所有操作
-$grid->disableActions();
-```
-
-#### 控制列
-```php
-$grid->rows(function($row){
-
-    //id小于10的行添加style
-    if($row->id < 10) {
-        $row->style('color:red');
-    }
-
-    //指定列只开启编辑操作
-    if($row->id % 3) {
-        $row->actions('edit');
-    }
-   
-    //指定列添加自定义操作按钮
-    if($row->id % 2) {
-        $row->actions()->add(function ($row) {
-            return "<a class=\"btn btn-xs btn-danger\">btn</a>";
-        });
-    }
-});
-```
-#### 添加自定义操作按钮
-```php
-$grid->actions(function(Actions $action){
-
-        //在操作按钮组前添加
-        $action->prepend("<a  href='".route('exampleImageSave',['id'=>$action->getkey()])."' ><i class='fa fa-image'></i></a>");
-        
-        //在操作按钮组后添加
-        $action->append("<a  href='".route('exampleImageSave',['id'=>$action->getkey()])."' ><i class='fa fa-image'></i></a>");
-});
+$grid->perPages([10, 20, 30, 40, 50]);
 ```
 
 #### 添加查询过滤器
@@ -185,6 +162,9 @@ $grid->filter(function($filter){
 
     // 如果过滤器太多，可以使用弹出模态框来显示过滤器.
     $filter->useModal();
+    
+    // 禁用id查询框
+    $filter->disableIdFilter();
 
     // sql: ... WHERE `user.name` LIKE "%$name%";
     $filter->like('name', 'name');
@@ -212,6 +192,18 @@ $grid->filter(function($filter){
         $query->whereRaw("`rate` >= 6 AND `created_at` = {$this->input}");
 
     }, 'Text');
+    
+    // 关系查询，查询对应关系`profile`的字段
+    $filter->where(function ($query) {
+
+        $input = $this->input;
+
+        $query->whereHas('profile', function ($query) use ($input) {
+            $query->where('address', 'like', "%{$input}%")->orWhere('email', 'like', "%{$input}%");
+        });
+
+    }, '地址或手机号');
+    
 });
 ```
 
@@ -257,7 +249,10 @@ class User extends Model
 
 class Profile extends Model
 {
-    $this->hasOne(User::class);
+    public function user()
+    {
+        $this->belongsTo(User::class);
+    }
 }
 
 ```
@@ -341,7 +336,7 @@ return Admin::grid(Post::class, function (Grid $grid) {
     $grid->title();
     $grid->content();
 
-    $grid->comments('评论数')->value(function ($comments) {
+    $grid->comments('评论数')->display(function ($comments) {
         $count = count($comments);
         return "<span class='label label-warning'>{$count}</span>";
     });
@@ -429,7 +424,7 @@ return Admin::grid(User::class, function (Grid $grid) {
     $grid->username();
     $grid->name();
 
-    $grid->roles()->value(function ($roles) {
+    $grid->roles()->display(function ($roles) {
 
         $roles = array_map(function ($role) {
             return "<span class='label label-success'>{$role['name']}</span>";
