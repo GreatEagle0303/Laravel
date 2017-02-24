@@ -26,11 +26,25 @@ class Row
     protected $attributes = [];
 
     /**
+     * Actions of row.
+     *
+     * @var
+     */
+    protected $actions;
+
+    /**
      * The primary key name.
      *
      * @var string
      */
     protected $keyName = 'id';
+
+    /**
+     * Action path.
+     *
+     * @var
+     */
+    protected $path;
 
     /**
      * Constructor.
@@ -53,6 +67,26 @@ class Row
     public function setKeyName($keyName)
     {
         $this->keyName = $keyName;
+    }
+
+    /**
+     * Set action path.
+     *
+     * @param $path
+     */
+    public function setPath($path)
+    {
+        $this->path = $path;
+    }
+
+    /**
+     * Get action path.
+     *
+     * @return mixed
+     */
+    public function getPath()
+    {
+        return $this->path;
     }
 
     /**
@@ -111,6 +145,26 @@ class Row
     }
 
     /**
+     * Set or Get actions.
+     *
+     * @param string $actions
+     *
+     * @return Action
+     */
+    public function actions($actions = 'edit|delete')
+    {
+        if (!is_null($this->actions)) {
+            return $this->actions;
+        }
+
+        $this->actions = new Action($actions);
+
+        $this->actions->setRow($this);
+
+        return $this->actions;
+    }
+
+    /**
      * Get data of this row.
      *
      * @return mixed
@@ -145,7 +199,7 @@ class Row
         if (is_null($value)) {
             $column = array_get($this->data, $name);
 
-            return $this->dump($column);
+            return is_string($column) ? $column : var_export($column, true);
         }
 
         if (is_callable($value)) {
@@ -156,21 +210,5 @@ class Row
         array_set($this->data, $name, $value);
 
         return $this;
-    }
-
-    /**
-     * Dump output column vars.
-     *
-     * @param mixed $var
-     *
-     * @return mixed|string
-     */
-    protected function dump($var)
-    {
-        if (!is_scalar($var)) {
-            return '<pre>'.var_export($var, true).'</pre>';
-        }
-
-        return $var;
     }
 }
