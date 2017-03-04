@@ -156,13 +156,10 @@ class Builder
     /**
      * @return string
      */
-    public function getResource($slice = null)
+    public function getResource()
     {
         if ($this->mode == self::MODE_CREATE) {
             return $this->form->resource(-1);
-        }
-        if ($slice !== null) {
-            return $this->form->resource($slice);
         }
 
         return $this->form->resource();
@@ -485,7 +482,7 @@ if ($('.has-error').length) {
         var tabId = '#'+$(this).closest('.tab-pane').attr('id');
         $('li a[href="'+tabId+'"] i').removeClass('hide');
     });
-
+    
     var first = $('.has-error:first').closest('.tab-pane').attr('id');
     $('li a[href="#'+first+'"]').tab('show');
 }

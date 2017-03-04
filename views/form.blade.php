@@ -33,9 +33,7 @@
         </div>
         <!-- /.box-body -->
         <div class="box-footer">
-            @if( ! $form->isMode(\Encore\Admin\Form\Builder::MODE_VIEW  || ! $form->options()['enableSubmit']))
-                <input type="hidden" name="_token" value="{{ csrf_token() }}">
-            @endif
+            <input type="hidden" name="_token" value="{{ csrf_token() }}">
             <div class="col-sm-{{$width['label']}}">
 
             </div>

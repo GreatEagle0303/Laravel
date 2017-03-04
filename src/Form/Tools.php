@@ -7,7 +7,6 @@ use Encore\Admin\Form;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Str;
 
 class Tools implements Renderable
 {
@@ -68,8 +67,7 @@ EOT;
 
     public function listButton()
     {
-        $slice = Str::contains($this->form->getResource(0), "/edit") ? null : -1;
-        $resource = $this->form->getResource($slice);
+        $resource = $this->form->getResource();
 
         $text = trans('admin::lang.list');
 
@@ -107,7 +105,7 @@ EOT;
     }
 
     /**
-     * Disable list button.
+     * Disable batch actions.
      *
      * @return $this
      */
