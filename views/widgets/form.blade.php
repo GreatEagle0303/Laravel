@@ -1,5 +1,5 @@
-<form {!! $attributes !!}>
-    <div class="box-body fields-group">
+<form {!! $attributes !!} pjax-container>
+    <div class="box-body">
 
         @foreach($fields as $field)
             {!! $field->render() !!}

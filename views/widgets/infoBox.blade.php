@@ -1,4 +1,4 @@
-<div {!! $attributes !!}>
+<div class="small-box bg-{{ $color }}">
     <div class="inner">
         <h3>{{ $info }}</h3>
 

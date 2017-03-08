@@ -2,15 +2,9 @@
 
 namespace Encore\Admin\Form\Field;
 
-class Url extends Text
+use Encore\Admin\Form\Field;
+
+class Url extends Field
 {
     protected $rules = 'url';
-
-    public function render()
-    {
-        $this->prepend('<i class="fa fa-internet-explorer"></i>')
-            ->defaultAttribute('type', 'url');
-
-        return parent::render();
-    }
 }

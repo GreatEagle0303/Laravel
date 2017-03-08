@@ -2,7 +2,6 @@
 
 namespace Encore\Admin\Grid\Filter;
 
-use Encore\Admin\Grid\Filter;
 use Encore\Admin\Grid\Filter\Field\DateTime;
 use Encore\Admin\Grid\Filter\Field\Select;
 use Encore\Admin\Grid\Filter\Field\Text;
@@ -29,7 +28,7 @@ abstract class AbstractFilter
     protected $value;
 
     /**
-     * @var string
+     * @var
      */
     protected $column;
 
@@ -46,11 +45,6 @@ abstract class AbstractFilter
      * @var string
      */
     protected $query = 'where';
-
-    /**
-     * @var Filter
-     */
-    protected $parent;
 
     /**
      * AbstractFilter constructor.
@@ -75,7 +69,6 @@ abstract class AbstractFilter
     public function setupField()
     {
         $this->field = new Text();
-        $this->field->setPlaceholder($this->label);
     }
 
     /**
@@ -128,58 +121,6 @@ abstract class AbstractFilter
     }
 
     /**
-     * @param Filter $filter
-     */
-    public function setParent(Filter $filter)
-    {
-        $this->parent = $filter;
-    }
-
-    /**
-     * Get siblings of current filter.
-     *
-     * @param null $index
-     *
-     * @return AbstractFilter[]|mixed
-     */
-    public function siblings($index = null)
-    {
-        if (!is_null($index)) {
-            return array_get($this->parent->filters(), $index);
-        }
-
-        return $this->parent->filters();
-    }
-
-    /**
-     * Get previous filter.
-     *
-     * @param int $step
-     *
-     * @return AbstractFilter[]|mixed
-     */
-    public function previous($step = 1)
-    {
-        return $this->siblings(
-            array_search($this, $this->parent->filters()) - $step
-        );
-    }
-
-    /**
-     * Get next filter.
-     *
-     * @param int $step
-     *
-     * @return AbstractFilter[]|mixed
-     */
-    public function next($step = 1)
-    {
-        return $this->siblings(
-            array_search($this, $this->parent->filters()) + $step
-        );
-    }
-
-    /**
      * Get query condition from filter.
      *
      * @param array $inputs
@@ -203,26 +144,18 @@ abstract class AbstractFilter
      * Select filter.
      *
      * @param array $options
-     *
-     * @return $this
      */
     public function select($options = [])
     {
-        $select = new Select($options);
-
-        $select->setParent($this);
-
-        return $this->setField($select);
+        $this->setField(new Select($options));
     }
 
     /**
      * Datetime filter.
-     *
-     * @param array $options
      */
-    public function datetime($options = [])
+    public function datetime()
     {
-        $this->setField(new DateTime($this, $options));
+        $this->setField(new DateTime($this));
     }
 
     /**
@@ -232,7 +165,7 @@ abstract class AbstractFilter
      */
     protected function setField($field)
     {
-        return $this->field = $field;
+        $this->field = $field;
     }
 
     /**
@@ -253,26 +186,6 @@ abstract class AbstractFilter
     public function getId()
     {
         return $this->id;
-    }
-
-    /**
-     * Get column name of current filter.
-     *
-     * @return string
-     */
-    public function getColumn()
-    {
-        return $this->column;
-    }
-
-    /**
-     * Get value of current filter.
-     *
-     * @return array|string
-     */
-    public function getValue()
-    {
-        return $this->value;
     }
 
     /**
@@ -356,22 +269,5 @@ abstract class AbstractFilter
     public function __toString()
     {
         return $this->render();
-    }
-
-    /**
-     * @param $method
-     * @param $params
-     *
-     * @throws \Exception
-     *
-     * @return mixed
-     */
-    public function __call($method, $params)
-    {
-        if (method_exists($this->field, $method)) {
-            return call_user_func_array([$this->field, $method], $params);
-        }
-
-        throw new \Exception('Method "'.$method.'" not exists.');
     }
 }
