@@ -72,11 +72,7 @@ class PermissionController extends Controller
             $grid->created_at(trans('admin::lang.created_at'));
             $grid->updated_at(trans('admin::lang.updated_at'));
 
-            $grid->tools(function (Grid\Tools $tools) {
-                $tools->batch(function (Grid\Tools\BatchActions $actions) {
-                    $actions->disableDelete();
-                });
-            });
+            $grid->disableBatchDeletion();
         });
     }
 

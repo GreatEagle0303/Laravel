@@ -33,8 +33,6 @@ class Permission extends Model
     {
         $pivotTable = config('admin.database.role_permissions_table');
 
-        $relatedModel = config('admin.database.roles_model');
-
-        return $this->belongsToMany($relatedModel, $pivotTable, 'permission_id', 'role_id');
+        return $this->belongsToMany(Role::class, $pivotTable, 'permission_id', 'role_id');
     }
 }
