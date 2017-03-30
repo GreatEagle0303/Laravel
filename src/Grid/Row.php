@@ -12,11 +12,11 @@ class Row
     protected $number;
 
     /**
-     * Row data.
+     * Row model.
      *
-     * @var
+     * @var \Illuminate\Database\Eloquent\Model
      */
-    protected $data;
+    protected $model;
 
     /**
      * Attributes of row.
@@ -26,13 +26,6 @@ class Row
     protected $attributes = [];
 
     /**
-     * Actions of row.
-     *
-     * @var
-     */
-    protected $actions;
-
-    /**
      * The primary key name.
      *
      * @var string
@@ -40,23 +33,16 @@ class Row
     protected $keyName = 'id';
 
     /**
-     * Action path.
-     *
-     * @var
-     */
-    protected $path;
-
-    /**
      * Constructor.
      *
      * @param $number
-     * @param $data
+     * @param $model
      */
-    public function __construct($number, $data)
+    public function __construct($number, $model)
     {
         $this->number = $number;
 
-        $this->data = $data;
+        $this->model = $model;
     }
 
     /**
@@ -67,26 +53,6 @@ class Row
     public function setKeyName($keyName)
     {
         $this->keyName = $keyName;
-    }
-
-    /**
-     * Set action path.
-     *
-     * @param $path
-     */
-    public function setPath($path)
-    {
-        $this->path = $path;
-    }
-
-    /**
-     * Get action path.
-     *
-     * @return mixed
-     */
-    public function getPath()
-    {
-        return $this->path;
     }
 
     /**
@@ -145,33 +111,13 @@ class Row
     }
 
     /**
-     * Set or Get actions.
-     *
-     * @param string $actions
-     *
-     * @return Action
-     */
-    public function actions($actions = 'edit|delete')
-    {
-        if (!is_null($this->actions)) {
-            return $this->actions;
-        }
-
-        $this->actions = new Action($actions);
-
-        $this->actions->setRow($this);
-
-        return $this->actions;
-    }
-
-    /**
-     * Get data of this row.
+     * Get model of this row.
      *
      * @return mixed
      */
     public function cells()
     {
-        return $this->data;
+        return $this->model;
     }
 
     /**
@@ -183,7 +129,7 @@ class Row
      */
     public function __get($attr)
     {
-        return array_get($this->data, $attr);
+        return array_get($this->model, $attr);
     }
 
     /**
@@ -197,9 +143,9 @@ class Row
     public function column($name, $value = null)
     {
         if (is_null($value)) {
-            $column = array_get($this->data, $name);
+            $column = $this->model->getAttribute($name);
 
-            return is_string($column) ? $column : var_export($column, true);
+            return $this->dump($column);
         }
 
         if (is_callable($value)) {
@@ -207,8 +153,28 @@ class Row
             $value = $value($this->column($name));
         }
 
-        array_set($this->data, $name, $value);
+        $this->model->{$name} = $value;
 
         return $this;
+    }
+
+    /**
+     * Dump output column vars.
+     *
+     * @param mixed $var
+     *
+     * @return mixed|string
+     */
+    protected function dump($var)
+    {
+        if (method_exists($var, '__toString')) {
+            return $var->__toString();
+        }
+
+        if (!is_scalar($var)) {
+            return '<pre>'.var_export($var, true).'</pre>';
+        }
+
+        return $var;
     }
 }
