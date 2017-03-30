@@ -577,8 +577,12 @@ class Grid
      */
     protected function buildRows(array $data)
     {
-        $this->rows = collect($data)->map(function ($model, $number) {
-            return new Row($number, $model);
+        $this->rows = collect($data)->map(function ($val, $key) {
+            $row = new Row($key, $val);
+
+            $row->setKeyName($this->keyName);
+
+            return $row;
         });
 
         if ($this->rowsCallback) {
