@@ -100,9 +100,9 @@ class Column
     public static $defined = [];
 
     /**
-     * @var Model
+     * @var array
      */
-    protected static $model;
+    protected static $htmlAttributes = [];
 
     /**
      * @param string $name
@@ -145,20 +145,6 @@ class Column
     public function setGrid(Grid $grid)
     {
         $this->grid = $grid;
-
-        $this->setModel($grid->model()->eloquent());
-    }
-
-    /**
-     * Set model for column.
-     *
-     * @param $model
-     */
-    public function setModel($model)
-    {
-        if (is_null(static::$model) && ($model instanceof Model)) {
-            static::$model = $model->newInstance();
-        }
     }
 
     /**
@@ -169,6 +155,41 @@ class Column
     public static function setOriginalGridData(array $input)
     {
         static::$originalGridData = $input;
+    }
+
+    /**
+     * Set column attributes.
+     *
+     * @param array $attributes
+     * @return $this
+     */
+    public function setAttributes($attributes  = [])
+    {
+        static::$htmlAttributes[$this->name] = $attributes;
+
+        return $this;
+    }
+
+    /**
+     * Get column attributes.
+     *
+     * @param string $name
+     * @return mixed
+     */
+    public static function getAttributes($name)
+    {
+        return array_get(static::$htmlAttributes, $name, '');
+    }
+
+    /**
+     * Set style of this column.
+     *
+     * @param string $style
+     * @return Column
+     */
+    public function style($style)
+    {
+        return $this->setAttributes(compact('style'));
     }
 
     /**
@@ -311,7 +332,7 @@ class Column
     {
         $originalRow = static::$originalGridData[$key];
 
-        return $callback->bindTo(static::$model->newFromBuilder($originalRow));
+        return $callback->bindTo($originalRow);
     }
 
     /**
@@ -326,9 +347,11 @@ class Column
         foreach ($data as $key => &$row) {
             $this->original = $value = array_get($row, $this->name);
 
-            $value = $this->htmlEntityEncode($value);
+            if (!($value instanceof Model)) {
+                $value = $this->htmlEntityEncode($value);
+            }
 
-            array_set($row, $this->name, $value);
+            $row->{$this->name} = $value;
 
             if ($this->isDefinedColumn()) {
                 $this->useDefinedColumn();
@@ -336,7 +359,7 @@ class Column
 
             if ($this->hasDisplayCallbacks()) {
                 $value = $this->callDisplayCallbacks($this->original, $key);
-                array_set($row, $this->name, $value);
+                $row->{$this->name} = $value;
             }
         }
 
