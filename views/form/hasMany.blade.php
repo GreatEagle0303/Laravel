@@ -1,56 +1,31 @@
+<div class="form-group" style="margin:10px 0px 30px 0px">
 
-<div class="row">
-    <div class="col-md-{{$width['label']}}"><h4 class="pull-right">{{ $label }}</h4></div>
-    <div class="col-md-{{$width['field']}}"></div>
-</div>
+    <label for="{{$id}}" class="col-sm-2 control-label">{{$label}}</label>
 
-<hr style="margin-top: 0px;">
-
-<div id="has-many-{{$column}}" class="has-many-{{$column}}">
-
-    <div class="has-many-{{$column}}-forms">
-
-        @foreach($forms as $pk => $form)
-
-            <div class="has-many-{{$column}}-form fields-group">
-
-                @foreach($form->fields() as $field)
-                    {!! $field->render() !!}
+    <div class="col-sm-6">
+        <table class="table table-hover">
+            <tr>
+                @foreach($grid->columns() as $column)
+                    <th>{{$column->getLabel()}}{!!$column->sorter()!!}</th>
                 @endforeach
+                <th>{{ trans('admin::lang.action') }}</th>
+            </tr>
 
-                <div class="form-group">
-                    <label class="col-sm-{{$width['label']}} control-label"></label>
-                    <div class="col-sm-{{$width['field']}}">
-                        <div class="remove btn btn-warning btn-sm pull-right"><i class="fa fa-trash">&nbsp;</i>{{ trans('admin::lang.remove') }}</div>
-                    </div>
-                </div>
+            @foreach($grid->rows() as $row)
+                <tr {!! $row->getHtmlAttributes() !!}>
+                    @foreach($grid->columnNames as $name)
+                        <td>{!! $row->column($name) !!}</td>
+                    @endforeach
+                    <td>
+                        {!! $row->actions() !!}
+                    </td>
+                </tr>
+            @endforeach
+        </table>
 
-                <hr>
-            </div>
-
-        @endforeach
-    </div>
-
-    <template class="{{$column}}-tpl">
-        <div class="has-many-{{$column}}-form fields-group">
-
-            {!! $template !!}
-
-            <div class="form-group">
-                <label class="col-sm-{{$width['label']}} control-label"></label>
-                <div class="col-sm-{{$width['field']}}">
-                    <div class="remove btn btn-warning btn-sm pull-right"><i class="fa fa-trash"></i>&nbsp;{{ trans('admin::lang.remove') }}</div>
-                </div>
-            </div>
-            <hr>
-        </div>
-    </template>
-
-    <div class="form-group">
-        <label class="col-sm-{{$width['label']}} control-label"></label>
-        <div class="col-sm-{{$width['field']}}">
-            <div class="add btn btn-success btn-sm"><i class="fa fa-save"></i>&nbsp;{{ trans('admin::lang.new') }}</div>
+        <div class="btn-group pull-left" style="margin-right: 10px">
+            <a href="/{{$grid->resource()}}" class="btn btn-sm btn-primary">{{ trans('admin::lang.list') }}</a>
+            <a href="/{{$grid->resource()}}/create" class="btn btn-sm btn-success">{{ trans('admin::lang.new') }}</a>
         </div>
     </div>
-
 </div>

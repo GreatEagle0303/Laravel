@@ -7,11 +7,6 @@ use Illuminate\Contracts\Support\Renderable;
 class Carousel extends Widget implements Renderable
 {
     /**
-     * @var string
-     */
-    protected $view = 'admin::widgets.carousel';
-
-    /**
      * @var array
      */
     protected $items;
@@ -29,10 +24,6 @@ class Carousel extends Widget implements Renderable
     public function __construct($items = [])
     {
         $this->items = $items;
-
-        $this->id('carousel-'.uniqid());
-        $this->class('carousel slide');
-        $this->offsetSet('data-ride', 'carousel');
     }
 
     /**
@@ -53,11 +44,10 @@ class Carousel extends Widget implements Renderable
     public function render()
     {
         $variables = [
-            'items'         => $this->items,
-            'title'         => $this->title,
-            'attributes'    => $this->formatAttributes(),
+            'items' => $this->items,
+            'title' => $this->title,
         ];
 
-        return view($this->view, $variables)->render();
+        return view('admin::widgets.carousel', $variables)->render();
     }
 }
