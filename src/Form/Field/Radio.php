@@ -3,7 +3,6 @@
 namespace Encore\Admin\Form\Field;
 
 use Encore\Admin\Form\Field;
-use Illuminate\Contracts\Support\Arrayable;
 
 class Radio extends Field
 {
@@ -15,43 +14,21 @@ class Radio extends Field
         'packages/admin/AdminLTE/plugins/iCheck/icheck.min.js',
     ];
 
-    /**
-     * Set options.
-     *
-     * @param array|callable|string $options
-     *
-     * @return $this
-     */
-    public function options($options = [])
-    {
-        if ($options instanceof Arrayable) {
-            $options = $options->toArray();
-        }
+    protected $values;
 
-        $this->options = (array) $options;
-
-        return $this;
-    }
-
-    /**
-     * Set options.
-     *
-     * @param array|callable|string $values
-     *
-     * @return $this
-     */
-    public function values($values)
-    {
-        return $this->options($values);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function render()
     {
-        $this->script = "$('{$this->getElementClassSelector()}').iCheck({radioClass:'iradio_minimal-blue'});";
+        $this->options['radioClass'] = 'iradio_minimal-blue';
 
-        return parent::render()->with(['options' => $this->options]);
+        $this->script = "$('.{$this->id}').iCheck(".json_encode($this->options).');';
+
+        return parent::render()->with(['values' => $this->values]);
+    }
+
+    public function values($values)
+    {
+        $this->values = $values;
+
+        return $this;
     }
 }

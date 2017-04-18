@@ -2,7 +2,9 @@
 
 namespace Encore\Admin\Form\Field;
 
-class Ip extends Text
+use Encore\Admin\Form\Field;
+
+class Ip extends Field
 {
     protected $rules = 'ip';
 
@@ -10,26 +12,9 @@ class Ip extends Text
         '/packages/admin/AdminLTE/plugins/input-mask/jquery.inputmask.bundle.min.js',
     ];
 
-    /**
-     * @see https://github.com/RobinHerbots/Inputmask#options
-     *
-     * @var array
-     */
-    protected $options = [
-        'alias' => 'ip',
-    ];
-
     public function render()
     {
-        $options = json_encode($this->options);
-
-        $this->script = <<<EOT
-
-$('{$this->getElementClassSelector()}').inputmask($options);
-EOT;
-
-        $this->prepend('<i class="fa fa-laptop"></i>')
-            ->defaultAttribute('style', 'width: 130px');
+        $this->script = '$("[data-mask]").inputmask();';
 
         return parent::render();
     }
