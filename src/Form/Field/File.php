@@ -68,7 +68,7 @@ class File extends Field
         /*
          * Make input data validatable if the column data is `null`.
          */
-        if (array_has($input, $this->column) && is_null($input[$this->column])) {
+        if (array_has($input, $this->column) && is_null(array_get($input, $this->column))) {
             $input[$this->column] = '';
         }
 
@@ -164,8 +164,6 @@ class File extends Field
         $this->setupDefaultOptions();
 
         if (!empty($this->value)) {
-            $this->attribute('data-initial-preview', $this->preview());
-
             $this->setupPreviewOptions();
         }
 
