@@ -2,6 +2,8 @@
 
 namespace Encore\Admin;
 
+use Closure;
+use Encore\Admin\Tree\Tools;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Database\Eloquent\Model;
 
@@ -58,6 +60,13 @@ class Tree implements Renderable
     protected $nestableOptions = [];
 
     /**
+     * Header tools.
+     *
+     * @var Tools
+     */
+    public $tools;
+
+    /**
      * Menu constructor.
      *
      * @param Model|null $model
@@ -69,11 +78,21 @@ class Tree implements Renderable
         $this->path = app('request')->getPathInfo();
         $this->elementId .= uniqid();
 
+        $this->setupTools();
+
         if ($callback instanceof \Closure) {
             call_user_func($callback, $this);
         }
 
         $this->initBranchCallback();
+    }
+
+    /**
+     * Setup tree tools.
+     */
+    public function setupTools()
+    {
+        $this->tools = new Tools($this);
     }
 
     /**
@@ -235,16 +254,6 @@ SCRIPT;
     }
 
     /**
-     * Return all items of the tree.
-     *
-     * @param array $items
-     */
-    public function getItems()
-    {
-        return $this->model->withQuery($this->queryCallback)->toTree();
-    }
-
-    /**
      * Variables in tree template.
      *
      * @return array
@@ -253,9 +262,22 @@ SCRIPT;
     {
         return [
             'id'        => $this->elementId,
-            'items'     => $this->getItems(),
+            'tools'     => $this->tools->render(),
+            'items'     => $this->model->withQuery($this->queryCallback)->toTree(),
             'useCreate' => $this->useCreate,
         ];
+    }
+
+    /**
+     * Setup grid tools.
+     *
+     * @param Closure $callback
+     *
+     * @return void
+     */
+    public function tools(Closure $callback)
+    {
+        call_user_func($callback, $this->tools);
     }
 
     /**
