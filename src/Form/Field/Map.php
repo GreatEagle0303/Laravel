@@ -7,13 +7,6 @@ use Encore\Admin\Form\Field;
 class Map extends Field
 {
     /**
-     * Column name.
-     *
-     * @var string
-     */
-    protected $column = [];
-
-    /**
      * Get assets required by this field.
      *
      * @return array

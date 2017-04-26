@@ -8,11 +8,6 @@ use Illuminate\Support\Arr;
 class Table extends Widget implements Renderable
 {
     /**
-     * @var string
-     */
-    protected $view = 'admin::widgets.table';
-
-    /**
      * @var array
      */
     protected $headers = [];
@@ -39,8 +34,6 @@ class Table extends Widget implements Renderable
         $this->setHeaders($headers);
         $this->setRows($rows);
         $this->setStyle($style);
-
-        $this->class('table');
     }
 
     /**
@@ -101,12 +94,11 @@ class Table extends Widget implements Renderable
     public function render()
     {
         $vars = [
-            'headers'       => $this->headers,
-            'rows'          => $this->rows,
-            'style'         => $this->style,
-            'attributes'    => $this->formatAttributes(),
+            'headers' => $this->headers,
+            'rows'    => $this->rows,
+            'style'   => $this->style,
         ];
 
-        return view($this->view, $vars)->render();
+        return view('admin::widgets.table', $vars)->render();
     }
 }

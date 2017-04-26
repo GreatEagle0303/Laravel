@@ -9,11 +9,6 @@ class Row implements Buildable
      */
     protected $columns = [];
 
-    /**
-     * Row constructor.
-     *
-     * @param string $content
-     */
     public function __construct($content = '')
     {
         if (!empty($content)) {
@@ -21,12 +16,6 @@ class Row implements Buildable
         }
     }
 
-    /**
-     * Add a column.
-     *
-     * @param int $width
-     * @param $content
-     */
     public function column($width, $content)
     {
         $column = new Column($content, $width);
@@ -34,17 +23,11 @@ class Row implements Buildable
         $this->addColumn($column);
     }
 
-    /**
-     * @param Column $column
-     */
     protected function addColumn(Column $column)
     {
         $this->columns[] = $column;
     }
 
-    /**
-     * Build row column.
-     */
     public function build()
     {
         $this->startRow();
@@ -56,17 +39,11 @@ class Row implements Buildable
         $this->endRow();
     }
 
-    /**
-     * Start row.
-     */
     protected function startRow()
     {
         echo '<div class="row">';
     }
 
-    /**
-     * End column.
-     */
     protected function endRow()
     {
         echo '</div>';
