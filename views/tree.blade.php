@@ -19,10 +19,6 @@
             <a class="btn btn-warning btn-sm {{ $id }}-refresh"><i class="fa fa-refresh"></i>&nbsp;{{ trans('admin::lang.refresh') }}</a>
         </div>
 
-        <div class="btn-group">
-            {!! $tools !!}
-        </div>
-
         @if($useCreate)
         <div class="btn-group pull-right">
             <a class="btn btn-success btn-sm" href="{{ $path }}/create"><i class="fa fa-save"></i>&nbsp;{{ trans('admin::lang.new') }}</a>
