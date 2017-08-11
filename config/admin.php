@@ -5,29 +5,12 @@ return [
     /*
      * Laravel-admin name.
      */
-    'name'      => 'Laravel-admin',
+    'name'  => 'Laravel-admin',
 
     /*
-     * Logo in admin panel header.
+     * Laravel-admin url prefix.
      */
-    'logo'      => '<b>Laravel</b> admin',
-
-    /*
-     * Mini-logo in admin panel header.
-     */
-    'logo-mini' => '<b>La</b>',
-
-    /**
-     * Route configration.
-     */
-    'route' => [
-
-        'prefix' => 'admin',
-
-        'namespace'     => 'App\\Admin\\Controllers',
-
-        'middleware'    => ['web', 'admin'],
-    ],
+    'prefix'    => 'admin',
 
     /*
      * Laravel-admin install directory.
@@ -35,32 +18,17 @@ return [
     'directory' => app_path('Admin'),
 
     /*
-     * Laravel-admin html title.
+     * Laravel-admin title.
      */
     'title'  => 'Admin',
-
-    /**
-     * Use `https`.
-     */
-    'secure' => false,
 
     /*
      * Laravel-admin auth setting.
      */
     'auth' => [
-        'guards' => [
-            'admin' => [
-                'driver' => 'session',
-                'provider' => 'admin',
-            ]
-        ],
-
-        'providers' => [
-            'admin' => [
-                'driver' => 'eloquent',
-                'model'  => Encore\Admin\Auth\Database\Administrator::class,
-            ]
-        ],
+        'driver'   => 'session',
+        'provider' => '',
+        'model'    => Encore\Admin\Auth\Database\Administrator::class,
     ],
 
     /*
@@ -71,9 +39,11 @@ return [
         'disk' => 'admin',
 
         'directory'  => [
-            'image'  => 'images',
-            'file'   => 'files',
-        ]
+            'image'  => 'image',
+            'file'   => 'file',
+        ],
+
+        'host' => 'http://localhost:8000/upload/',
     ],
 
     /*
@@ -109,27 +79,16 @@ return [
     ],
 
     /*
-     * By setting this option to open or close operation log in laravel-admin.
+    |---------------------------------------------------------|
+    | SKINS         | skin-blue                               |
+    |               | skin-black                              |
+    |               | skin-purple                             |
+    |               | skin-yellow                             |
+    |               | skin-red                                |
+    |               | skin-green                              |
+    |---------------------------------------------------------|
      */
-    'operation_log'   => [
-
-        'enable' => true,
-
-        /**
-         * Routes that will not log to database.
-         *
-         * All method to path like: admin/auth/logs
-         * or specific method to path like: get:admin/auth/logs
-         */
-        'except' => [
-            'admin/auth/logs*',
-        ]
-    ],
-
-    /**
-     * @see https://adminlte.io/docs/2.4/layout
-     */
-    'skin'    => 'skin-blue-light',
+    'skin'    => 'skin-blue',
 
     /*
     |---------------------------------------------------------|
@@ -140,17 +99,7 @@ return [
     |               | sidebar-mini                            |
     |---------------------------------------------------------|
      */
-    'layout'  => ['sidebar-mini', 'sidebar-collapse'],
+    'layout'  => ['sidebar-mini'],
 
-    /*
-     * Version displayed in footer.
-     */
-    'version'   => '1.5.x-dev',
-
-    /**
-     * Settings for extensions.
-     */
-    'extensions' => [
-
-    ]
+    'version'   => '1.0',
 ];

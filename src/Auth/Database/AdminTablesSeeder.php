@@ -29,38 +29,7 @@ class AdminTablesSeeder extends Seeder
         ]);
 
         // add role to user.
-        Administrator::first()->roles()->save(Role::first());
-
-        //create a permission
-        Permission::truncate();
-        Permission::insert([
-            [
-                'name'        => 'All permission',
-                'slug'        => '*',
-                'http_method' => '',
-                'http_path'   => '/admin*'
-            ],
-            [
-                'name'        => 'Login',
-                'slug'        => 'auth.login',
-                'http_method' => '',
-                'http_path'   => "/admin/auth/login\r\n/admin/auth/logout"
-            ],
-            [
-                'name'        => 'User setting',
-                'slug'        => 'auth.setting',
-                'http_method' => 'GET,PUT',
-                'http_path'   => '/admin/auth/setting',
-            ],
-            [
-                'name'        => 'Auth management',
-                'slug'        => 'auth.management',
-                'http_method' => '',
-                'http_path'   => "/admin/auth/roles\r\n/admin/auth/permissions\r\n/admin/auth/menu\r\n/admin/auth/logs",
-            ],
-        ]);
-
-        Role::first()->permissions()->save(Permission::first());
+        Administrator::first()->roles()->sync(Role::first()->toArray());
 
         // add default menus.
         Menu::truncate();

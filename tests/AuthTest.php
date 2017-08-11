@@ -41,7 +41,7 @@ class AuthTest extends TestCase
             ->see('Table')
             ->see('Email')
             ->see('Last Login')
-            ->see('Powered by')
+            ->see('Copyright')
             ->see('Version');
 
         $this
