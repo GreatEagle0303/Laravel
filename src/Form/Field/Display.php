@@ -9,7 +9,7 @@ class Display extends Field
 {
     protected $callback;
 
-    public function format(Closure $callback)
+    public function with(Closure $callback)
     {
         $this->callback = $callback;
     }
@@ -17,7 +17,9 @@ class Display extends Field
     public function render()
     {
         if ($this->callback instanceof Closure) {
-            $this->value = call_user_func($this->callback, $this->value);
+            $callback = $this->callback->bindTo($this->form->model());
+
+            $this->value = call_user_func($callback, $this->value);
         }
 
         return parent::render();
