@@ -19,44 +19,41 @@ class LogController extends Controller
     public function index()
     {
         return Admin::content(function (Content $content) {
-            $content->header(trans('admin.operation_log'));
-            $content->description(trans('admin.list'));
+            $content->header(trans('admin::lang.operation_log'));
+            $content->description(trans('admin::lang.list'));
 
             $grid = Admin::grid(OperationLog::class, function (Grid $grid) {
                 $grid->model()->orderBy('id', 'DESC');
 
                 $grid->id('ID')->sortable();
-                $grid->user()->name('User');
-                $grid->method()->display(function ($method) {
+                $grid->user()->name();
+                $grid->method()->value(function ($method) {
                     $color = array_get(OperationLog::$methodColors, $method, 'grey');
 
                     return "<span class=\"badge bg-$color\">$method</span>";
                 });
                 $grid->path()->label('info');
                 $grid->ip()->label('primary');
-                $grid->input()->display(function ($input) {
+                $grid->input()->value(function ($input) {
                     $input = json_decode($input, true);
-                    $input = array_except($input, ['_pjax', '_token', '_method', '_previous_']);
-                    if (empty($input)) {
-                        return '<code>{}</code>';
-                    }
+                    $input = array_except($input, '_pjax');
 
-                    return '<pre>'.json_encode($input, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE).'</pre>';
+                    return '<code>'.json_encode($input, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE).'</code>';
                 });
 
-                $grid->created_at(trans('admin.created_at'));
+                $grid->created_at(trans('admin::lang.created_at'));
 
-                $grid->actions(function (Grid\Displayers\Actions $actions) {
-                    $actions->disableEdit();
+                $grid->rows(function ($row) {
+                    $row->actions('delete');
                 });
 
                 $grid->disableCreation();
 
                 $grid->filter(function ($filter) {
-                    $filter->equal('user_id', 'User')->select(Administrator::all()->pluck('name', 'id'));
-                    $filter->equal('method')->select(array_combine(OperationLog::$methods, OperationLog::$methods));
+                    $filter->is('user_id', 'User')->select(Administrator::all()->pluck('name', 'id'));
+                    $filter->is('method')->select(array_combine(OperationLog::$methods, OperationLog::$methods));
                     $filter->like('path');
-                    $filter->equal('ip');
+                    $filter->is('ip');
 
                     $filter->useModal();
                 });
@@ -73,12 +70,12 @@ class LogController extends Controller
         if (OperationLog::destroy(array_filter($ids))) {
             return response()->json([
                 'status'  => true,
-                'message' => trans('admin.delete_succeeded'),
+                'message' => trans('admin::lang.delete_succeeded'),
             ]);
         } else {
             return response()->json([
                 'status'  => false,
-                'message' => trans('admin.delete_failed'),
+                'message' => trans('admin::lang.delete_failed'),
             ]);
         }
     }

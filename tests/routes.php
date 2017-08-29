@@ -1,7 +1,7 @@
 <?php
 
 Route::group([
-    'prefix'        => config('admin.route.prefix'),
+    'prefix'        => config('admin.prefix'),
     'namespace'     => 'Tests\Controllers',
     'middleware'    => ['web', 'admin'],
 ], function ($router) {

@@ -1,4 +1,4 @@
-# Model-Grid
+# Model-grid
 
 Class `Encore\Admin\Grid` is used to generate tables based on the data model,for example,we have a table `movies` in database:
 
@@ -18,7 +18,7 @@ CREATE TABLE `movies` (
 
 ```
 
-And the model of this table is `App\Models\Movie`,The following code can generate the data ggrid for `users`:
+And the model of this table is `App\Models\Movie`,The following code can generate the data grid for table `movies`:
 
 ```php
 
@@ -34,8 +34,8 @@ $grid = Admin::grid(Movie::class, function(Grid $grid){
     // The second column shows the title field, because the title field name and the Grid object's title method conflict, so use Grid's column () method instead
     $grid->column('title');
     
-    // The third column shows the director field, which is set by the value($callback) method to display the corresponding user name in the users table
-    $grid->director()->value(function($userId) {
+    // The third column shows the director field, which is set by the display($callback) method to display the corresponding user name in the users table
+    $grid->director()->display(function($userId) {
         return User::find($userId)->name;
     });
     
@@ -45,8 +45,8 @@ $grid = Admin::grid(Movie::class, function(Grid $grid){
     // The fifth column is displayed as the rate field
     $grid->rate();
 
-    // The sixth column shows the released field, formatting the display output through the value($callback) method
-    $grid->released('Release?')->value(function ($released) {
+    // The sixth column shows the released field, formatting the display output through the display($callback) method
+    $grid->released('Release?')->display(function ($released) {
         return $released ? 'yes' : 'no';
     });
 
@@ -63,17 +63,9 @@ $grid = Admin::grid(Movie::class, function(Grid $grid){
     });
 });
 
-// Displays the table contents
-echo $grid;
-
 ```
 
 ## Basic Usage
-
-#### Set the table title
-```php
-$grid->title('Movie list');
-```
 
 #### Add a column
 ```php
@@ -102,24 +94,41 @@ $grid->model()->take(100);
 
 ```php
 // The default is 15 per page
-$grid->paginate(15);
+$grid->paginate(20);
 ```
 
-#### Modify the display output
+#### Modify the display output of column
 
 ```php
-$grid->text()->value(function($text) {
+$grid->text()->display(function($text) {
     return str_limit($text, 30, '...');
 });
 
-$grid->name()->value(function ($name) {
+$grid->name()->display(function ($name) {
     return "<span class='label'>$name</span>";
 });
 
-$grid->email()->value(function ($email) {
+$grid->email()->display(function ($email) {
     return "mailto:$email";
 });
 
+// column not in table
+$grid->column('column_not_in_table')->display(function () {
+    return 'blablabla....';
+});
+
+```
+
+The closure passed to method `display()` is bind to row data object, you can use other column data in current row.
+
+```php
+$grid->first_name();
+$grid->last_name();
+
+// column not in table
+$grid->column('full_name')->display(function () {
+    return $this->first_name.' '.$this->last_name;
+});
 ```
 
 #### Disable the create button 
@@ -127,9 +136,14 @@ $grid->email()->value(function ($email) {
 $grid->disableCreation();
 ```
 
-#### Disable the batch delete button
+#### Disable Pagination
 ```php
-$grid->disableBatchDeletion();
+$grid->disablePagination();
+```
+
+#### Disable data filter
+```php
+$grid->disableFilter();
 ```
 
 #### Disable the export button
@@ -137,36 +151,24 @@ $grid->disableBatchDeletion();
 $grid->disableExport();
 ```
 
-#### Modify the row action button
+#### Disable row selector
 ```php
-//Opens the edit and delete operations
-$grid->actions('edit|delete');
+$grid->disableRowSelector();
+```
 
-//Close all operations
+#### Disable row actions
+```php
 $grid->disableActions();
 ```
 
-#### Column control 
+#### Enable orderable grid
 ```php
-$grid->rows(function($row){
+$grid->orderable();
+```
 
-    //add style to lines which Id less than 10 
-    if($row->id < 10) {
-        $row->style('color:red');
-    }
-
-    // Open the edit operation for specified column
-    if($row->id % 3) {
-        $row->action('edit');
-    }
-
-    //Specifies the column to add a custom action button
-    if($row->id % 2) {
-        $row->actions()->add(function ($row) {
-            return "<a class=\"btn btn-xs btn-danger\">btn</a>";
-        });
-    }
-});
+#### Set options for perPage selector
+```php
+$grid->perPages([10, 20, 30, 40, 50]);
 ```
 
 #### Add query filters
@@ -180,13 +182,13 @@ $grid->filter(function($filter){
     $filter->like('name', 'name');
 
     // sql: ... WHERE `user.email` = $email;
-    $filter->equal('emial', 'Email');
+    $filter->is('emial', 'Email');
 
     // sql: ... WHERE `user.created_at` BETWEEN $start AND $end;
     $filter->between('created_at', 'Created Time')->datetime();
     
-    // sql: ... WHERE `article.author_id` = $id;
-    $filter->equal('author_id', 'Author')->select(User::all()->pluck('name', 'id'));
+    // sql: ... WHERE `author_id` = $id;
+    $filter->is('author_id', 'Author')->select(User::all()->pluck('name', 'id'));
 
     // sql: ... WHERE `title` LIKE "%$input" OR `content` LIKE "%$input";
     $filter->where(function ($query) {
@@ -202,6 +204,17 @@ $grid->filter(function($filter){
         $query->whereRaw("`rate` >= 6 AND `created_at` = {$this->input}");
 
     }, 'Text');
+    
+    // relation filter, filter columns in relation `profile`
+    $filter->where(function ($query) {
+
+        $input = $this->input;
+
+        $query->whereHas('profile', function ($query) use ($input) {
+            $query->where('address', 'like', "%{$input}%")->orWhere('email', 'like', "%{$input}%");
+        });
+
+    }, 'Address or Email');
 });
 ```
 
@@ -332,7 +345,7 @@ return Admin::grid(Post::class, function (Grid $grid) {
     $grid->title();
     $grid->content();
 
-    $grid->comments('Comments count')->value(function ($comments) {
+    $grid->comments('Comments count')->display(function ($comments) {
         $count = count($comments);
         return "<span class='label label-warning'>{$count}</span>";
     });
@@ -419,7 +432,7 @@ return Admin::grid(User::class, function (Grid $grid) {
     $grid->username();
     $grid->name();
 
-    $grid->roles()->value(function ($roles) {
+    $grid->roles()->display(function ($roles) {
 
         $roles = array_map(function ($role) {
             return "<span class='label label-success'>{$role['name']}</span>";

@@ -11,22 +11,19 @@ class DateTime
      */
     protected $filter;
 
-    protected $options = [];
-
-    protected $format = 'YYYY-MM-DD HH:mm:ss';
-
-    public function __construct($filter, array $options = [])
+    public function __construct($filter)
     {
         $this->filter = $filter;
-
-        $this->options = $this->checkOptions($options);
 
         $this->prepare();
     }
 
     public function prepare()
     {
-        $script = "$('#{$this->filter->getId()}').datetimepicker(".json_encode($this->options).');';
+        $options['format'] = 'YYYY-MM-DD HH:mm:ss';
+        $options['locale'] = config('app.locale');
+
+        $script = "$('#{$this->filter->getId()}').datetimepicker(".json_encode($options).');';
 
         Admin::script($script);
     }
@@ -39,13 +36,5 @@ class DateTime
     public function name()
     {
         return 'datetime';
-    }
-
-    protected function checkOptions($options)
-    {
-        $options['format'] = array_get($options, 'format', $this->format);
-        $options['locale'] = array_get($options, 'locale', config('app.locale'));
-
-        return $options;
     }
 }
