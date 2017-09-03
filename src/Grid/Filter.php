@@ -41,7 +41,7 @@ class Filter
      *
      * @var bool
      */
-    protected $useModal = false;
+    protected $useModal = true;
 
     /**
      * If use id filter.
