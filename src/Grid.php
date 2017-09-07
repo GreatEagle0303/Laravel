@@ -167,11 +167,6 @@ class Grid
     ];
 
     /**
-     * @var Tools\Footer
-     */
-    protected $footer;
-
-    /**
      * Create a new grid instance.
      *
      * @param Eloquent $model
@@ -717,12 +712,8 @@ class Grid
         return new Tools\CreateButton($this);
     }
 
-    /**
-     * Set grid footer.
-     *
-     * @param Closure|null $closure
-     * @return $this|Tools\Footer
-     */
+    protected $footer;
+
     public function footer(Closure $closure = null)
     {
         if (!$closure) {
@@ -734,11 +725,6 @@ class Grid
         return $this;
     }
 
-    /**
-     * Render grid footer.
-     *
-     * @return Tools\Footer|string
-     */
     public function renderFooter()
     {
         if (!$this->footer) {
@@ -768,6 +754,7 @@ class Grid
         }
 
         return app('request')->getPathInfo();
+        //return app('router')->current()->getPath();
     }
 
     /**

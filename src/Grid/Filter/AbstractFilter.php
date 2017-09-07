@@ -4,7 +4,6 @@ namespace Encore\Admin\Grid\Filter;
 
 use Encore\Admin\Grid\Filter;
 use Encore\Admin\Grid\Filter\Field\DateTime;
-use Encore\Admin\Grid\Filter\Field\MultipleSelect;
 use Encore\Admin\Grid\Filter\Field\Select;
 use Encore\Admin\Grid\Filter\Field\Text;
 
@@ -52,11 +51,6 @@ abstract class AbstractFilter
      * @var Filter
      */
     protected $parent;
-
-    /**
-     * @var string
-     */
-    protected $view = 'admin::filter.where';
 
     /**
      * AbstractFilter constructor.
@@ -222,19 +216,6 @@ abstract class AbstractFilter
     }
 
     /**
-     * @param array $options
-     * @return mixed
-     */
-    public function multipleSelect($options = [])
-    {
-        $select = new MultipleSelect($options);
-
-        $select->setParent($this);
-
-        return $this->setField($select);
-    }
-
-    /**
      * Datetime filter.
      *
      * @param array $options
@@ -267,40 +248,9 @@ abstract class AbstractFilter
     }
 
     /**
-     * Day filter.
-     *
-     * @return mixed
-     */
-    public function day()
-    {
-        return $this->datetime(['format' => 'DD']);
-    }
-
-    /**
-     * Month filter.
-     *
-     * @return mixed
-     */
-    public function month()
-    {
-        return $this->datetime(['format' => 'MM']);
-    }
-
-    /**
-     * Year filter.
-     *
-     * @return mixed
-     */
-    public function year()
-    {
-        return $this->datetime(['format' => 'YYYY']);
-    }
-
-    /**
      * Set field object of filter.
      *
      * @param $field
-     * @return mixed
      */
     protected function setField($field)
     {
@@ -350,7 +300,7 @@ abstract class AbstractFilter
     /**
      * Build conditions of filter.
      *
-     * @return mixed
+     * @return array|mixed
      */
     protected function buildCondition()
     {
@@ -416,7 +366,10 @@ abstract class AbstractFilter
      */
     public function render()
     {
-        return view($this->view, $this->variables());
+        $class = explode('\\', get_called_class());
+        $view = 'admin::filter.'.strtolower(end($class));
+
+        return view($view, $this->variables());
     }
 
     /**

@@ -4,7 +4,7 @@ namespace Encore\Admin\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\MessageBag;
 use Symfony\Component\DomCrawler\Crawler;
@@ -17,7 +17,7 @@ class Pjax
      * @param Request $request
      * @param Closure $next
      *
-     * @return Response
+     * @return \Symfony\Component\HttpFoundation\Response
      */
     public function handle($request, Closure $next)
     {
@@ -40,9 +40,9 @@ class Pjax
     /**
      * Send a response through this middleware.
      *
-     * @param Response $response
+     * @param \Symfony\Component\HttpFoundation\Response $response
      */
-    public static function respond(Response $response)
+    public static function respond(\Symfony\Component\HttpFoundation\Response $response)
     {
         $next = function () use ($response) {
             return $response;

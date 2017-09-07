@@ -5,11 +5,6 @@ namespace Encore\Admin\Grid\Filter;
 class Gt extends AbstractFilter
 {
     /**
-     * {@inheritdoc}
-     */
-    protected $view = 'admin::filter.gt';
-
-    /**
      * Get condition of this filter.
      *
      * @param array $inputs

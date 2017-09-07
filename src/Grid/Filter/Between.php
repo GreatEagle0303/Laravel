@@ -7,9 +7,9 @@ use Encore\Admin\Admin;
 class Between extends AbstractFilter
 {
     /**
-     * {@inheritdoc}
+     * @var null
      */
-    protected $view = 'admin::filter.between';
+    protected $view = null;
 
     /**
      * Format id.
@@ -54,7 +54,7 @@ class Between extends AbstractFilter
      *
      * @param array $inputs
      *
-     * @return mixed
+     * @return array|mixed|void
      */
     public function condition($inputs)
     {
@@ -85,22 +85,14 @@ class Between extends AbstractFilter
         return $this->buildCondition($this->column, $this->value);
     }
 
-    /**
-     * @param array $options
-     *
-     * @return void
-     */
     public function datetime($options = [])
     {
         $this->view = 'admin::filter.betweenDatetime';
 
-        $this->setupDatetime($options);
+        $this->prepareForDatetime($options);
     }
 
-    /**
-     * @param array $options
-     */
-    protected function setupDatetime($options = [])
+    protected function prepareForDatetime($options = [])
     {
         $options['format'] = array_get($options, 'format', 'YYYY-MM-DD HH:mm:ss');
         $options['locale'] = array_get($options, 'locale', config('app.locale'));
@@ -120,5 +112,14 @@ class Between extends AbstractFilter
 EOT;
 
         Admin::script($script);
+    }
+
+    public function render()
+    {
+        if (isset($this->view)) {
+            return view($this->view, $this->variables());
+        }
+
+        return parent::render();
     }
 }
