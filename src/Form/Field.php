@@ -54,7 +54,7 @@ class Field implements Renderable
     /**
      * Column name.
      *
-     * @var string|array
+     * @var string
      */
     protected $column = '';
 
@@ -89,7 +89,7 @@ class Field implements Renderable
     /**
      * Validation rules.
      *
-     * @var string|\Closure
+     * @var string
      */
     protected $rules = '';
 
@@ -381,15 +381,13 @@ class Field implements Renderable
      */
     public function rules($rules = null)
     {
-        if ($rules instanceof \Closure) {
-            $this->rules = $rules;
+        if (is_null($rules)) {
+            return $this->rules;
         }
 
-        if (is_string($rules)) {
-            $rules = array_filter(explode('|', "{$this->rules}|$rules"));
+        $rules = array_filter(explode('|', "{$this->rules}|$rules"));
 
-            $this->rules = implode('|', $rules);
-        }
+        $this->rules = implode('|', $rules);
 
         return $this;
     }
@@ -401,10 +399,6 @@ class Field implements Renderable
      */
     protected function getRules()
     {
-        if ($this->rules instanceof \Closure) {
-            return $this->rules->call($this, $this->form);
-        }
-
         return $this->rules;
     }
 
@@ -508,7 +502,7 @@ class Field implements Renderable
     /**
      * Get column of the field.
      *
-     * @return string|array
+     * @return string
      */
     public function column()
     {
@@ -644,18 +638,6 @@ class Field implements Renderable
     public function getPlaceholder()
     {
         return $this->placeholder ?: trans('admin.input').' '.$this->label;
-    }
-
-    /**
-     * Prepare for a field value before update or insert.
-     *
-     * @param $value
-     *
-     * @return mixed
-     */
-    public function prepare($value)
-    {
-        return $value;
     }
 
     /**

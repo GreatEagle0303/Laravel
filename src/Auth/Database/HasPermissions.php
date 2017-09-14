@@ -2,8 +2,6 @@
 
 namespace Encore\Admin\Auth\Database;
 
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 
 trait HasPermissions
@@ -27,9 +25,9 @@ trait HasPermissions
     /**
      * A user has and belongs to many roles.
      *
-     * @return BelongsToMany
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
-    public function roles() : BelongsToMany
+    public function roles()
     {
         $pivotTable = config('admin.database.role_users_table');
 
@@ -41,9 +39,9 @@ trait HasPermissions
     /**
      * A User has and belongs to many permissions.
      *
-     * @return BelongsToMany
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
-    public function permissions() : BelongsToMany
+    public function permissions()
     {
         $pivotTable = config('admin.database.user_permissions_table');
 
@@ -57,9 +55,11 @@ trait HasPermissions
      *
      * @return mixed
      */
-    public function allPermissions() : Collection
+    public function allPermissions()
     {
-        return $this->roles()->with('permissions')->get()->pluck('permissions')->flatten()->merge($this->permissions);
+        return $this->roles->map(function ($role) {
+            return $role->permissions;
+        })->flatten()->merge($this->permissions);
     }
 
     /**
@@ -69,17 +69,25 @@ trait HasPermissions
      *
      * @return bool
      */
-    public function can(string $permission) : bool
+    public function can($permission)
     {
         if ($this->isAdministrator()) {
             return true;
         }
 
-        if ($this->permissions->pluck('slug')->contains($permission)) {
-            return true;
+        if (method_exists($this, 'permissions')) {
+            if ($this->permissions->keyBy('slug')->has($permission)) {
+                return true;
+            }
         }
 
-        return $this->roles->pluck('permissions')->flatten()->pluck('slug')->contains($permission);
+        foreach ($this->roles as $role) {
+            if ($role->can($permission)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -89,7 +97,7 @@ trait HasPermissions
      *
      * @return bool
      */
-    public function cannot(string $permission) : bool
+    public function cannot($permission)
     {
         return !$this->can($permission);
     }
@@ -99,7 +107,7 @@ trait HasPermissions
      *
      * @return mixed
      */
-    public function isAdministrator() : bool
+    public function isAdministrator()
     {
         return $this->isRole('administrator');
     }
@@ -111,9 +119,9 @@ trait HasPermissions
      *
      * @return mixed
      */
-    public function isRole(string $role) : bool
+    public function isRole($role)
     {
-        return $this->roles->pluck('slug')->contains($role);
+        return $this->roles->keyBy('slug')->has($role);
     }
 
     /**
@@ -123,9 +131,16 @@ trait HasPermissions
      *
      * @return mixed
      */
-    public function inRoles(array $roles = []) : bool
+    public function inRoles($roles = [])
     {
-        return $this->roles->pluck('slug')->intersect($roles)->isNotEmpty();
+        $grantedRoles = $this->roles->keyBy('slug');
+        foreach ($roles as $role) {
+            if ($grantedRoles->has($role)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -135,7 +150,7 @@ trait HasPermissions
      *
      * @return bool
      */
-    public function visible(array $roles = []) : bool
+    public function visible($roles)
     {
         if (empty($roles)) {
             return true;
@@ -143,6 +158,10 @@ trait HasPermissions
 
         $roles = array_column($roles, 'slug');
 
-        return $this->inRoles($roles) || $this->isAdministrator();
+        if ($this->inRoles($roles) || $this->isAdministrator()) {
+            return true;
+        }
+
+        return false;
     }
 }

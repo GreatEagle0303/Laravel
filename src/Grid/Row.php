@@ -159,8 +159,9 @@ class Row
             return $this->dump($column);
         }
 
-        if ($value instanceof \Closure) {
-            $value = $value->call($this, $this->column($name));
+        if (is_callable($value)) {
+            $value = $value->bindTo($this);
+            $value = $value($this->column($name));
         }
 
         array_set($this->data, $name, $value);

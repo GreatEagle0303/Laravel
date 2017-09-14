@@ -5,7 +5,6 @@ namespace Encore\Admin\Auth\Database;
 use Encore\Admin\Traits\AdminBuilder;
 use Encore\Admin\Traits\ModelTree;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -45,9 +44,9 @@ class Menu extends Model
     /**
      * A Menu belongs to many roles.
      *
-     * @return BelongsToMany
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
-    public function roles() : BelongsToMany
+    public function roles()
     {
         $pivotTable = config('admin.database.role_menu_table');
 
@@ -59,7 +58,7 @@ class Menu extends Model
     /**
      * @return array
      */
-    public function allNodes() : array
+    public function allNodes()
     {
         $orderColumn = DB::getQueryGrammar()->wrap($this->orderColumn);
         $byOrder = $orderColumn.' = 0,'.$orderColumn;

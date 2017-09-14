@@ -48,7 +48,9 @@ class Html extends Field
     public function render()
     {
         if ($this->html instanceof \Closure) {
-            $this->html = $this->html->call($this->form->model(), $this->form);
+            $callback = $this->html->bindTo($this->form->model());
+
+            $this->html = call_user_func($callback, $this->form);
         }
 
         if ($this->plain) {

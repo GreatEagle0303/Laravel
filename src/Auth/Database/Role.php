@@ -3,7 +3,6 @@
 namespace Encore\Admin\Auth\Database;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Role extends Model
 {
@@ -28,9 +27,9 @@ class Role extends Model
     /**
      * A role belongs to many users.
      *
-     * @return BelongsToMany
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
-    public function administrators() : BelongsToMany
+    public function administrators()
     {
         $pivotTable = config('admin.database.role_users_table');
 
@@ -42,9 +41,9 @@ class Role extends Model
     /**
      * A role belongs to many permissions.
      *
-     * @return BelongsToMany
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
-    public function permissions() : BelongsToMany
+    public function permissions()
     {
         $pivotTable = config('admin.database.role_permissions_table');
 
@@ -60,7 +59,7 @@ class Role extends Model
      *
      * @return bool
      */
-    public function can(string $permission) : bool
+    public function can($permission)
     {
         return $this->permissions()->where('slug', $permission)->exists();
     }
@@ -72,7 +71,7 @@ class Role extends Model
      *
      * @return bool
      */
-    public function cannot(string $permission) : bool
+    public function cannot($permission)
     {
         return !$this->can($permission);
     }

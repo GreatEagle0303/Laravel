@@ -272,7 +272,7 @@ class Grid
 
             $label = empty($label) ? ucfirst($relationColumn) : $label;
 
-            $name = $relationName.'.'.$relationColumn;
+            $name = snake_case($relationName).'.'.$relationColumn;
         }
 
         $column = $this->addColumn($name, $label);
@@ -721,7 +721,6 @@ class Grid
      * Set grid footer.
      *
      * @param Closure|null $closure
-     *
      * @return $this|Tools\Footer
      */
     public function footer(Closure $closure = null)
@@ -844,13 +843,13 @@ class Grid
         if ($relation instanceof HasOne || $relation instanceof BelongsTo) {
             $this->model()->with($method);
 
-            return $this->addColumn($method, $label)->setRelation($method);
+            return $this->addColumn($method, $label)->setRelation(snake_case($method));
         }
 
         if ($relation instanceof HasMany || $relation instanceof BelongsToMany || $relation instanceof MorphToMany) {
             $this->model()->with($method);
 
-            return $this->addColumn($method, $label);
+            return $this->addColumn(snake_case($method), $label);
         }
 
         return false;

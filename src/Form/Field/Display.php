@@ -17,7 +17,9 @@ class Display extends Field
     public function render()
     {
         if ($this->callback instanceof Closure) {
-            $this->value = $this->callback->call($this->form->model(), $this->value);
+            $callback = $this->callback->bindTo($this->form->model());
+
+            $this->value = call_user_func($callback, $this->value);
         }
 
         return parent::render();

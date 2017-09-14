@@ -47,34 +47,28 @@ class Select
      */
     protected function buildOptions()
     {
+        $default = ['' => trans('admin.choose')];
+
         if (is_string($this->options)) {
             $this->loadAjaxOptions($this->options);
 
-            return [];
+            return $default;
         }
 
         if ($this->options instanceof \Closure) {
-            $this->options = $this->options->call($this->parent, $this->parent->getValue());
+            $this->options = $this->options->bindTo($this->parent);
+            $this->options = call_user_func($this->options, $this->parent->getValue());
         }
 
         if ($this->options instanceof Arrayable) {
             $this->options = $this->options->toArray();
         }
 
-        $placeholder = trans('admin.choose');
-
-        $script = <<<SCRIPT
-$(".{$this->getElementClass()}").select2({
-  placeholder: "$placeholder"
-});
-
-SCRIPT;
-
-        Admin::script($script);
+        Admin::script("$(\".{$this->getElementClass()}\").select2();");
 
         $options = is_array($this->options) ? $this->options : [];
 
-        return $options;
+        return $default + $options;
     }
 
     /**
@@ -84,12 +78,9 @@ SCRIPT;
      */
     protected function loadAjaxOptions($resourceUrl)
     {
-        $placeholder = trans('admin.choose');
-
         $script = <<<EOT
 
 $(".{$this->getElementClass()}").select2({
-  placeholder: "$placeholder",
   ajax: {
     url: "$resourceUrl",
     dataType: 'json',
