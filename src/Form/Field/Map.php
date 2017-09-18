@@ -9,7 +9,7 @@ class Map extends Field
     /**
      * Column name.
      *
-     * @var array
+     * @var string
      */
     protected $column = [];
 
@@ -20,10 +20,10 @@ class Map extends Field
      */
     public static function getAssets()
     {
-        if (config('app.locale') == 'zh-CN') {
-            $js = '//map.qq.com/api/js?v=2.exp';
+        if (config('app.locale') == 'zh_CN') {
+            $js = 'http://map.qq.com/api/js?v=2.exp';
         } else {
-            $js = '//maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&key='.env('GOOGLE_API_KEY');
+            $js = 'https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&key='.env('GOOGLE_API_KEY');
         }
 
         return compact('js');
@@ -43,7 +43,7 @@ class Map extends Field
          * Google map is blocked in mainland China
          * people in China can use Tencent map instead(;
          */
-        if (config('app.locale') == 'zh-CN') {
+        if (config('app.locale') == 'zh_CN') {
             $this->useTencentMap();
         } else {
             $this->useGoogleMap();
