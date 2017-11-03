@@ -9,29 +9,37 @@ use Illuminate\Support\Str;
 
 class Select extends Field
 {
-    /**
-     * @var array
-     */
     protected static $css = [
         '/vendor/laravel-admin/AdminLTE/plugins/select2/select2.min.css',
     ];
 
-    /**
-     * @var array
-     */
     protected static $js = [
         '/vendor/laravel-admin/AdminLTE/plugins/select2/select2.full.min.js',
     ];
 
-    /**
-     * @var array
-     */
-    protected $groups = [];
+    public function render()
+    {
+        if (empty($this->script)) {
+            $this->script = <<<EOF
+$("{$this->getElementClassSelector()}").select2({
+    allowClear: true,
+    placeholder: "{$this->label}"
+});
+EOF;
+        }
 
-    /**
-     * @var array
-     */
-    protected $config = [];
+        if ($this->options instanceof \Closure) {
+            if ($this->form) {
+                $this->options = $this->options->bindTo($this->form->model());
+            }
+
+            $this->options(call_user_func($this->options, $this->value));
+        }
+
+        $this->options = array_filter($this->options);
+
+        return parent::render()->with(['options' => $this->options]);
+    }
 
     /**
      * Set options.
@@ -44,7 +52,7 @@ class Select extends Field
     {
         // remote options
         if (is_string($options)) {
-            return $this->loadRemoteOptions(...func_get_args());
+            return call_user_func_array([$this, 'loadOptionsFromRemote'], func_get_args());
         }
 
         if ($options instanceof Arrayable) {
@@ -56,35 +64,6 @@ class Select extends Field
         } else {
             $this->options = (array) $options;
         }
-
-        return $this;
-    }
-
-    /**
-     * @param array $groups
-     */
-
-    /**
-     * Set option groups.
-     *
-     * eg: $group = [
-     *        [
-     *        'label' => 'xxxx',
-     *        'options' => [
-     *            1 => 'foo',
-     *            2 => 'bar',
-     *            ...
-     *        ],
-     *        ...
-     *     ]
-     *
-     * @param array $groups
-     *
-     * @return $this
-     */
-    public function groups(array $groups)
-    {
-        $this->groups = $groups;
 
         return $this;
     }
@@ -139,7 +118,7 @@ EOT;
      *
      * @return $this
      */
-    protected function loadRemoteOptions($url, $parameters = [], $options = [])
+    protected function loadOptionsFromRemote($url, $parameters = [], $options = [])
     {
         $ajaxOptions = [
             'url' => $url.'?'.http_build_query($parameters),
@@ -207,53 +186,5 @@ $("{$this->getElementClassSelector()}").select2({
 EOT;
 
         return $this;
-    }
-
-    /**
-     * Set config for select2
-     *
-     * all configurations see https://select2.org/configuration/options-api
-     *
-     * @param string $key
-     * @param mixed  $val
-     * @return $this
-     */
-    public function config($key, $val)
-    {
-        $this->config[$key] = $val;
-
-        return $this;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function render()
-    {
-        $configs = array_merge([
-            'allowClear' => true,
-            'placeholder' => $this->label,
-        ], $this->config);
-
-        $configs = json_encode($configs);
-
-        if (empty($this->script)) {
-            $this->script = "$(\"{$this->getElementClassSelector()}\").select2($configs);";
-        }
-
-        if ($this->options instanceof \Closure) {
-            if ($this->form) {
-                $this->options = $this->options->bindTo($this->form->model());
-            }
-
-            $this->options(call_user_func($this->options, $this->value));
-        }
-
-        $this->options = array_filter($this->options);
-
-        return parent::render()->with([
-            'options' => $this->options,
-            'groups'  => $this->groups,
-        ]);
     }
 }
