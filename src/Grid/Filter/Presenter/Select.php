@@ -136,7 +136,7 @@ EOT;
      *
      * @return $this
      */
-    public function load($target, $resourceUrl, $idField = 'id', $textField = 'text') : self
+    public function load($target, $resourceUrl, $idField = 'id', $textField = 'text') : Select
     {
         $column = $this->filter->getColumn();
 
