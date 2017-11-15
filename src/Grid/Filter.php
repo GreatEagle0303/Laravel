@@ -54,13 +54,6 @@ class Filter
     protected $useIdFilter = true;
 
     /**
-     * Id filter was removed.
-     *
-     * @var bool
-     */
-    protected $idFilterRemoved = false;
-
-    /**
      * Action of search form.
      *
      * @var string
@@ -113,9 +106,8 @@ class Filter
      */
     public function removeIDFilterIfNeeded()
     {
-        if (!$this->useIdFilter && !$this->idFilterRemoved) {
+        if (!$this->useIdFilter) {
             array_shift($this->filters);
-            $this->idFilterRemoved = true;
         }
     }
 
