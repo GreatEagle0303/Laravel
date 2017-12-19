@@ -53,16 +53,6 @@ class Permission
     }
 
     /**
-     * Don't check permission.
-     *
-     * @return bool
-     */
-    public static function free()
-    {
-        return true;
-    }
-
-    /**
      * Roles denied to access.
      *
      * @param $roles
