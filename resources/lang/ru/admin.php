@@ -40,7 +40,7 @@ return [
     'description'       => 'Описание',
     'back'              => 'Назад',
     'back_to_list'      => 'Вернуться к списку',
-    'submit'            => 'Создать',
+    'submit'            => 'Сохранить',
     'menu'              => 'Меню',
     'input'             => 'Ввод',
     'succeeded'         => 'Завершена',
