@@ -35,9 +35,9 @@ $grid = Admin::form(Movie::class, function(Form $form){
     $form->text('title', '电影标题');
     
     $directors = [
-        1 => 'John',
-        2 => 'Smith',
-        3 => 'Kate',
+        'John'  => 1,
+        'Smith' => 2,
+        'Kate'  => 3,
     ];
     
     $form->select('director', '导演')->options($directors);
