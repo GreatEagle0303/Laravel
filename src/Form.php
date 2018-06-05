@@ -969,9 +969,7 @@ class Form
         $data = $this->model->toArray();
 
         $this->builder->fields()->each(function (Field $field) use ($data) {
-            if (!in_array($field->column(), $this->ignored)) {
-                $field->fill($data);
-            }
+            $field->fill($data);
         });
     }
 
