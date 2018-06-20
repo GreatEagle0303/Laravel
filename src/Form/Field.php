@@ -189,13 +189,6 @@ class Field implements Renderable
     protected $horizontal = true;
 
     /**
-     * column data format.
-     *
-     * @var Closure
-     */
-    protected $customFormat = null;
-
-    /**
      * @var bool
      */
     protected $display = true;
@@ -329,21 +322,6 @@ class Field implements Renderable
         }
 
         $this->value = array_get($data, $this->column);
-        if (isset($this->customFormat) && $this->customFormat instanceof \Closure) {
-            $this->value = call_user_func($this->customFormat, $this->value);
-        }
-    }
-
-    /**
-     * custom format form column data when edit.
-     *
-     * @param Closure $call
-     *
-     * @return [null]
-     */
-    public function customFormat(\Closure $call)
-    {
-        $this->customFormat = $call;
     }
 
     /**
