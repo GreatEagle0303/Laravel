@@ -9,7 +9,7 @@ class Row
      *
      * @var
      */
-    public $number;
+    protected $number;
 
     /**
      * Row data.

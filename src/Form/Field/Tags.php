@@ -65,7 +65,7 @@ class Tags extends Field
             return empty($this->value) ? ($this->getDefault() ?? []) : $this->value;
         }
 
-        $this->value = (array) $value;
+        $this->value = $value;
 
         return $this;
     }
@@ -80,8 +80,6 @@ class Tags extends Field
             tokenSeparators: [',']
         });";
 
-        return parent::render()->with([
-            'options' => array_unique(array_merge($this->value, $this->options)),
-        ]);
+        return parent::render();
     }
 }

@@ -88,13 +88,6 @@ class Builder
     protected $view = 'admin::form';
 
     /**
-     * Form title.
-     *
-     * @var string
-     */
-    protected $title;
-
-    /**
      * Builder constructor.
      *
      * @param Form $form
@@ -238,20 +231,6 @@ class Builder
     }
 
     /**
-     * Set title for form.
-     *
-     * @param string $title
-     *
-     * @return $this
-     */
-    public function setTitle($title)
-    {
-        $this->title = $title;
-
-        return $this;
-    }
-
-    /**
      * Get fields of this builder.
      *
      * @return Collection
@@ -353,10 +332,6 @@ class Builder
      */
     public function title()
     {
-        if ($this->title) {
-            return $this->title;
-        }
-
         if ($this->mode == static::MODE_CREATE) {
             return trans('admin.create');
         }

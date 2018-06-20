@@ -969,9 +969,7 @@ class Form
         $data = $this->model->toArray();
 
         $this->builder->fields()->each(function (Field $field) use ($data) {
-            if (!in_array($field->column(), $this->ignored)) {
-                $field->fill($data);
-            }
+            $field->fill($data);
         });
     }
 
@@ -1109,20 +1107,6 @@ class Form
     public function setView($view)
     {
         $this->builder()->setView($view);
-
-        return $this;
-    }
-
-    /**
-     * Set title for form.
-     *
-     * @param string $title
-     *
-     * @return $this
-     */
-    public function setTitle($title = '')
-    {
-        $this->builder()->setTitle($title);
 
         return $this;
     }

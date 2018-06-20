@@ -16,47 +16,43 @@ use Illuminate\Support\Facades\Validator;
 class AuthController extends Controller
 {
     /**
-     * Show the login page.
+     * Login page.
      *
      * @return \Illuminate\Contracts\View\Factory|Redirect|\Illuminate\View\View
      */
     public function getLogin()
     {
-        if ($this->guard()->check()) {
-            return redirect($this->redirectPath());
+        if (!Auth::guard('admin')->guest()) {
+            return redirect(config('admin.route.prefix'));
         }
 
         return view('admin::login');
     }
 
     /**
-     * Handle a login request.
-     *
      * @param Request $request
      *
      * @return mixed
      */
     public function postLogin(Request $request)
     {
-        $credentials = $request->only([$this->username(), 'password']);
+        $credentials = $request->only(['username', 'password']);
 
-        /** @var \Illuminate\Validation\Validator $validator */
         $validator = Validator::make($credentials, [
-            $this->username()   => 'required',
-            'password'          => 'required',
+            'username' => 'required', 'password' => 'required',
         ]);
 
         if ($validator->fails()) {
-            return back()->withInput()->withErrors($validator);
+            return Redirect::back()->withInput()->withErrors($validator);
         }
 
-        if ($this->guard()->attempt($credentials)) {
-            return $this->sendLoginResponse($request);
+        if (Auth::guard('admin')->attempt($credentials)) {
+            admin_toastr(trans('admin.login_successful'));
+
+            return redirect()->intended(config('admin.route.prefix'));
         }
 
-        return back()->withInput()->withErrors([
-            $this->username() => $this->getFailedLoginMessage(),
-        ]);
+        return Redirect::back()->withInput()->withErrors(['username' => $this->getFailedLoginMessage()]);
     }
 
     /**
@@ -64,11 +60,11 @@ class AuthController extends Controller
      *
      * @return Redirect
      */
-    public function getLogout(Request $request)
+    public function getLogout()
     {
-        $this->guard()->logout();
+        Auth::guard('admin')->logout();
 
-        $request->session()->invalidate();
+        session()->forget('url.intented');
 
         return redirect(config('admin.route.prefix'));
     }
@@ -146,55 +142,5 @@ class AuthController extends Controller
         return Lang::has('auth.failed')
             ? trans('auth.failed')
             : 'These credentials do not match our records.';
-    }
-
-    /**
-     * Get the post login redirect path.
-     *
-     * @return string
-     */
-    protected function redirectPath()
-    {
-        if (method_exists($this, 'redirectTo')) {
-            return $this->redirectTo();
-        }
-
-        return property_exists($this, 'redirectTo') ? $this->redirectTo : config('admin.route.prefix');
-    }
-
-    /**
-     * Send the response after the user was authenticated.
-     *
-     * @param \Illuminate\Http\Request $request
-     *
-     * @return \Illuminate\Http\Response
-     */
-    protected function sendLoginResponse(Request $request)
-    {
-        admin_toastr(trans('admin.login_successful'));
-
-        $request->session()->regenerate();
-
-        return redirect()->intended($this->redirectPath());
-    }
-
-    /**
-     * Get the login username to be used by the controller.
-     *
-     * @return string
-     */
-    protected function username()
-    {
-        return 'username';
-    }
-
-    /**
-     * Get the guard to be used during authentication.
-     *
-     * @return \Illuminate\Contracts\Auth\StatefulGuard
-     */
-    protected function guard()
-    {
-        return Auth::guard('admin');
     }
 }

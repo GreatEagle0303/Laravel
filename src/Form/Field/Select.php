@@ -304,11 +304,9 @@ EOT;
 
         $this->options = array_filter($this->options);
 
-        $this->addVariables([
+        return parent::render()->with([
             'options' => $this->options,
             'groups'  => $this->groups,
         ]);
-
-        return parent::render();
     }
 }
