@@ -132,17 +132,15 @@ abstract class AbstractFilter
         $columns = explode('.', $column);
 
         if (count($columns) == 1) {
-            $name = $columns[0];
-        } else {
-            $name = array_shift($columns);
-            foreach ($columns as $column) {
-                $name .= "[$column]";
-            }
+            return $columns[0];
         }
 
-        $parenName = $this->parent->getName();
+        $name = array_shift($columns);
+        foreach ($columns as $column) {
+            $name .= "[$column]";
+        }
 
-        return $parenName ? "{$parenName}_{$name}" : $name;
+        return $name;
     }
 
     /**
@@ -390,9 +388,7 @@ abstract class AbstractFilter
      */
     public function getColumn()
     {
-        $parenName = $this->parent->getName();
-
-        return $parenName ? "{$parenName}_{$this->column}" : $this->column;
+        return $this->column;
     }
 
     /**

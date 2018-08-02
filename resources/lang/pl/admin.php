@@ -20,7 +20,6 @@ return [
     'remove'       => 'Usuń',
     'edit'         => 'Edytuj',
     'view'         => 'Zobacz',
-    'detail'       => 'Szczegół',
     'reset'        => 'Resetuj',
     'export'       => 'Eksportuj',
     'batch_delete' => 'Usuń wsadowo',

@@ -20,7 +20,6 @@ return [
     'remove'       => 'حذف',
     'edit'         => 'تعديل',
     'view'         => 'عرض',
-    'detail'       => 'التفاصيل',
     'browse'       => 'تصفح',
     'reset'        => 'تفريغ',
     'export'       => 'تصدير',
