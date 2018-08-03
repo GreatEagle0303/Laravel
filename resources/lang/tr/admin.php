@@ -20,7 +20,6 @@ return [
     'remove'       => 'Kaldır',
     'edit'         => 'Düzenle',
     'view'         => 'Gör',
-    'detail'       => 'Ayrıntılı',
     'browse'       => 'Gözat',
     'reset'        => 'Temizle',
     'export'       => 'Dışarı aktar',

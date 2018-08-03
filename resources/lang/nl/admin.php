@@ -20,7 +20,6 @@ return [
     'remove'       => 'Verwijder',
     'edit'         => 'Wijzigen',
     'view'         => 'Toon',
-    'detail'       => 'Gedetailleerd',
     'browse'       => 'Selecteer',
     'reset'        => 'Reset',
     'export'       => 'Exporteer',
