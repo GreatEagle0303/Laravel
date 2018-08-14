@@ -43,8 +43,6 @@ class Tools implements Renderable
     public function __construct(Builder $builder)
     {
         $this->form = $builder;
-        $this->appends = new Collection();
-        $this->prepends = new Collection();
     }
 
     /**
