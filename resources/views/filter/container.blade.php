@@ -1,5 +1,5 @@
 <div class="box-header with-border {{ $expand?'':'hide' }}" id="{{ $filterID }}">
-    <form action="{!! $action !!}" class="form-horizontal" pjax-container method="get">
+    <form action="{!! $action !!}" class="form-horizontal" pjax-container>
         <div class="box-body">
             <div class="fields-group">
                 @foreach($filters as $filter)

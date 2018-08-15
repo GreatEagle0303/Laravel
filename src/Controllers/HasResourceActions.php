@@ -7,13 +7,12 @@ trait HasResourceActions
     /**
      * Update the specified resource in storage.
      *
-     * @param int $id
-     *
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
     public function update($id)
     {
-        return $this->form()->update($id);
+        return $this->resource->form()->update($id);
     }
 
     /**
@@ -23,19 +22,18 @@ trait HasResourceActions
      */
     public function store()
     {
-        return $this->form()->store();
+        return $this->resource->form()->store();
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param int $id
-     *
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
     public function destroy($id)
     {
-        if ($this->form()->destroy($id)) {
+        if ($this->resource->form()->destroy($id)) {
             $data = [
                 'status'  => true,
                 'message' => trans('admin.delete_succeeded'),

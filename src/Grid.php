@@ -13,9 +13,15 @@ use Encore\Admin\Grid\Model;
 use Encore\Admin\Grid\Row;
 use Encore\Admin\Grid\Tools;
 use Illuminate\Database\Eloquent\Model as Eloquent;
-use Illuminate\Database\Eloquent\Relations;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Schema;
 use Jenssegers\Mongodb\Eloquent\Model as MongodbModel;
 
 class Grid
@@ -35,6 +41,13 @@ class Grid
      * @var \Illuminate\Support\Collection
      */
     protected $columns;
+
+    /**
+     * Collection of table columns.
+     *
+     * @var \Illuminate\Support\Collection
+     */
+    protected $dbColumns;
 
     /**
      * Collection of all data rows.
@@ -270,7 +283,7 @@ class Grid
 
         $column = $this->addColumn($name, $label);
 
-        if (isset($relation) && $relation instanceof Relations\Relation) {
+        if (isset($relation) && $relation instanceof Relation) {
             $this->model()->with($relationName);
             $column->setRelation($relationName, $relationColumn);
         }
@@ -814,6 +827,39 @@ class Grid
     }
 
     /**
+     * Get the table columns for grid.
+     *
+     * @return void
+     */
+    protected function setDbColumns()
+    {
+        $connection = $this->model()->eloquent()->getConnectionName();
+
+        $this->dbColumns = collect(Schema::connection($connection)->getColumnListing($this->model()->getTable()));
+    }
+
+    /**
+     * Handle table column for grid.
+     *
+     * @param string $method
+     * @param string $label
+     *
+     * @return bool|Column
+     */
+    protected function handleTableColumn($method, $label)
+    {
+        if (empty($this->dbColumns)) {
+            $this->setDbColumns();
+        }
+
+        if ($this->dbColumns->has($method)) {
+            return $this->addColumn($method, $label);
+        }
+
+        return false;
+    }
+
+    /**
      * Handle get mutator column for grid.
      *
      * @param string $method
@@ -846,20 +892,17 @@ class Grid
             return false;
         }
 
-        if (!($relation = $model->$method()) instanceof Relations\Relation) {
+        if (!($relation = $model->$method()) instanceof Relation) {
             return false;
         }
 
-        if ($relation instanceof Relations\HasOne || $relation instanceof Relations\BelongsTo) {
+        if ($relation instanceof HasOne || $relation instanceof BelongsTo) {
             $this->model()->with($method);
 
             return $this->addColumn($method, $label)->setRelation(snake_case($method));
         }
 
-        if ($relation instanceof Relations\HasMany
-            || $relation instanceof Relations\BelongsToMany
-            || $relation instanceof Relations\MorphToMany
-        ) {
+        if ($relation instanceof HasMany || $relation instanceof BelongsToMany || $relation instanceof MorphToMany) {
             $this->model()->with($method);
 
             return $this->addColumn(snake_case($method), $label);
@@ -889,6 +932,10 @@ class Grid
         }
 
         if ($column = $this->handleRelationColumn($method, $label)) {
+            return $column;
+        }
+
+        if ($column = $this->handleTableColumn($method, $label)) {
             return $column;
         }
 
@@ -982,27 +1029,13 @@ class Grid
     /**
      * Set relation for grid.
      *
-     * @param Relations\Relation $relation
+     * @param Relation $relation
      *
      * @return $this
      */
-    public function setRelation(Relations\Relation $relation)
+    public function setRelation(Relation $relation)
     {
         $this->model()->setRelation($relation);
-
-        return $this;
-    }
-
-    /**
-     * Set resource path for grid.
-     *
-     * @param string $path
-     *
-     * @return $this
-     */
-    public function setResource($path)
-    {
-        $this->resourcePath = $path;
 
         return $this;
     }

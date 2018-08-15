@@ -47,11 +47,6 @@ class Select extends Field
             return $this->loadRemoteOptions(...func_get_args());
         }
 
-        // reload selected
-        if ($options instanceof Illuminate\Database\Eloquent\Model) {
-            return $this->selected(...func_get_arg());
-        }
-
         if ($options instanceof Arrayable) {
             $options = $options->toArray();
         }
@@ -188,39 +183,6 @@ EOT;
     }
 
     /**
-     * Load options from current selected resource(s).
-     *
-     * @param Illuminate\Database\Eloquent\Model $model
-     * @param string                             $column
-     *
-     * @return $this
-     */
-    protected function selected($model, $column = 'name')
-    {
-        $this->options = function ($resource) use ($model, $column) {
-            if (null == $resource) {
-                return [];
-            }
-
-            $model = $model::find($resource);
-
-            if ($model) {
-                if ($model instanceof Illuminate\Support\Collection) {
-                    $results = [];
-
-                    foreach ($model as $result) {
-                        $results[$result->id] = $result->{$column};
-                    }
-
-                    return $results;
-                } else {
-                    return [$resource => $model->{$column}];
-                }
-            }
-        };
-    }
-
-    /**
      * Load options from remote.
      *
      * @param string $url
@@ -257,7 +219,7 @@ EOT;
      *
      * @return $this
      */
-    public function ajax($url, $idField = 'id', $textField = 'text', $minimumInputLength = 1)
+    public function ajax($url, $idField = 'id', $textField = 'text')
     {
         $this->script = <<<EOT
 
@@ -288,7 +250,7 @@ $("{$this->getElementClassSelector()}").select2({
     },
     cache: true
   },
-  minimumInputLength: $minimumInputLength,
+  minimumInputLength: 1,
   escapeMarkup: function (markup) {
       return markup;
   }
