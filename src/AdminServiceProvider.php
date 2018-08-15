@@ -2,8 +2,6 @@
 
 namespace Encore\Admin;
 
-use Encore\Admin\Console;
-use Encore\Admin\Middleware;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 
@@ -18,7 +16,6 @@ class AdminServiceProvider extends ServiceProvider
         Console\InstallCommand::class,
         Console\UninstallCommand::class,
         Console\ImportCommand::class,
-        Console\GenerateCommand::class,
     ];
 
     /**
