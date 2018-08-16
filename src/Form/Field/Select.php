@@ -44,11 +44,6 @@ class Select extends Field
     {
         // remote options
         if (is_string($options)) {
-            // reload selected
-            if (class_exists($options) && in_array('Illuminate\Database\Eloquent\Model', class_parents($options))) {
-                return $this->selected(...func_get_args());
-            }
-
             return $this->loadRemoteOptions(...func_get_args());
         }
 
@@ -188,52 +183,6 @@ EOT;
     }
 
     /**
-     * Load options from current selected resource(s).
-     *
-     * @param Illuminate\Database\Eloquent\Model $model
-     * @param string                             $textField
-     * @param string                             $idField
-     *
-     * @return $this
-     */
-    protected function selected($model, $textField = 'name', $idField = 'id')
-    {
-        $this->options = function ($resource) use ($model, $textField, $idField) {
-            if (null == $resource) {
-                return [];
-            }
-
-            if (is_array($resource) && !empty($resource) && isset($resource[0]['id'])) {
-                $resource = array_map(function ($res) {
-                    return $res['id'];
-                }, $resource);
-            } elseif (is_array($resource) && !empty($resource) && isset($resource['id'])) {
-                $resource = $resource['id'];
-            }
-
-            $model = $model::find($resource);
-
-            if ($model) {
-                if ($model instanceof \Illuminate\Support\Collection) {
-                    $results = [];
-
-                    foreach ($model as $result) {
-                        $results[$result->{$idField}] = $result->{$textField};
-                    }
-
-                    return $results;
-                }
-
-                return [$model->{$idField} => $model->{$textField}];
-            }
-
-            return [];
-        };
-
-        return $this;
-    }
-
-    /**
      * Load options from remote.
      *
      * @param string $url
@@ -272,15 +221,6 @@ EOT;
      */
     public function ajax($url, $idField = 'id', $textField = 'text')
     {
-        $configs = array_merge([
-            'allowClear'         => true,
-            'placeholder'        => $this->label,
-            'minimumInputLength' => 1,
-        ], $this->config);
-
-        $configs = json_encode($configs);
-        $configs = substr($configs, 1, strlen($configs) - 2);
-
         $this->script = <<<EOT
 
 $("{$this->getElementClassSelector()}").select2({
@@ -310,7 +250,7 @@ $("{$this->getElementClassSelector()}").select2({
     },
     cache: true
   },
-  $configs,
+  minimumInputLength: 1,
   escapeMarkup: function (markup) {
       return markup;
   }
