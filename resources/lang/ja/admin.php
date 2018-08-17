@@ -111,6 +111,4 @@ return [
         'filter_clear'       => '全て表示',
         'filter_placeholder' => 'フィルタ',
     ],
-
-    'menu_titles' => [],
 ];

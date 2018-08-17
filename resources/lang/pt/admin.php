@@ -112,6 +112,4 @@ return [
         'filter_clear'       => 'Mostrar tudo',
         'filter_placeholder' => 'Filtrar',
     ],
-
-    'menu_titles' => [],
 ];
