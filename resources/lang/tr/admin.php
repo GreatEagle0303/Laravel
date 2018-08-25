@@ -112,6 +112,4 @@ return [
         'filter_clear'       => 'Tümümnü göster',
         'filter_placeholder' => 'Filtrele',
     ],
-
-    'menu_titles' => [],
 ];

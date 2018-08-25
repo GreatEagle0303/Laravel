@@ -253,17 +253,7 @@ EOT;
         $this->script = <<<EOT
 
 $.ajax($ajaxOptions).done(function(data) {
-
-  var select = $("{$this->getElementClassSelector()}");
-
-  select.select2({data: data});
-  
-  var value = select.data('value') + '';
-  
-  if (value) {
-    value = value.split(',');
-    select.select2('val', value);
-  }
+  $("{$this->getElementClassSelector()}").select2({data: data});
 });
 
 EOT;
@@ -378,8 +368,6 @@ EOT;
             'options' => $this->options,
             'groups'  => $this->groups,
         ]);
-
-        $this->attribute('data-value', implode(',', (array)$this->value()));
 
         return parent::render();
     }

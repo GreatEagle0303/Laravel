@@ -140,11 +140,7 @@ class Tools implements Renderable
     {
         $key = $this->form->getResourceId();
 
-        if ($key) {
-            return $this->getListPath().'/'.$key;
-        } else {
-            return $this->getListPath();
-        }
+        return $this->getListPath().'/'.$key;
     }
 
     /**

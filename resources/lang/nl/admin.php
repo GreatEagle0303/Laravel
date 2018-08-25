@@ -111,6 +111,4 @@ return [
         'filter_clear'       => 'Toon alle',
         'filter_placeholder' => 'Filter',
     ],
-
-    'menu_titles' => [],
 ];

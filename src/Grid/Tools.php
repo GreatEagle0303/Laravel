@@ -79,18 +79,6 @@ class Tools implements Renderable
     }
 
     /**
-     * Disable filter button.
-     *
-     * @return void
-     */
-    public function disableFilterButton()
-    {
-        $this->tools = $this->tools->reject(function ($tool) {
-            return $tool instanceof FilterButton;
-        });
-    }
-
-    /**
      * Disable refresh button.
      *
      * @return void

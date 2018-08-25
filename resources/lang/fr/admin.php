@@ -111,6 +111,4 @@ return [
         'filter_clear'       => 'Affichez tous',
         'filter_placeholder' => 'Filtre',
     ],
-
-    'menu_titles' => [],
 ];

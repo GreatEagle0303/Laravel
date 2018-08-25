@@ -97,5 +97,4 @@ return [
         'filter_clear'       => '顯示全部',
         'filter_placeholder' => '過濾',
     ],
-    'menu_titles' => [],
 ];

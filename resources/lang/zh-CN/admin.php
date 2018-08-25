@@ -97,5 +97,4 @@ return [
         'filter_clear'       => '显示全部',
         'filter_placeholder' => '过滤',
     ],
-    'menu_titles' => [],
 ];
