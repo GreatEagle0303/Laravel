@@ -10,7 +10,7 @@
 <a href="http://laravel-admin.org/docs/#/zh/">中文文档</a> |
 <a href="http://laravel-admin.org/demo">Demo</a> |
 <a href="https://github.com/z-song/laravel-admin.org">Demo source code</a> |
-<a href="#extensions">Extensions</a>
+<a href="https://github.com/laravel-admin-extensions">Extensions</a>
 </p>
 
 <p align="center">
@@ -31,12 +31,6 @@
     </a>
     <a href="https://github.com/z-song/laravel-admin">
         <img src="https://img.shields.io/badge/Awesome-Laravel-brightgreen.svg?style=flat-square" alt="Awesome Laravel">
-    </a>
-    <a href="#backers" alt="sponsors on Open Collective">
-        <img src="https://opencollective.com/laravel-admin/backers/badge.svg" />
-    </a> 
-    <a href="#sponsors" alt="Sponsors on Open Collective">
-        <img src="https://opencollective.com/laravel-admin/sponsors/badge.svg" />
     </a>
 </div>
 
@@ -84,30 +78,18 @@ Configurations
 ------------
 The file `config/admin.php` contains an array of configurations, you can find the default configurations in there.
 
-## Extensions
+Backers
+------------
 
-| Extension                                        | Description                              |
-| ------------------------------------------------ | ---------------------------------------- |
-| [helpers](https://github.com/laravel-admin-extensions/helpers)             | Several tools to help you in development |
-| [media-manager](https://github.com/laravel-admin-extensions/media-manager) | Provides a web interface to manage local files          |
-| [api-tester](https://github.com/laravel-admin-extensions/api-tester) | Help you to test the local laravel APIs          |
-| [scheduling](https://github.com/laravel-admin-extensions/scheduling) | Scheduling task manager for laravel-admin          |
-| [redis-manager](https://github.com/laravel-admin-extensions/redis-manager) | Redis manager for laravel-admin          |
-| [backup](https://github.com/laravel-admin-extensions/backup) | An admin interface for managing backups          |
-| [log-viewer](https://github.com/laravel-admin-extensions/log-viewer) | Log viewer for laravel           |
-| [config](https://github.com/laravel-admin-extensions/config) | Config manager for laravel-admin          |
-| [exporter](https://github.com/laravel-admin-extensions/reporter) | Provides a developer-friendly web interface to view the exception          |
+Thank you to all our backers! 🙏 [[Become a backer](https://opencollective.com/laravel-admin#backer)]
 
+<a href="https://opencollective.com/laravel-admin#backers" target="_blank"><img src="https://opencollective.com/laravel-admin/backers.svg?width=890"></a>
 
-## Contributors
- This project exists thanks to all the people who contribute. [[Contribute](CONTRIBUTING.md)].
-<a href="graphs/contributors"><img src="https://opencollective.com/laravel-admin/contributors.svg?width=890&button=false" /></a>
- ## Backers
- Thank you to all our backers! 🙏 [[Become a backer](https://opencollective.com/laravel-admin#backer)]
- <a href="https://opencollective.com/laravel-admin#backers" target="_blank"><img src="https://opencollective.com/laravel-admin/backers.svg?width=890"></a>
- ## Sponsors
- Support this project by becoming a sponsor. Your logo will show up here with a link to your website. [[Become a sponsor](https://opencollective.com/laravel-admin#sponsor)]
- <a href="https://opencollective.com/laravel-admin/sponsor/0/website" target="_blank"><img src="https://opencollective.com/laravel-admin/sponsor/0/avatar.svg"></a>
+## Sponsors
+
+Support this project by becoming a sponsor. Your logo will show up here with a link to your website. [[Become a sponsor](https://opencollective.com/laravel-admin#sponsor)]
+
+<a href="https://opencollective.com/laravel-admin/sponsor/0/website" target="_blank"><img src="https://opencollective.com/laravel-admin/sponsor/0/avatar.svg"></a>
 <a href="https://opencollective.com/laravel-admin/sponsor/1/website" target="_blank"><img src="https://opencollective.com/laravel-admin/sponsor/1/avatar.svg"></a>
 <a href="https://opencollective.com/laravel-admin/sponsor/2/website" target="_blank"><img src="https://opencollective.com/laravel-admin/sponsor/2/avatar.svg"></a>
 <a href="https://opencollective.com/laravel-admin/sponsor/3/website" target="_blank"><img src="https://opencollective.com/laravel-admin/sponsor/3/avatar.svg"></a>

@@ -322,22 +322,6 @@ class Column
     }
 
     /**
-     * Render this column with the given view.
-     *
-     * @param string $view
-     *
-     * @return $this
-     */
-    public function view($view)
-    {
-        return $this->display(function ($value) use ($view) {
-            $model = $this;
-
-            return view($view, compact('model', 'value'))->render();
-        });
-    }
-
-    /**
      * If has display callbacks.
      *
      * @return bool
@@ -358,6 +342,7 @@ class Column
     protected function callDisplayCallbacks($value, $key)
     {
         foreach ($this->displayCallbacks as $callback) {
+
             $previous = $value;
 
             $callback = $this->bindOriginalRow($callback, $key);

@@ -193,6 +193,7 @@ class Field implements Renderable
     public function image($server = '', $width = 200, $height = 200)
     {
         return $this->as(function ($path) use ($server, $width, $height) {
+
             if (empty($path)) {
                 return '';
             }

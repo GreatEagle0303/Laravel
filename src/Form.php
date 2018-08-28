@@ -11,7 +11,6 @@ use Encore\Admin\Form\Tab;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
@@ -91,23 +90,23 @@ class Form implements Renderable
     /**
      * Submitted callback.
      *
-     * @var Closure[]
+     * @var Closure
      */
-    protected $submitted = [];
+    protected $submitted;
 
     /**
      * Saving callback.
      *
-     * @var Closure[]
+     * @var Closure
      */
-    protected $saving = [];
+    protected $saving;
 
     /**
      * Saved callback.
      *
-     * @var Closure[]
+     * @var Closure
      */
-    protected $saved = [];
+    protected $saved;
 
     /**
      * Data for save to current model from input.
@@ -272,29 +271,25 @@ class Form implements Renderable
     {
         $ids = explode(',', $id);
 
-        collect($ids)->filter()->each(function ($id) {
-            $this->deleteFiles($id);
-            $this->model()->find($id)->delete();
-        });
+        foreach ($ids as $id) {
+            if (empty($id)) {
+                continue;
+            }
+            $this->deleteFilesAndImages($id);
+            $this->model->find($id)->delete();
+        }
 
         return true;
     }
 
     /**
-     * Remove files in record.
+     * Remove files or images in record.
      *
      * @param $id
      */
-    protected function deleteFiles($id)
+    protected function deleteFilesAndImages($id)
     {
-        // If it's a soft delete, the files in the data will not be deleted.
-        if (in_array(SoftDeletes::class, class_uses($this->model))) {
-            return;
-        }
-
-        $data = $this
-            ->model()
-            ->with($this->getRelations())
+        $data = $this->model->with($this->getRelations())
             ->findOrFail($id)->toArray();
 
         $this->builder->fields()->filter(function ($field) {
@@ -336,7 +331,7 @@ class Form implements Renderable
             $this->updateRelation($this->relations);
         });
 
-        if (($response = $this->callSaved()) instanceof Response) {
+        if (($response = $this->complete($this->saved)) instanceof Response) {
             return $response;
         }
 
@@ -438,10 +433,8 @@ class Form implements Renderable
      */
     protected function callSubmitted()
     {
-        foreach ($this->submitted as $func) {
-            if ($func instanceof Closure && ($ret = call_user_func($func, $this)) instanceof Response) {
-                return $ret;
-            }
+        if ($this->submitted instanceof Closure) {
+            return call_user_func($this->submitted, $this);
         }
     }
 
@@ -452,24 +445,22 @@ class Form implements Renderable
      */
     protected function callSaving()
     {
-        foreach ($this->saving as $func) {
-            if ($func instanceof Closure && ($ret = call_user_func($func, $this)) instanceof Response) {
-                return $ret;
-            }
+        if ($this->saving instanceof Closure) {
+            return call_user_func($this->saving, $this);
         }
     }
 
     /**
      * Callback after saving a Model.
      *
+     * @param Closure|null $callback
+     *
      * @return mixed|null
      */
-    protected function callSaved()
+    protected function complete(Closure $callback = null)
     {
-        foreach ($this->saved as $func) {
-            if ($func instanceof Closure && ($ret = call_user_func($func, $this)) instanceof Response) {
-                return $ret;
-            }
+        if ($callback instanceof Closure) {
+            return $callback($this);
         }
     }
 
@@ -528,7 +519,7 @@ class Form implements Renderable
             $this->updateRelation($this->relations);
         });
 
-        if (($result = $this->callSaved()) instanceof Response) {
+        if (($result = $this->complete($this->saved)) instanceof Response) {
             return $result;
         }
 
@@ -874,7 +865,7 @@ class Form implements Renderable
      */
     public function submitted(Closure $callback)
     {
-        $this->submitted[] = $callback;
+        $this->submitted = $callback;
     }
 
     /**
@@ -886,7 +877,7 @@ class Form implements Renderable
      */
     public function saving(Closure $callback)
     {
-        $this->saving[] = $callback;
+        $this->saving = $callback;
     }
 
     /**
@@ -898,7 +889,7 @@ class Form implements Renderable
      */
     public function saved(Closure $callback)
     {
-        $this->saved[] = $callback;
+        $this->saved = $callback;
     }
 
     /**
@@ -1202,30 +1193,6 @@ class Form implements Renderable
     public function disableReset()
     {
         $this->builder()->getFooter()->disableReset();
-
-        return $this;
-    }
-
-    /**
-     * Disable View Checkbox on footer.
-     *
-     * @return $this
-     */
-    public function disableViewCheck()
-    {
-        $this->builder()->getFooter()->disableViewCheck();
-
-        return $this;
-    }
-
-    /**
-     * Disable Editing Checkbox on footer.
-     *
-     * @return $this
-     */
-    public function disableEditingCheck()
-    {
-        $this->builder()->getFooter()->disableEditingCheck();
 
         return $this;
     }
