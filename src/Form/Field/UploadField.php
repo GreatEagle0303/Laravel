@@ -67,7 +67,7 @@ trait UploadField
             'showRemove'           => false,
             'showUpload'           => false,
 //            'initialCaption'       => $this->initialCaption($this->value),
-            'deleteExtraData'      => [
+            'deleteExtraData' => [
                 $this->formatName($this->column) => static::FILE_DELETE_FLAG,
                 static::FILE_DELETE_FLAG         => '',
                 '_token'                         => csrf_token(),
@@ -76,7 +76,7 @@ trait UploadField
         ];
 
         if ($this->form instanceof Form) {
-            $defaultOptions['deleteUrl'] = $this->form->resource() . '/' . $this->form->model()->getKey();
+            $defaultOptions['deleteUrl'] = $this->form->resource().'/'.$this->form->model()->getKey();
         }
 
         $this->options($defaultOptions);
@@ -131,24 +131,19 @@ trait UploadField
      * @param string $disk Disks defined in `config/filesystems.php`.
      *
      * @return $this
-     * @throws \Exception
      */
     public function disk($disk)
     {
-        try {
-            $this->storage = Storage::disk($disk);
-        } catch (\Exception $exception) {
-            if (!array_key_exists($disk, config('filesystems.disks'))) {
-                admin_error(
-                    'Config error.',
-                    "Disk [$disk] not configured, please add a disk config in `config/filesystems.php`."
-                );
+        if (!array_key_exists($disk, config('filesystems.disks'))) {
+            $error = new MessageBag([
+                'title'   => 'Config error.',
+                'message' => "Disk [$disk] not configured, please add a disk config in `config/filesystems.php`.",
+            ]);
 
-                return $this;
-            }
-
-            throw $exception;
+            return session()->flash('error', $error);
         }
+
+        $this->storage = Storage::disk($disk);
 
         return $this;
     }
@@ -156,7 +151,7 @@ trait UploadField
     /**
      * Specify the directory and name for upload file.
      *
-     * @param string $directory
+     * @param string      $directory
      * @param null|string $name
      *
      * @return $this
@@ -309,7 +304,7 @@ trait UploadField
      */
     protected function generateUniqueName(UploadedFile $file)
     {
-        return md5(uniqid()) . '.' . $file->getClientOriginalExtension();
+        return md5(uniqid()).'.'.$file->getClientOriginalExtension();
     }
 
     /**

@@ -20,7 +20,6 @@ use Illuminate\Support\Facades\Facade;
  * @method static void navbar(\Closure $builder = null)
  * @method static void registerAuthRoutes()
  * @method static void extend($name, $class)
- * @method static void disablePjax()
  */
 class Admin extends Facade
 {
