@@ -272,7 +272,7 @@ return [
     | When you use command `php artisan admin:extend` to generate extensions,
     | the extension files will be generated in this directory.
     */
-    'extension_dir' => app_path('Admin/Extensions'),
+    'extension_dir' => admin_path('extensions'),
 
     /*
     |--------------------------------------------------------------------------
