@@ -196,6 +196,13 @@ class Field implements Renderable
     protected $horizontal = true;
 
     /**
+     * column data format.
+     *
+     * @var \Closure
+     */
+    protected $customFormat = null;
+
+    /**
      * @var bool
      */
     protected $display = true;
@@ -334,6 +341,23 @@ class Field implements Renderable
         }
 
         $this->value = array_get($data, $this->column);
+        if (isset($this->customFormat) && $this->customFormat instanceof \Closure) {
+            $this->value = call_user_func($this->customFormat, $this->value);
+        }
+    }
+
+    /**
+     * custom format form column data when edit.
+     *
+     * @param \Closure $call
+     *
+     * @return $this
+     */
+    public function customFormat(\Closure $call)
+    {
+        $this->customFormat = $call;
+
+        return $this;
     }
 
     /**
@@ -692,12 +716,34 @@ class Field implements Renderable
         return $this;
     }
 
+
+    /**
+     * Set the field automatically get focus.
+     *
+     * @return Field
+     */
+    public function autofocus()
+    {
+        return $this->attribute('autofocus', true);
+    }
+
+
     /**
      * Set the field as readonly mode.
      *
      * @return Field
      */
     public function readOnly()
+    {
+        return $this->attribute('readonly', true);
+    }
+
+    /**
+     * Set field as disabled.
+     *
+     * @return Field
+     */
+    public function disable()
     {
         return $this->attribute('disabled', true);
     }
@@ -835,7 +881,7 @@ class Field implements Renderable
     /**
      * Get element class selector.
      *
-     * @return string
+     * @return string|array
      */
     protected function getElementClassSelector()
     {
@@ -981,13 +1027,27 @@ class Field implements Renderable
     }
 
     /**
+     * If this field should render.
+     *
+     * @return bool
+     */
+    protected function shouldRender()
+    {
+        if (!$this->display) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Render this filed.
      *
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View|string
      */
     public function render()
     {
-        if (!$this->display) {
+        if (! $this->shouldRender()) {
             return '';
         }
 
