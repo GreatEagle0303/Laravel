@@ -90,6 +90,13 @@ class Field implements Renderable
     protected $options = [];
 
     /**
+     * Checked for specify elements.
+     *
+     * @var array
+     */
+    protected $checked = [];
+
+    /**
      * Validation rules.
      *
      * @var string|\Closure
@@ -398,6 +405,24 @@ class Field implements Renderable
     }
 
     /**
+     * Set the field option checked.
+     *
+     * @param array $checked
+     *
+     * @return $this
+     */
+    public function checked($checked = [])
+    {
+        if ($checked instanceof Arrayable) {
+            $checked = $checked->toArray();
+        }
+
+        $this->checked = array_merge($this->checked, $checked);
+
+        return $this;
+    }
+
+    /**
      * Get or set rules.
      *
      * @param null  $rules
@@ -666,18 +691,6 @@ class Field implements Renderable
 
         return $this;
     }
-
-
-    /**
-     * Set the field automatically get focus.
-     *
-     * @return Field
-     */
-    public function autofocus()
-    {
-        return $this->attribute('autofocus', true);
-    }
-
 
     /**
      * Set the field as readonly mode.
