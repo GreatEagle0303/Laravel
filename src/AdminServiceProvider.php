@@ -20,6 +20,7 @@ class AdminServiceProvider extends ServiceProvider
         Console\ImportCommand::class,
         Console\CreateUserCommand::class,
         Console\ResetPasswordCommand::class,
+        Console\ExtendCommand::class,
     ];
 
     /**
