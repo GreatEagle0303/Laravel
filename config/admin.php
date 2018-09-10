@@ -85,7 +85,7 @@ return [
     | If your page is going to be accessed via https, set it to `true`.
     |
     */
-    'https' => env('ADMIN_HTTPS', false),
+    'secure' => false,
 
     /*
     |--------------------------------------------------------------------------
@@ -245,34 +245,13 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Show version at footer
+    | Version
     |--------------------------------------------------------------------------
     |
-    | Whether to display the version number of laravel-admim at the footer of
-    | each page
-    |
-    */
-    'show_version' => true,
-
-    /*
-    |--------------------------------------------------------------------------
-    | Show environment at footer
-    |--------------------------------------------------------------------------
-    |
-    | Whether to display the environment at the footer of each page
+    | This version number set will appear in the page footer.
     |
     */
-    'show_environment' => true,
-
-    /*
-    |--------------------------------------------------------------------------
-    | Extension Directory
-    |--------------------------------------------------------------------------
-    |
-    | When you use command `php artisan admin:extend` to generate extensions,
-    | the extension files will be generated in this directory.
-    */
-    'extension_dir' => admin_path('extensions'),
+    'version' => '1.5.x-dev',
 
     /*
     |--------------------------------------------------------------------------
