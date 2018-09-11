@@ -15,10 +15,12 @@ class AdminServiceProvider extends ServiceProvider
         Console\MakeCommand::class,
         Console\MenuCommand::class,
         Console\InstallCommand::class,
+        Console\PublishCommand::class,
         Console\UninstallCommand::class,
         Console\ImportCommand::class,
         Console\CreateUserCommand::class,
         Console\ResetPasswordCommand::class,
+        Console\ExtendCommand::class,
     ];
 
     /**
