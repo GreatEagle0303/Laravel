@@ -138,13 +138,6 @@ class Form implements Renderable
     public static $availableFields = [];
 
     /**
-     * Form field alias.
-     *
-     * @var array
-     */
-    public static $fieldAlias = [];
-
-    /**
      * Ignored saving fields.
      *
      * @var array
@@ -705,6 +698,7 @@ class Form implements Renderable
                     }
                     break;
                 case Relations\HasOne::class:
+                case Relations\BelongsTo::class:
 
                     $related = $this->model->$name;
 
@@ -719,29 +713,6 @@ class Form implements Renderable
                     }
 
                     $related->save();
-                    break;
-                case Relations\BelongsTo::class:
-
-                    $parent = $this->model->$name;
-
-                    // if related is empty
-                    if (is_null($parent)) {
-                        $parent = $relation->getRelated();
-                    }
-
-                    foreach ($prepared[$name] as $column => $value) {
-                        $parent->setAttribute($column, $value);
-                    }
-
-                    $parent->save();
-
-                    // When in creating, associate two models
-                    if (! $this->model->{$relation->getForeignKey()}) {
-                        $this->model->{$relation->getForeignKey()} = $parent->getKey();
-
-                        $this->model->save();
-                    }
-
                     break;
                 case Relations\MorphOne::class:
                     $related = $this->model->$name;
@@ -1284,7 +1255,7 @@ class Form implements Renderable
             $segments = array_slice($segments, 0, $slice);
         }
         // # fix #1768
-        if ($segments[0] == 'http:' && (config('admin.https') || config('admin.secure'))) {
+        if ($segments[0] == 'http:' && config('admin.secure') == true) {
             $segments[0] = 'https:';
         }
 
@@ -1397,19 +1368,6 @@ class Form implements Renderable
     }
 
     /**
-     * Set form field alias.
-     *
-     * @param string $field
-     * @param string $alias
-     *
-     * @return void
-     */
-    public static function alias($field, $alias)
-    {
-        static::$fieldAlias[$alias] = $field;
-    }
-
-    /**
      * Remove registered field.
      *
      * @param array|string $abstract
@@ -1428,11 +1386,6 @@ class Form implements Renderable
      */
     public static function findFieldClass($method)
     {
-        // If alias exists.
-        if (isset(static::$fieldAlias[$method])) {
-            $method = static::$fieldAlias[$method];
-        }
-
         $class = array_get(static::$availableFields, $method);
 
         if (class_exists($class)) {
@@ -1502,7 +1455,7 @@ class Form implements Renderable
      * @param string $method
      * @param array  $arguments
      *
-     * @return Field
+     * @return Field|void
      */
     public function __call($method, $arguments)
     {
@@ -1515,9 +1468,5 @@ class Form implements Renderable
 
             return $element;
         }
-
-        admin_error('Error', "Field type [$method] does not exist.");
-
-        return new Field\Nullable();
     }
 }
