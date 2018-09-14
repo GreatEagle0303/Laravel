@@ -1050,7 +1050,7 @@ class Form implements Renderable
      *
      * @return MessageBag|bool
      */
-    public function validationMessages($input)
+    protected function validationMessages($input)
     {
         $failedValidators = [];
 
