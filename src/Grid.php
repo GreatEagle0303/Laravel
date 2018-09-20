@@ -211,8 +211,6 @@ class Grid
             return;
         }
 
-        ob_end_clean();
-
         $this->model()->usePaginate(false);
 
         $exporter = (new Exporter($this))->resolve($this->exporter)->withScope($scope);
