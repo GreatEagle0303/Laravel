@@ -156,7 +156,7 @@ class Grid
     ];
 
     /**
-     * @var Closure
+     * @var Tools\Footer
      */
     protected $footer;
 
@@ -178,8 +178,7 @@ class Grid
 
         $this->setupTools();
         $this->setupFilter();
-
-        $this->handleExportRequest();
+        $this->setupExporter();
     }
 
     /**
@@ -201,30 +200,20 @@ class Grid
     }
 
     /**
-     * Handle export request.
+     * Setup grid exporter.
      *
-     * @param bool $forceExport
+     * @return void
      */
-    protected function handleExportRequest($forceExport = false)
+    protected function setupExporter()
     {
-        if (!$scope = request(Exporter::$queryName)) {
-            return;
-        }
+        if ($scope = Input::get(Exporter::$queryName)) {
+            $this->model()->usePaginate(false);
 
-        ob_end_clean();
+            if ($this->builder) {
+                call_user_func($this->builder, $this);
+            }
 
-        $this->model()->usePaginate(false);
-
-        $exporter = (new Exporter($this))->resolve($this->exporter)->withScope($scope);
-
-        if ($forceExport) {
-            $exporter->export();
-        }
-
-        if ($this->builder) {
-            call_user_func($this->builder, $this);
-
-            $exporter->export();
+            (new Exporter($this))->resolve($this->exporter)->withScope($scope)->export();
         }
     }
 
@@ -500,14 +489,12 @@ class Grid
             return;
         }
 
-        $collection = $this->processFilter(false);
-
-        $data = $collection->toArray();
+        $data = $this->processFilter();
 
         $this->prependRowSelectorColumn();
         $this->appendActionsColumn();
 
-        Column::setOriginalGridModels($collection);
+        Column::setOriginalGridData($data);
 
         $this->columns->map(function (Column $column) use (&$data) {
             $data = $column->fill($data);
@@ -547,17 +534,15 @@ class Grid
     /**
      * Process the grid filter.
      *
-     * @param bool $toArray
-     *
-     * @return array|Collection|mixed
+     * @return array
      */
-    public function processFilter($toArray = true)
+    public function processFilter()
     {
         if ($this->builder) {
             call_user_func($this->builder, $this);
         }
 
-        return $this->filter->execute($toArray);
+        return $this->filter->execute();
     }
 
     /**
@@ -781,7 +766,7 @@ class Grid
      *
      * @param Closure|null $closure
      *
-     * @return Closure
+     * @return $this|Tools\Footer
      */
     public function footer(Closure $closure = null)
     {
@@ -805,7 +790,7 @@ class Grid
             return '';
         }
 
-        return (new Tools\Footer($this))->render();
+        return new Tools\Footer($this);
     }
 
     /**
@@ -1031,8 +1016,6 @@ class Grid
      */
     public function render()
     {
-        $this->handleExportRequest(true);
-
         try {
             $this->build();
         } catch (\Exception $e) {

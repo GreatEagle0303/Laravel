@@ -183,11 +183,6 @@ return [
         'enable' => true,
 
         /*
-         * Only logging allowed methods in the list
-         */
-        'allowed_methods' => ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'CONNECT', 'OPTIONS', 'TRACE', 'PATCH'],
-
-        /*
          * Routes that will not log to database.
          *
          * All method to path like: admin/auth/logs
@@ -277,7 +272,7 @@ return [
     | When you use command `php artisan admin:extend` to generate extensions,
     | the extension files will be generated in this directory.
     */
-    'extension_dir' => app_path('Admin/Extensions'),
+    'extension_dir' => admin_path('extensions'),
 
     /*
     |--------------------------------------------------------------------------

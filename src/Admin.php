@@ -5,11 +5,12 @@ namespace Encore\Admin;
 use Closure;
 use Encore\Admin\Auth\Database\Menu;
 use Encore\Admin\Layout\Content;
-use Encore\Admin\Traits\HasAssets;
 use Encore\Admin\Widgets\Navbar;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Request;
+use Illuminate\Support\Facades\Route;
 use InvalidArgumentException;
 
 /**
@@ -17,19 +18,32 @@ use InvalidArgumentException;
  */
 class Admin
 {
-    use HasAssets;
-
     /**
      * The Laravel admin version.
      *
      * @var string
      */
-    const VERSION = '1.6.1';
+    const VERSION = '1.6.0';
 
     /**
      * @var Navbar
      */
     protected $navbar;
+
+    /**
+     * @var array
+     */
+    public static $script = [];
+
+    /**
+     * @var array
+     */
+    public static $css = [];
+
+    /**
+     * @var array
+     */
+    public static $js = [];
 
     /**
      * @var array
@@ -61,8 +75,6 @@ class Admin
      * @param Closure $callable
      *
      * @return \Encore\Admin\Grid
-     *
-     * @deprecated since v1.6.1
      */
     public function grid($model, Closure $callable)
     {
@@ -74,8 +86,6 @@ class Admin
      * @param Closure $callable
      *
      * @return \Encore\Admin\Form
-     *
-     *  @deprecated since v1.6.1
      */
     public function form($model, Closure $callable)
     {
@@ -101,8 +111,6 @@ class Admin
      * @param mixed $callable
      *
      * @return Show
-     *
-     * @deprecated since v1.6.1
      */
     public function show($model, $callable = null)
     {
@@ -113,8 +121,6 @@ class Admin
      * @param Closure $callable
      *
      * @return \Encore\Admin\Layout\Content
-     *
-     * @deprecated since v1.6.1
      */
     public function content(Closure $callable = null)
     {
@@ -128,7 +134,7 @@ class Admin
      */
     public function getModel($model)
     {
-        if ($model instanceof Model) {
+        if ($model instanceof EloquentModel) {
             return $model;
         }
 
@@ -137,6 +143,62 @@ class Admin
         }
 
         throw new InvalidArgumentException("$model is not a valid model");
+    }
+
+    /**
+     * Add css or get all css.
+     *
+     * @param null $css
+     *
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View|void
+     */
+    public static function css($css = null)
+    {
+        if (!is_null($css)) {
+            self::$css = array_merge(self::$css, (array) $css);
+
+            return;
+        }
+
+        static::$css = array_merge(static::$css, (array) $css);
+
+        return view('admin::partials.css', ['css' => array_unique(static::$css)]);
+    }
+
+    /**
+     * Add js or get all js.
+     *
+     * @param null $js
+     *
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View|void
+     */
+    public static function js($js = null)
+    {
+        if (!is_null($js)) {
+            self::$js = array_merge(self::$js, (array) $js);
+
+            return;
+        }
+
+        static::$js = array_merge(static::$js, (array) $js);
+
+        return view('admin::partials.js', ['js' => array_unique(static::$js)]);
+    }
+
+    /**
+     * @param string $script
+     *
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View|void
+     */
+    public static function script($script = '')
+    {
+        if (!empty($script)) {
+            self::$script = array_merge(self::$script, (array) $script);
+
+            return;
+        }
+
+        return view('admin::partials.script', ['script' => array_unique(self::$script)]);
     }
 
     /**
@@ -212,7 +274,7 @@ class Admin
             'middleware' => config('admin.route.middleware'),
         ];
 
-        app('router')->group($attributes, function ($router) {
+        Route::group($attributes, function ($router) {
 
             /* @var \Illuminate\Routing\Router $router */
             $router->group([], function ($router) {
@@ -269,8 +331,10 @@ class Admin
      */
     public function disablePjax()
     {
-        if (request()->pjax()) {
-            request()->headers->set('X-PJAX', false);
+        $request = Request::instance();
+
+        if ($request->pjax()) {
+            $request->headers->set('X-PJAX', false);
         }
     }
 }

@@ -77,8 +77,7 @@ class Select extends Presenter
 
             $this->script = <<<SCRIPT
 $(".{$this->getElementClass()}").select2({
-  placeholder: "$placeholder",
-  allowClear: true
+  placeholder: "$placeholder"
 });
 
 SCRIPT;

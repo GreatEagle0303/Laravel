@@ -717,18 +717,6 @@ class Field implements Renderable
     }
 
     /**
-     * Specifies a regular expression against which to validate the value of the input.
-     *
-     * @param string $regexp
-     *
-     * @return Field
-     */
-    public function pattern($regexp)
-    {
-        return $this->attribute('pattern', $regexp);
-    }
-
-    /**
      * Set the field automatically get focus.
      *
      * @return Field
