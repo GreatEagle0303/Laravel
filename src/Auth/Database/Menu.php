@@ -22,11 +22,18 @@ class Menu extends Model
     }
 
     /**
+     * whether enable menu bind to a permission
+     *
+     * @var bool
+     */
+    public $withPermission = true;
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
-    protected $fillable = ['parent_id', 'order', 'title', 'icon', 'uri'];
+    protected $fillable = ['parent_id', 'order', 'title', 'icon', 'uri', 'permission'];
 
     /**
      * Create a new Eloquent model instance.

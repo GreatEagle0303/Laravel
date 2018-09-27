@@ -729,16 +729,6 @@ class Field implements Renderable
     }
 
     /**
-     * set the input filed required.
-     *
-     * @return Field
-     */
-    public function required()
-    {
-        return $this->attribute('required', true);
-    }
-
-    /**
      * Set the field automatically get focus.
      *
      * @return Field
