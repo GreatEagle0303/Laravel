@@ -39,12 +39,11 @@
                 </tr>
                 @endforeach
             </tbody>
+
+            {!! $grid->renderFooter() !!}
+
         </table>
-
     </div>
-
-    {!! $grid->renderFooter() !!}
-
     <div class="box-footer clearfix">
         {!! $grid->paginator() !!}
     </div>

@@ -26,11 +26,6 @@ class Model
     protected $model;
 
     /**
-     * @var EloquentModel
-     */
-    protected $originalModel;
-
-    /**
      * Array of queries of the eloquent model.
      *
      * @var \Illuminate\Support\Collection
@@ -107,8 +102,6 @@ class Model
     public function __construct(EloquentModel $model)
     {
         $this->model = $model;
-
-        $this->originalModel = $model;
 
         $this->queries = collect();
 
@@ -379,28 +372,6 @@ class Model
         }
 
         throw new \Exception('Grid query error');
-    }
-
-    /**
-     * @return \Illuminate\Database\Eloquent\Builder|EloquentModel
-     */
-    public function getQueryBuilder()
-    {
-        if ($this->relation) {
-            return $this->relation->getQuery();
-        }
-
-        $this->setSort();
-
-        $queryBuilder = $this->originalModel;
-
-        $this->queries->reject(function ($query) {
-            return in_array($query['method'], ['get', 'paginate']);
-        })->each(function ($query) use (&$queryBuilder) {
-            $queryBuilder = $queryBuilder->{$query['method']}(...$query['arguments']);
-        });
-
-        return $queryBuilder;
     }
 
     /**
