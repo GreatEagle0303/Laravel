@@ -110,6 +110,13 @@ class Form implements Renderable
     protected $saved = [];
 
     /**
+     * Callbacks after getting editing model.
+     *
+     * @var Closure[]
+     */
+    protected $editing = [];
+
+    /**
      * Data for save to current model from input.
      *
      * @var array
@@ -176,6 +183,11 @@ class Form implements Renderable
     public $rows = [];
 
     /**
+     * @var bool
+     */
+    protected $isSoftDeletes = false;
+
+    /**
      * Create a new form instance.
      *
      * @param $model
@@ -190,6 +202,8 @@ class Form implements Renderable
         if ($callback instanceof Closure) {
             $callback($this);
         }
+
+        $this->isSoftDeletes = in_array(SoftDeletes::class, class_uses($this->model));
     }
 
     /**
@@ -277,11 +291,24 @@ class Form implements Renderable
      */
     public function destroy($id)
     {
-        $ids = explode(',', $id);
+        collect(explode(',', $id))->filter()->each(function ($id) {
+            $builder = $this->model()->newQuery();
 
-        collect($ids)->filter()->each(function ($id) {
-            $this->deleteFiles($id);
-            $this->model()->find($id)->delete();
+            if ($this->isSoftDeletes) {
+                $builder = $builder->withTrashed();
+            }
+
+            $model = $builder->with($this->getRelations())->findOrFail($id);
+
+            if ($this->isSoftDeletes && $model->trashed()) {
+                $this->deleteFiles($model, true);
+                $model->forceDelete();
+
+                return;
+            }
+
+            $this->deleteFiles($model);
+            $model->delete();
         });
 
         return true;
@@ -290,19 +317,17 @@ class Form implements Renderable
     /**
      * Remove files in record.
      *
-     * @param $id
+     * @param Model $model
+     * @param bool  $forceDelete
      */
-    protected function deleteFiles($id)
+    protected function deleteFiles(Model $model, $forceDelete = false)
     {
         // If it's a soft delete, the files in the data will not be deleted.
-        if (in_array(SoftDeletes::class, class_uses($this->model))) {
+        if (!$forceDelete && $this->isSoftDeletes) {
             return;
         }
 
-        $data = $this
-            ->model()
-            ->with($this->getRelations())
-            ->findOrFail($id)->toArray();
+        $data = $model->toArray();
 
         $this->builder->fields()->filter(function ($field) {
             return $field instanceof Field\File;
@@ -436,6 +461,18 @@ class Form implements Renderable
         }
 
         return $relations;
+    }
+
+    /**
+     * Call editing callbacks.
+     *
+     * @return void
+     */
+    protected function callEditing()
+    {
+        foreach ($this->editing as $func) {
+            call_user_func($func, $this);
+        }
     }
 
     /**
@@ -705,7 +742,6 @@ class Form implements Renderable
                     }
                     break;
                 case Relations\HasOne::class:
-                case Relations\BelongsTo::class:
 
                     $related = $this->model->$name;
 
@@ -720,6 +756,29 @@ class Form implements Renderable
                     }
 
                     $related->save();
+                    break;
+                case Relations\BelongsTo::class:
+
+                    $parent = $this->model->$name;
+
+                    // if related is empty
+                    if (is_null($parent)) {
+                        $parent = $relation->getRelated();
+                    }
+
+                    foreach ($prepared[$name] as $column => $value) {
+                        $parent->setAttribute($column, $value);
+                    }
+
+                    $parent->save();
+
+                    // When in creating, associate two models
+                    if (!$this->model->{$relation->getForeignKey()}) {
+                        $this->model->{$relation->getForeignKey()} = $parent->getKey();
+
+                        $this->model->save();
+                    }
+
                     break;
                 case Relations\MorphOne::class:
                     $related = $this->model->$name;
@@ -873,6 +932,18 @@ class Form implements Renderable
     }
 
     /**
+     * Set after getting editing model callback.
+     *
+     * @param Closure $callback
+     *
+     * @return void
+     */
+    public function editing(Closure $callback)
+    {
+        $this->editing[] = $callback;
+    }
+
+    /**
      * Set submitted callback.
      *
      * @param Closure $callback
@@ -994,7 +1065,15 @@ class Form implements Renderable
     {
         $relations = $this->getRelations();
 
-        $this->model = $this->model->with($relations)->findOrFail($id);
+        $builder = $this->model()->newQuery();
+
+        if ($this->isSoftDeletes) {
+            $builder->withTrashed();
+        }
+
+        $this->model = $builder->with($relations)->findOrFail($id);
+
+        $this->callEditing();
 
 //        static::doNotSnakeAttributes($this->model);
 
@@ -1028,7 +1107,7 @@ class Form implements Renderable
      *
      * @return MessageBag|bool
      */
-    protected function validationMessages($input)
+    public function validationMessages($input)
     {
         $failedValidators = [];
 
@@ -1260,10 +1339,6 @@ class Form implements Renderable
 
         if ($slice != 0) {
             $segments = array_slice($segments, 0, $slice);
-        }
-        // # fix #1768
-        if ($segments[0] == 'http:' && (config('admin.https') || config('admin.secure'))) {
-            $segments[0] = 'https:';
         }
 
         return implode('/', $segments);

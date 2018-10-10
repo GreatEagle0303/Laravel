@@ -183,6 +183,11 @@ return [
         'enable' => true,
 
         /*
+         * Only logging allowed methods in the list
+         */
+        'allowed_methods' => ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'CONNECT', 'OPTIONS', 'TRACE', 'PATCH'],
+
+        /*
          * Routes that will not log to database.
          *
          * All method to path like: admin/auth/logs
@@ -209,7 +214,7 @@ return [
     |--------------------------------------------------------------------------
     |
     | This value is the skin of admin pages.
-    | @see https://adminlte.io/docs/2.4/skin
+    | @see https://adminlte.io/docs/2.4/layout
     |
     | Supported:
     |    "skin-blue", "skin-blue-light", "skin-yellow", "skin-yellow-light",
@@ -266,13 +271,31 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Menu bind to permission
+    |--------------------------------------------------------------------------
+    |
+    | whether enable menu bind to a permission
+    */
+    'menu_bind_permission' => true,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Enable default breadcrumb
+    |--------------------------------------------------------------------------
+    |
+    | Whether enable default breadcrumb for every page content.
+    */
+    'enable_default_breadcrumb' => true,
+
+    /*
+    |--------------------------------------------------------------------------
     | Extension Directory
     |--------------------------------------------------------------------------
     |
     | When you use command `php artisan admin:extend` to generate extensions,
     | the extension files will be generated in this directory.
     */
-    'extension_dir' => admin_path('extensions'),
+    'extension_dir' => app_path('Admin/Extensions'),
 
     /*
     |--------------------------------------------------------------------------
