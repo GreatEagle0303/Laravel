@@ -37,13 +37,6 @@ class Field implements Renderable
     protected $label;
 
     /**
-     * Escape field value or not.
-     *
-     * @var bool
-     */
-    protected $escape = true;
-
-    /**
      * Field value.
      *
      * @var mixed
@@ -199,7 +192,7 @@ class Field implements Renderable
      */
     public function image($server = '', $width = 200, $height = 200)
     {
-        return $this->unescape()->as(function ($path) use ($server, $width, $height) {
+        return $this->as(function ($path) use ($server, $width, $height) {
             if (empty($path)) {
                 return '';
             }
@@ -234,7 +227,7 @@ class Field implements Renderable
     {
         $field = $this;
 
-        return $this->unescape()->as(function ($path) use ($server, $download, $field) {
+        return $this->as(function ($path) use ($server, $download, $field) {
             $name = basename($path);
 
             $field->wrapped = false;
@@ -282,7 +275,7 @@ HTML;
      */
     public function link($href = '', $target = '_blank')
     {
-        return $this->unescape()->as(function ($link) use ($href, $target) {
+        return $this->as(function ($link) use ($href, $target) {
             $href = $href ?: $link;
 
             return "<a href='$href' target='{$target}'>{$link}</a>";
@@ -298,7 +291,7 @@ HTML;
      */
     public function label($style = 'success')
     {
-        return $this->unescape()->as(function ($value) use ($style) {
+        return $this->as(function ($value) use ($style) {
             if ($value instanceof Arrayable) {
                 $value = $value->toArray();
             }
@@ -318,7 +311,7 @@ HTML;
      */
     public function badge($style = 'blue')
     {
-        return $this->unescape()->as(function ($value) use ($style) {
+        return $this->as(function ($value) use ($style) {
             if ($value instanceof Arrayable) {
                 $value = $value->toArray();
             }
@@ -338,7 +331,7 @@ HTML;
     {
         $field = $this;
 
-        return $this->unescape()->as(function ($value) use ($field) {
+        return $this->as(function ($value) use ($field) {
             $content = json_decode($value, true);
 
             if (json_last_error() == 0) {
@@ -369,30 +362,6 @@ HTML;
         }
 
         return 'fa-file-o';
-    }
-
-    /**
-     * Set escape or not for this field.
-     *
-     * @param bool $escape
-     *
-     * @return $this
-     */
-    public function setEscape($escape = true)
-    {
-        $this->escape = $escape;
-
-        return $this;
-    }
-
-    /**
-     * Unescape for this field.
-     *
-     * @return Field
-     */
-    public function unescape()
-    {
-        return $this->setEscape(false);
     }
 
     /**
@@ -460,7 +429,6 @@ HTML;
     {
         return [
             'content'   => $this->value,
-            'escape'    => $this->escape,
             'label'     => $this->getLabel(),
             'wrapped'   => $this->wrapped,
         ];
