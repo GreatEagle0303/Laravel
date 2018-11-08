@@ -26,9 +26,7 @@
     @include('admin::partials.sidebar')
 
     <div class="content-wrapper" id="pjax-container">
-        <div id="app">
         @yield('content')
-        </div>
         {!! Admin::script() !!}
     </div>
 

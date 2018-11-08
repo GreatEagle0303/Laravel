@@ -20,7 +20,6 @@ return [
     'edit'                  => 'Ubah',
     'view'                  => 'Lihat',
     'continue_editing'      => 'Lanjutkan Pengubahan',
-    'continue_creating'     => 'Terus ciptakan',
     'detail'                => 'Detail',
     'browse'                => 'Jelajahi',
     'reset'                 => 'Reset',
