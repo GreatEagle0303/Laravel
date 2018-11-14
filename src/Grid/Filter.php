@@ -222,20 +222,14 @@ class Filter implements Renderable
     public function removeIDFilterIfNeeded()
     {
         if (!$this->useIdFilter && !$this->idFilterRemoved) {
-            $this->removeDefaultIDFilter();
+            $this->removeFilterByID($this->primaryKey);
 
-            $this->layout->removeDefaultIDFilter();
+            foreach ($this->layout->columns() as $column) {
+                $column->removeFilterByID($this->primaryKey);
+            }
 
             $this->idFilterRemoved = true;
         }
-    }
-
-    /**
-     * Remove the default ID filter.
-     */
-    protected function removeDefaultIDFilter()
-    {
-        array_shift($this->filters);
     }
 
     /**
@@ -475,10 +469,10 @@ class Filter implements Renderable
         }
 
         return view($this->view)->with([
-            'action'   => $this->action ?: $this->urlWithoutFilters(),
-            'layout'   => $this->layout,
-            'filterID' => $this->filterID,
-            'expand'   => $this->expand,
+            'action'    => $this->action ?: $this->urlWithoutFilters(),
+            'layout'    => $this->layout,
+            'filterID'  => $this->filterID,
+            'expand'    => $this->expand,
         ])->render();
     }
 
