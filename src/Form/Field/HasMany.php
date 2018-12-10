@@ -1,4 +1,5 @@
 <?php
+
 namespace Encore\Admin\Form\Field;
 
 use Encore\Admin\Admin;
@@ -15,7 +16,6 @@ use Illuminate\Support\Str;
  */
 class HasMany extends Field
 {
-
     /**
      * Relation name.
      *
@@ -53,17 +53,7 @@ class HasMany extends Field
      */
     protected $views = [
         'default' => 'admin::form.hasmany',
-        'tab' => 'admin::form.hasmanytab',
-    ];
-
-    /**
-     * Options for template
-     *
-     * @var array
-     */
-    protected $options = [
-        'allowCreate' => true,
-        'allowDelete' => true,
+        'tab'     => 'admin::form.hasmanytab',
     ];
 
     /**
@@ -117,7 +107,7 @@ class HasMany extends Field
 
             if (is_array($column)) {
                 foreach ($column as $key => $name) {
-                    $rules[$name . $key] = $fieldRules;
+                    $rules[$name.$key] = $fieldRules;
                 }
 
                 $this->resetInputKey($input, $column);
@@ -126,7 +116,8 @@ class HasMany extends Field
             }
 
             $attributes = array_merge(
-                $attributes, $this->formatValidationAttribute($input, $field->label(), $column)
+                $attributes,
+                $this->formatValidationAttribute($input, $field->label(), $column)
             );
         }
 
@@ -137,14 +128,25 @@ class HasMany extends Field
         }
 
         $newRules = [];
+        $newInput = [];
 
         foreach ($rules as $column => $rule) {
             foreach (array_keys($input[$this->column]) as $key) {
                 $newRules["{$this->column}.$key.$column"] = $rule;
+                if (isset($input[$this->column][$key][$column]) &&
+                    is_array($input[$this->column][$key][$column])) {
+                    foreach ($input[$this->column][$key][$column] as $vkey => $value) {
+                        $newInput["{$this->column}.$key.{$column}$vkey"] = $value;
+                    }
+                }
             }
         }
 
-        return Validator::make($input, $newRules, $this->validationMessages, $attributes);
+        if (empty($newInput)) {
+            $newInput = $input;
+        }
+
+        return Validator::make($newInput, $newRules, $this->validationMessages, $attributes);
     }
 
     /**
@@ -162,7 +164,7 @@ class HasMany extends Field
 
         if (is_array($column)) {
             foreach ($column as $index => $col) {
-                $new[$col . $index] = $col;
+                $new[$col.$index] = $col;
             }
         }
 
@@ -174,7 +176,7 @@ class HasMany extends Field
             } else {
                 foreach ($new as $k => $val) {
                     if (Str::endsWith($key, ".$k")) {
-                        $attributes[$key] = $label . "[$val]";
+                        $attributes[$key] = $label."[$val]";
                     }
                 }
             }
@@ -233,7 +235,7 @@ class HasMany extends Field
                  *
                  * I don't know why a form need range input? Only can imagine is for range search....
                  */
-                $newKey = $name . $column[$name];
+                $newKey = $name.$column[$name];
 
                 /*
                  * set new key
@@ -385,7 +387,7 @@ class HasMany extends Field
      */
     protected function setupScript($script)
     {
-        $method = 'setupScriptFor' . ucfirst($this->viewMode) . 'View';
+        $method = 'setupScriptFor'.ucfirst($this->viewMode).'View';
 
         call_user_func([$this, $method], $script);
     }
@@ -487,18 +489,6 @@ EOT;
         Admin::script($script);
     }
 
-    public function disableCreate()
-    {
-        $this->options['allowCreate'] = false;
-        return $this;
-    }
-
-    public function disableDelete()
-    {
-        $this->options['allowDelete'] = false;
-        return $this;
-    }
-
     /**
      * Render the `HasMany` field.
      *
@@ -517,10 +507,9 @@ EOT;
         $this->setupScript($script);
 
         return parent::render()->with([
-                'forms' => $this->buildRelatedForms(),
-                'template' => $template,
-                'relationName' => $this->relationName,
-                'options' => $this->options,
+            'forms'        => $this->buildRelatedForms(),
+            'template'     => $template,
+            'relationName' => $this->relationName,
         ]);
     }
 }
