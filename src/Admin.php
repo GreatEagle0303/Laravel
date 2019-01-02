@@ -24,12 +24,17 @@ class Admin
      *
      * @var string
      */
-    const VERSION = '1.6.8';
+    const VERSION = '1.6.7';
 
     /**
      * @var Navbar
      */
     protected $navbar;
+
+    /**
+     * @var string
+     */
+    public static $meta_t;
 
     /**
      * @var array
@@ -152,13 +157,23 @@ class Admin
     }
 
     /**
+     * Set admin title.
+     *
+     * @return void
+     */
+    public static function setTitle($title)
+    {
+        self::$meta_t = $title;
+    }
+
+    /**
      * Get admin title.
      *
      * @return Config
      */
     public function title()
     {
-        return config('admin.title');
+        return self::$meta_t ? self::$meta_t : config('admin.title');
     }
 
     /**
