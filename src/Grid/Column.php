@@ -277,27 +277,15 @@ class Column
     }
 
     /**
-     * Set sort value.
-     *
-     * @param bool $sort
-     *
-     * @return Column
-     */
-    public function sort($sort)
-    {
-        $this->sortable = $sort;
-
-        return $this;
-    }
-
-    /**
      * Mark this column as sortable.
      *
      * @return Column
      */
     public function sortable()
     {
-        return $this->sort(true);
+        $this->sortable = true;
+
+        return $this;
     }
 
     /**

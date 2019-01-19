@@ -24,7 +24,7 @@ class Admin
      *
      * @var string
      */
-    const VERSION = '1.6.9';
+    const VERSION = '1.6.7';
 
     /**
      * @var Navbar
@@ -34,7 +34,7 @@ class Admin
     /**
      * @var string
      */
-    public static $metaTitle;
+    public static $meta_t;
 
     /**
      * @var array
@@ -163,7 +163,7 @@ class Admin
      */
     public static function setTitle($title)
     {
-        self::$metaTitle = $title;
+        self::$meta_t = $title;
     }
 
     /**
@@ -173,7 +173,7 @@ class Admin
      */
     public function title()
     {
-        return self::$metaTitle ? self::$metaTitle : config('admin.title');
+        return self::$meta_t ? self::$meta_t : config('admin.title');
     }
 
     /**
