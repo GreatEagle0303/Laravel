@@ -861,8 +861,8 @@ class Field implements Renderable
      */
     public function setElementClass($class)
     {
-        $this->elementClass = array_merge($this->elementClass, (array) $class);
-        
+        $this->elementClass = (array) $class;
+
         return $this;
     }
 
@@ -1051,7 +1051,7 @@ class Field implements Renderable
     {
         return $this->script;
     }
-
+    
     /**
      * To set this field should render or not.
      *
@@ -1060,7 +1060,7 @@ class Field implements Renderable
     public function setDisplay(bool $display)
     {
         $this->display = $display;
-
+        
         return $this;
     }
 
