@@ -149,7 +149,6 @@ class Grid
      */
     protected $options = [
         'usePagination'  => true,
-        'useTools'       => true,
         'useFilter'      => true,
         'useExporter'    => true,
         'useActions'     => true,
@@ -537,18 +536,6 @@ class Grid
     }
 
     /**
-     * Disable header tools.
-     *
-     * @return $this
-     */
-    public function disableTools()
-    {
-        $this->option('useTools', false);
-
-        return $this;
-    }
-
-    /**
      * Disable grid filter.
      *
      * @return $this
@@ -733,16 +720,6 @@ class Grid
     }
 
     /**
-     * If grid allows to use header tools.
-     *
-     * @return bool
-     */
-    public function allowTools()
-    {
-        return $this->option('useTools');
-    }
-
-    /**
      * If grid allows export.s.
      *
      * @return bool
@@ -905,10 +882,7 @@ class Grid
             return false;
         }
 
-        if ($relation instanceof Relations\HasOne ||
-            $relation instanceof Relations\BelongsTo ||
-            $relation instanceof Relations\MorphOne
-        ) {
+        if ($relation instanceof Relations\HasOne || $relation instanceof Relations\BelongsTo) {
             $this->model()->with($method);
 
             return $this->addColumn($method, $label)->setRelation(snake_case($method));

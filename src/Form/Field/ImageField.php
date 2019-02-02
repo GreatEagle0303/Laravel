@@ -58,10 +58,6 @@ trait ImageField
      */
     public function __call($method, $arguments)
     {
-        if (static::hasMacro($method)) {
-            return $this;
-        }
-
         if (!class_exists(ImageManagerStatic::class)) {
             throw new \Exception('To use image handling and manipulation, please install [intervention/image] first.');
         }
