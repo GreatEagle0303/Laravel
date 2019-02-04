@@ -34,6 +34,13 @@ class Field implements Renderable
     protected $value;
 
     /**
+     * Data of all original columns of value.
+     *
+     * @var mixed
+     */
+    protected $data;
+
+    /**
      * Field original value.
      *
      * @var mixed
@@ -332,6 +339,8 @@ class Field implements Renderable
 //            return;
 //        }
 
+        $this->data = $data;
+
         if (is_array($this->column)) {
             foreach ($this->column as $key => $column) {
                 $this->value[$key] = array_get($data, $column);
@@ -558,6 +567,24 @@ class Field implements Renderable
         }
 
         $this->value = $value;
+
+        return $this;
+    }
+
+    /**
+     * Set or get data.
+     *
+     * @param array $data
+     *
+     * @return $this
+     */
+    public function data(array $data = null)
+    {
+        if (is_null($data)) {
+            return $this->data;
+        }
+
+        $this->data = $data;
 
         return $this;
     }
@@ -861,8 +888,8 @@ class Field implements Renderable
      */
     public function setElementClass($class)
     {
-        $this->elementClass = (array) $class;
-
+        $this->elementClass = array_merge($this->elementClass, (array) $class);
+        
         return $this;
     }
 
@@ -1050,6 +1077,18 @@ class Field implements Renderable
     public function getScript()
     {
         return $this->script;
+    }
+    
+    /**
+     * To set this field should render or not.
+     *
+     * @return self
+     */
+    public function setDisplay(bool $display)
+    {
+        $this->display = $display;
+        
+        return $this;
     }
 
     /**
