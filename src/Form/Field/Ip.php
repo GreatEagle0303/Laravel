@@ -21,7 +21,12 @@ class Ip extends Text
 
     public function render()
     {
-        $this->inputmask($this->options);
+        $options = json_encode($this->options);
+
+        $this->script = <<<EOT
+
+$('{$this->getElementClassSelector()}').inputmask($options);
+EOT;
 
         $this->prepend('<i class="fa fa-laptop fa-fw"></i>')
             ->defaultAttribute('style', 'width: 130px');
