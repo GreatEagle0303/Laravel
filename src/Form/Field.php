@@ -987,27 +987,9 @@ class Field implements Renderable
         }
 
         foreach ($delClass as $del) {
-            if (($key = array_search($del, $this->elementClass)) !== false) {
+            if (($key = array_search($del, $this->elementClass))) {
                 unset($this->elementClass[$key]);
             }
-        }
-
-        return $this;
-    }
-
-    /**
-     * reset field className
-     *
-     * @param string $className
-     * @param string $resetClassName
-     *
-     * @return $this
-     */
-    public function resetElementClassName(string $className, string $resetClassName)
-    {
-        if (($key = array_search($className, $this->getElementClass())) !== false) {
-
-            $this->elementClass[$key] = $resetClassName;
         }
 
         return $this;
@@ -1098,14 +1080,15 @@ class Field implements Renderable
     }
 
     /**
-     * Set script of current field
+     * Set script of current field.
      *
      * @return self
      */
     public function setScript($script)
     {
-       $this->script = $script;
-       return $this;
+        $this->script = $script;
+
+        return $this;
     }
 
     /**
