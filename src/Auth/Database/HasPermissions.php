@@ -19,22 +19,21 @@ trait HasPermissions
     /**
      * Check if user has permission.
      *
-     * @param $ability
-     * @param array $arguments
+     * @param $permission
      *
      * @return bool
      */
-    public function can($ability, $arguments = []) : bool
+    public function can(string $permission) : bool
     {
         if ($this->isAdministrator()) {
             return true;
         }
 
-        if ($this->permissions->pluck('slug')->contains($ability)) {
+        if ($this->permissions->pluck('slug')->contains($permission)) {
             return true;
         }
 
-        return $this->roles->pluck('permissions')->flatten()->pluck('slug')->contains($ability);
+        return $this->roles->pluck('permissions')->flatten()->pluck('slug')->contains($permission);
     }
 
     /**

@@ -53,13 +53,7 @@ if (!function_exists('admin_base_path')) {
 
         $prefix = ($prefix == '/') ? '' : $prefix;
 
-        $path = trim($path, '/');
-
-        if (is_null($path) || strlen($path) == 0) {
-            return $prefix ?: '/';
-        }
-
-        return $prefix.'/'.$path;
+        return $prefix.'/'.trim($path, '/');
     }
 }
 

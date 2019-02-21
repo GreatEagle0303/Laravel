@@ -737,23 +737,21 @@ class Form implements Renderable
                 continue;
             }
 
-            switch (true) {
-                case $relation instanceof Relations\BelongsToMany:
-                case $relation instanceof Relations\MorphToMany:
+            switch (get_class($relation)) {
+                case Relations\BelongsToMany::class:
+                case Relations\MorphToMany::class:
                     if (isset($prepared[$name])) {
                         $relation->sync($prepared[$name]);
                     }
                     break;
-                case $relation instanceof Relations\HasOne:
+                case Relations\HasOne::class:
 
                     $related = $this->model->$name;
 
                     // if related is empty
                     if (is_null($related)) {
                         $related = $relation->getRelated();
-                        $qualifiedParentKeyName = $relation->getQualifiedParentKeyName();
-                        $localKey = array_last(explode('.', $qualifiedParentKeyName));
-                        $related->{$relation->getForeignKeyName()} = $this->model->{$localKey};
+                        $related->{$relation->getForeignKeyName()} = $this->model->{$this->model->getKeyName()};
                     }
 
                     foreach ($prepared[$name] as $column => $value) {
@@ -762,7 +760,7 @@ class Form implements Renderable
 
                     $related->save();
                     break;
-                case $relation instanceof Relations\BelongsTo:
+                case Relations\BelongsTo::class:
 
                     $parent = $this->model->$name;
 
@@ -785,7 +783,7 @@ class Form implements Renderable
                     }
 
                     break;
-                case $relation instanceof Relations\MorphOne:
+                case Relations\MorphOne::class:
                     $related = $this->model->$name;
                     if (is_null($related)) {
                         $related = $relation->make();
@@ -795,8 +793,8 @@ class Form implements Renderable
                     }
                     $related->save();
                     break;
-                case $relation instanceof Relations\HasMany:
-                case $relation instanceof Relations\MorphMany:
+                case Relations\HasMany::class:
+                case Relations\MorphMany::class:
 
                     foreach ($prepared[$name] as $related) {
                         /** @var Relations\Relation $relation */
@@ -1070,7 +1068,7 @@ class Form implements Renderable
     {
         $relations = $this->getRelations();
 
-        $builder = $this->model();
+        $builder = $this->model()->newQuery();
 
         if ($this->isSoftDeletes) {
             $builder->withTrashed();
@@ -1322,18 +1320,6 @@ class Form implements Renderable
     }
 
     /**
-     * Disable Creating Checkbox on footer.
-     *
-     * @return $this
-     */
-    public function disableCreatingCheck()
-    {
-        $this->builder()->getFooter()->disableCreatingCheck();
-
-        return $this;
-    }
-
-    /**
      * Footer setting for form.
      *
      * @param Closure $callback
@@ -1563,7 +1549,7 @@ class Form implements Renderable
      */
     public function __set($name, $value)
     {
-        return array_set($this->inputs, $name, $value);
+        $this->input($name, $value);
     }
 
     /**
