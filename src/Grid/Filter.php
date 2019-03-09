@@ -223,9 +223,9 @@ class Filter implements Renderable
      *
      * @return $this
      */
-    public function disableIdFilter(bool $disable = true)
+    public function disableIdFilter()
     {
-        $this->useIdFilter = !$disable;
+        $this->useIdFilter = false;
 
         return $this;
     }

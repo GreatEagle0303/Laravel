@@ -2,9 +2,7 @@
 
 namespace Encore\Admin\Layout;
 
-use Illuminate\Contracts\Support\Renderable;
-
-class Row implements Buildable, Renderable
+class Row implements Buildable
 {
     /**
      * @var Column[]
@@ -74,23 +72,5 @@ class Row implements Buildable, Renderable
     protected function endRow()
     {
         echo '</div>';
-    }
-
-    /**
-     * Render row.
-     *
-     * @return string
-     */
-    public function render()
-    {
-        ob_start();
-
-        $this->build();
-
-        $contents = ob_get_contents();
-
-        ob_end_clean();
-
-        return $contents;
     }
 }

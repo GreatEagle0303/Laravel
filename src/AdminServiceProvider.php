@@ -35,7 +35,6 @@ class AdminServiceProvider extends ServiceProvider
         'admin.log'        => Middleware\LogOperation::class,
         'admin.permission' => Middleware\Permission::class,
         'admin.bootstrap'  => Middleware\Bootstrap::class,
-        'admin.session'    => Middleware\Session::class,
     ];
 
     /**
@@ -50,7 +49,6 @@ class AdminServiceProvider extends ServiceProvider
             'admin.log',
             'admin.bootstrap',
             'admin.permission',
-            'admin.session',
         ],
     ];
 

@@ -148,29 +148,19 @@ class Grid
      * @var array
      */
     protected $options = [
-        'show_pagination'   => true,
-        'show_tools'        => true,
-        'show_filter'       => true,
-        'show_exporter'     => true,
-        'show_actions'      => true,
-        'show_row_selector' => true,
-        'show_create_btn'   => true,
+        'usePagination'  => true,
+        'useTools'       => true,
+        'useFilter'      => true,
+        'useExporter'    => true,
+        'useActions'     => true,
+        'useRowSelector' => true,
+        'allowCreate'    => true,
     ];
 
     /**
      * @var Closure
      */
-    protected $header;
-
-    /**
-     * @var Closure
-     */
     protected $footer;
-
-    /**
-     * @var Closure
-     */
-    protected static $initCallback;
 
     /**
      * Create a new grid instance.
@@ -192,20 +182,6 @@ class Grid
         $this->setupFilter();
 
         $this->handleExportRequest();
-
-        if (static::$initCallback instanceof Closure) {
-            call_user_func(static::$initCallback, $this);
-        }
-    }
-
-    /**
-     * Initialize with user pre-defined default disables and exporter, etc.
-     *
-     * @param Closure $callback
-     */
-    public static function init(Closure $callback = null)
-    {
-        static::$initCallback = $callback;
     }
 
     /**
@@ -357,46 +333,6 @@ class Grid
     }
 
     /**
-     * Get all visible column instances.
-     *
-     * @return Collection|static
-     */
-    public function visibleColumns()
-    {
-        $visible = array_filter(explode(',', request(Tools\ColumnSelector::SELECT_COLUMN_NAME)));
-
-        if (empty($visible)) {
-            return $this->columns;
-        }
-
-        array_push($visible, '__row_selector__', '__actions__');
-
-        return $this->columns->filter(function (Column $column) use ($visible) {
-            return in_array($column->getName(), $visible);
-        });
-    }
-
-    /**
-     * Get all visible column names.
-     *
-     * @return array|static
-     */
-    public function visibleColumnNames()
-    {
-        $visible = array_filter(explode(',', request(Tools\ColumnSelector::SELECT_COLUMN_NAME)));
-
-        if (empty($visible)) {
-            return $this->columnNames;
-        }
-
-        array_push($visible, '__row_selector__', '__actions__');
-
-        return collect($this->columnNames)->filter(function ($column) use ($visible) {
-            return in_array($column, $visible);
-        });
-    }
-
-    /**
      * Add column to grid.
      *
      * @param string $column
@@ -471,11 +407,13 @@ class Grid
      *
      * @return $this
      */
-    public function disablePagination(bool $disable = true)
+    public function disablePagination()
     {
-        $this->model->usePaginate(!$disable);
+        $this->model->usePaginate(false);
 
-        return $this->option('show_pagination', !$disable);
+        $this->option('usePagination', false);
+
+        return $this;
     }
 
     /**
@@ -483,9 +421,9 @@ class Grid
      *
      * @return bool
      */
-    public function showPagination()
+    public function usePagination()
     {
-        return $this->option('show_pagination');
+        return $this->option('usePagination');
     }
 
     /**
@@ -503,9 +441,9 @@ class Grid
      *
      * @return $this
      */
-    public function disableActions(bool $disable = true)
+    public function disableActions()
     {
-        return $this->option('show_actions', !$disable);
+        return $this->option('useActions', false);
     }
 
     /**
@@ -529,7 +467,7 @@ class Grid
      */
     protected function appendActionsColumn()
     {
-        if (!$this->option('show_actions')) {
+        if (!$this->option('useActions')) {
             return;
         }
 
@@ -542,11 +480,14 @@ class Grid
      *
      * @return Grid|mixed
      */
-    public function disableRowSelector(bool $disable = true)
+    public function disableRowSelector()
     {
-        $this->tools->disableBatchActions($disable);
+        $this->tools(function ($tools) {
+            /* @var Grid\Tools $tools */
+            $tools->disableBatchActions();
+        });
 
-        return $this->option('show_row_selector', !$disable);
+        return $this->option('useRowSelector', false);
     }
 
     /**
@@ -556,7 +497,7 @@ class Grid
      */
     protected function prependRowSelectorColumn()
     {
-        if (!$this->option('show_row_selector')) {
+        if (!$this->option('useRowSelector')) {
             return;
         }
 
@@ -600,9 +541,11 @@ class Grid
      *
      * @return $this
      */
-    public function disableTools(bool $disable = true)
+    public function disableTools()
     {
-        return $this->option('show_tools', !$disable);
+        $this->option('useTools', false);
+
+        return $this;
     }
 
     /**
@@ -610,11 +553,13 @@ class Grid
      *
      * @return $this
      */
-    public function disableFilter(bool $disable = true)
+    public function disableFilter()
     {
-        $this->tools->disableFilterButton($disable);
+        $this->option('useFilter', false);
 
-        return $this->option('show_filter', !$disable);
+        $this->tools->disableFilterButton();
+
+        return $this;
     }
 
     /**
@@ -660,7 +605,7 @@ class Grid
      */
     public function renderFilter()
     {
-        if (!$this->option('show_filter')) {
+        if (!$this->option('useFilter')) {
             return '';
         }
 
@@ -788,23 +733,23 @@ class Grid
     }
 
     /**
-     * If grid show header tools.
+     * If grid allows to use header tools.
      *
      * @return bool
      */
-    public function showTools()
+    public function allowTools()
     {
-        return $this->option('show_tools');
+        return $this->option('useTools');
     }
 
     /**
-     * If grid show export btn.
+     * If grid allows export.s.
      *
      * @return bool
      */
-    public function showExportBtn()
+    public function allowExport()
     {
-        return $this->option('show_exporter');
+        return $this->option('useExporter');
     }
 
     /**
@@ -812,9 +757,9 @@ class Grid
      *
      * @return $this
      */
-    public function disableExport(bool $disable = true)
+    public function disableExport()
     {
-        return $this->option('show_exporter', !$disable);
+        return $this->option('useExporter', false);
     }
 
     /**
@@ -844,9 +789,9 @@ class Grid
      *
      * @return $this
      */
-    public function disableCreateButton(bool $disable = true)
+    public function disableCreateButton()
     {
-        return $this->option('show_create_btn', !$disable);
+        return $this->option('allowCreate', false);
     }
 
     /**
@@ -854,9 +799,9 @@ class Grid
      *
      * @return bool
      */
-    public function showCreateBtn()
+    public function allowCreation()
     {
-        return $this->option('show_create_btn');
+        return $this->option('allowCreate');
     }
 
     /**
@@ -870,51 +815,11 @@ class Grid
     }
 
     /**
-     * @return string
-     */
-    public function renderColumnSelector()
-    {
-        return (new Grid\Tools\ColumnSelector($this))->render();
-    }
-
-    /**
-     * Set grid header.
-     *
-     * @param Closure|null $closure
-     *
-     * @return $this|Closure
-     */
-    public function header(Closure $closure = null)
-    {
-        if (!$closure) {
-            return $this->header;
-        }
-
-        $this->header = $closure;
-
-        return $this;
-    }
-
-    /**
-     * Render grid header.
-     *
-     * @return Tools\Header|string
-     */
-    public function renderHeader()
-    {
-        if (!$this->header) {
-            return '';
-        }
-
-        return (new Tools\Header($this))->render();
-    }
-
-    /**
      * Set grid footer.
      *
      * @param Closure|null $closure
      *
-     * @return $this|Closure
+     * @return Closure
      */
     public function footer(Closure $closure = null)
     {
@@ -1070,8 +975,6 @@ class Grid
             'checkbox'    => Displayers\Checkbox::class,
             'orderable'   => Displayers\Orderable::class,
             'table'       => Displayers\Table::class,
-            'expand'      => Displayers\Expand::class,
-            'modal'       => Displayers\Modal::class,
         ];
 
         foreach ($map as $abstract => $class) {

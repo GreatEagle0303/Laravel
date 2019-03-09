@@ -62,11 +62,6 @@ class Show implements Renderable
     protected $panel;
 
     /**
-     * @var Closure
-     */
-    protected static $initCallback;
-
-    /**
      * Show constructor.
      *
      * @param Model $model
@@ -79,20 +74,6 @@ class Show implements Renderable
 
         $this->initPanel();
         $this->initContents();
-
-        if (static::$initCallback instanceof Closure) {
-            call_user_func(static::$initCallback, $this);
-        }
-    }
-
-    /**
-     * Initialize with user pre-defined default disables, etc.
-     *
-     * @param Closure $callback
-     */
-    public static function init(Closure $callback = null)
-    {
-        static::$initCallback = $callback;
     }
 
     /**

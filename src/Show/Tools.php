@@ -102,13 +102,9 @@ class Tools implements Renderable
      *
      * @return $this
      */
-    public function disableList(bool $disable = true)
+    public function disableList()
     {
-        if ($disable) {
-            array_delete($this->tools, 'list');
-        } elseif (!in_array('list', $this->tools)) {
-            array_push($this->tools, 'list');
-        }
+        array_delete($this->tools, 'list');
 
         return $this;
     }
@@ -118,13 +114,9 @@ class Tools implements Renderable
      *
      * @return $this
      */
-    public function disableDelete(bool $disable = true)
+    public function disableDelete()
     {
-        if ($disable) {
-            array_delete($this->tools, 'delete');
-        } elseif (!in_array('delete', $this->tools)) {
-            array_push($this->tools, 'delete');
-        }
+        array_delete($this->tools, 'delete');
 
         return $this;
     }
@@ -134,13 +126,9 @@ class Tools implements Renderable
      *
      * @return $this
      */
-    public function disableEdit(bool $disable = true)
+    public function disableEdit()
     {
-        if ($disable) {
-            array_delete($this->tools, 'edit');
-        } elseif (!in_array('edit', $this->tools)) {
-            array_push($this->tools, 'edit');
-        }
+        array_delete($this->tools, 'edit');
 
         return $this;
     }

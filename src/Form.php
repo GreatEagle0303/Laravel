@@ -188,11 +188,6 @@ class Form implements Renderable
     protected $isSoftDeletes = false;
 
     /**
-     * @var Closure
-     */
-    protected static $initCallback;
-
-    /**
      * Create a new form instance.
      *
      * @param $model
@@ -209,20 +204,6 @@ class Form implements Renderable
         }
 
         $this->isSoftDeletes = in_array(SoftDeletes::class, class_uses($this->model));
-
-        if (static::$initCallback instanceof Closure) {
-            call_user_func(static::$initCallback, $this);
-        }
-    }
-
-    /**
-     * Initialize with user pre-defined default disables, etc.
-     *
-     * @param Closure $callback
-     */
-    public static function init(Closure $callback = null)
-    {
-        static::$initCallback = $callback;
     }
 
     /**
@@ -561,13 +542,7 @@ class Form implements Renderable
         }
 
         /* @var Model $this->model */
-        $builder = $this->model();
-
-        if ($this->isSoftDeletes) {
-            $builder = $builder->withTrashed();
-        }
-
-        $this->model = $builder->with($this->getRelations())->findOrFail($id);
+        $this->model = $this->model->with($this->getRelations())->findOrFail($id);
 
         $this->setFieldOriginalValue();
 
@@ -1098,7 +1073,7 @@ class Form implements Renderable
         $builder = $this->model();
 
         if ($this->isSoftDeletes) {
-            $builder = $builder->withTrashed();
+            $builder->withTrashed();
         }
 
         $this->model = $builder->with($relations)->findOrFail($id);
@@ -1301,9 +1276,9 @@ class Form implements Renderable
      *
      * @deprecated
      */
-    public function disableSubmit(bool $disable = true)
+    public function disableSubmit()
     {
-        $this->builder()->getFooter()->disableSubmit($disable);
+        $this->builder()->getFooter()->disableSubmit();
 
         return $this;
     }
@@ -1315,9 +1290,9 @@ class Form implements Renderable
      *
      * @deprecated
      */
-    public function disableReset(bool $disable = true)
+    public function disableReset()
     {
-        $this->builder()->getFooter()->disableReset($disable);
+        $this->builder()->getFooter()->disableReset();
 
         return $this;
     }
@@ -1327,9 +1302,9 @@ class Form implements Renderable
      *
      * @return $this
      */
-    public function disableViewCheck(bool $disable = true)
+    public function disableViewCheck()
     {
-        $this->builder()->getFooter()->disableViewCheck($disable);
+        $this->builder()->getFooter()->disableViewCheck();
 
         return $this;
     }
@@ -1339,9 +1314,9 @@ class Form implements Renderable
      *
      * @return $this
      */
-    public function disableEditingCheck(bool $disable = true)
+    public function disableEditingCheck()
     {
-        $this->builder()->getFooter()->disableEditingCheck($disable);
+        $this->builder()->getFooter()->disableEditingCheck();
 
         return $this;
     }
@@ -1351,9 +1326,9 @@ class Form implements Renderable
      *
      * @return $this
      */
-    public function disableCreatingCheck(bool $disable = true)
+    public function disableCreatingCheck()
     {
-        $this->builder()->getFooter()->disableCreatingCheck($disable);
+        $this->builder()->getFooter()->disableCreatingCheck();
 
         return $this;
     }
