@@ -44,12 +44,12 @@ class Admin
     /**
      * @var []Closure
      */
-    protected static $bootingCallbacks = [];
+    public static $booting;
 
     /**
      * @var []Closure
      */
-    protected static $bootedCallbacks = [];
+    public static $booted;
 
     /**
      * Returns the long version of Laravel-admin.
@@ -270,7 +270,7 @@ class Admin
      */
     public static function booting(callable $callback)
     {
-        static::$bootingCallbacks[] = $callback;
+        static::$booting[] = $callback;
     }
 
     /**
@@ -278,50 +278,7 @@ class Admin
      */
     public static function booted(callable $callback)
     {
-        static::$bootedCallbacks[] = $callback;
-    }
-
-    /**
-     * Bootstrap the admin application.
-     */
-    public function bootstrap()
-    {
-        $this->fireBootingCallbacks();
-
-        Form::registerBuiltinFields();
-
-        Grid::registerColumnDisplayer();
-
-        Grid\Filter::registerFilters();
-
-        require config('admin.bootstrap', admin_path('bootstrap.php'));
-
-        $assets = Form::collectFieldAssets();
-
-        Admin::css($assets['css']);
-        Admin::js($assets['js']);
-
-        $this->fireBootedCallbacks();
-    }
-
-    /**
-     * Call the booting callbacks for the admin application.
-     */
-    protected function fireBootingCallbacks()
-    {
-        foreach (static::$bootingCallbacks as $callable) {
-            call_user_func($callable);
-        }
-    }
-
-    /**
-     * Call the booted callbacks for the admin application.
-     */
-    protected function fireBootedCallbacks()
-    {
-        foreach (static::$bootedCallbacks as $callable) {
-            call_user_func($callable);
-        }
+        static::$booted[] = $callback;
     }
 
     /*

@@ -458,7 +458,7 @@ class Model
      */
     protected function resolvePerPage($paginate)
     {
-        if ($perPage = request($this->perPageName)) {
+        if ($perPage = app('request')->input($this->perPageName)) {
             if (is_array($paginate)) {
                 $paginate['arguments'][0] = (int) $perPage;
 

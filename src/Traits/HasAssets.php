@@ -2,8 +2,6 @@
 
 namespace Encore\Admin\Traits;
 
-use Encore\Admin\Admin;
-
 trait HasAssets
 {
     /**
@@ -25,24 +23,6 @@ trait HasAssets
      * @var array
      */
     public static $headerJs = [];
-
-    /**
-     * @var string
-     */
-    public static $manifest = 'vendor/laravel-admin/minify-manifest.json';
-
-    /**
-     * @var array
-     */
-    public static $manifestData = [];
-
-    /**
-     * @var array
-     */
-    public static $min = [
-        'js'  => 'vendor/laravel-admin/laravel-admin.min.js',
-        'css' => 'vendor/laravel-admin/laravel-admin.min.css',
-    ];
 
     /**
      * @var array
@@ -96,11 +76,7 @@ trait HasAssets
             return;
         }
 
-        if ($css = static::getMinifiedCss()) {
-            static::$css = [$css];
-        } else {
-            static::$css = array_merge(static::$css, static::baseCss(), (array)$css);
-        }
+        static::$css = array_merge(static::$css, static::baseCss(), (array) $css);
 
         return view('admin::partials.css', ['css' => array_unique(static::$css)]);
     }
@@ -140,11 +116,7 @@ trait HasAssets
             return;
         }
 
-        if ($js = static::getMinifiedJs()) {
-            static::$js = [$js];
-        } else {
-            static::$js = array_merge(static::baseJs(), static::$js, (array) $js);
-        }
+        static::$js = array_merge(static::baseJs(), static::$js, (array) $js);
 
         return view('admin::partials.js', ['js' => array_unique(static::$js)]);
     }
@@ -199,45 +171,6 @@ trait HasAssets
         }
 
         return view('admin::partials.script', ['script' => array_unique(self::$script)]);
-    }
-
-    /**
-     * @param string $key
-     * @return mixed
-     */
-    protected static function getManifestData($key)
-    {
-        if (!empty(static::$manifestData)) {
-            return static::$manifestData[$key];
-        }
-
-        static::$manifestData = json_decode(file_get_contents(public_path(static::$manifest)), true);
-
-        return static::$manifestData[$key];
-    }
-
-    /**
-     * @return bool|mixed
-     */
-    protected static function getMinifiedCss()
-    {
-        if (!config('admin.minify_assets') || !file_exists(public_path(static::$manifest))) {
-            return false;
-        }
-
-        return static::getManifestData(Admin::$min['css']);
-    }
-
-    /**
-     * @return bool|mixed
-     */
-    protected static function getMinifiedJs()
-    {
-        if (!config('admin.minify_assets') || !file_exists(public_path(static::$manifest))) {
-            return false;
-        }
-
-        return static::getManifestData(Admin::$min['js']);
     }
 
     /**
