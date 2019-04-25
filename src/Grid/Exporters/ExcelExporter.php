@@ -2,7 +2,6 @@
 
 namespace Encore\Admin\Grid\Exporters;
 
-use Illuminate\Support\Str;
 use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -44,16 +43,7 @@ abstract class ExcelExporter extends AbstractExporter implements FromQuery, With
     public function query()
     {
         if (!empty($this->columns)) {
-
-            $columns = array_keys($this->columns);
-
-            $eagerLoads = array_keys($this->getQuery()->getEagerLoads());
-
-            $columns = collect($columns)->reject(function ($column) use ($eagerLoads) {
-                return Str::contains($column, '.') || in_array($column, $eagerLoads);
-            });
-
-            return $this->getQuery()->select($columns->toArray());
+            return $this->getQuery()->select(array_keys($this->columns));
         }
 
         return $this->getQuery();

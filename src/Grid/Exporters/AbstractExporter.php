@@ -96,12 +96,11 @@ abstract class AbstractExporter implements ExporterInterface
         if ($this->page) {
 
             $keyName = $this->grid->getKeyName();
-            $perPage = request($model->getPerPageName(), $model->getPerPage());
 
             $scope = (clone $queryBuilder)
                 ->select([$keyName])
                 ->setEagerLoads([])
-                ->forPage($this->page, $perPage)->get();
+                ->forPage($this->page, request($model->getPerPageName()))->get();
 
             $queryBuilder->whereIn($keyName, $scope->pluck($keyName));
         }

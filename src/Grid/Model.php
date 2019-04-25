@@ -174,16 +174,6 @@ class Model
     }
 
     /**
-     * Get per-page number.
-     *
-     * @return int
-     */
-    public function getPerPage()
-    {
-        return $this->perPage;
-    }
-
-    /**
      * Get the query string variable used to store the sort.
      *
      * @return string
@@ -519,7 +509,7 @@ class Model
             return;
         }
 
-        if (str_contains($this->sort['column'], '.')) {
+        if (Str::contains($this->sort['column'], '.')) {
             $this->setRelationSort($this->sort['column']);
         } else {
             $this->resetOrderBy();
