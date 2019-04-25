@@ -53,13 +53,6 @@ class Column
     protected $sort;
 
     /**
-     * Cast Name.
-     *
-     * @var array
-     */
-    protected $cast;
-
-    /**
      * Attributes of column.
      *
      * @var array
@@ -308,18 +301,6 @@ class Column
     }
 
     /**
-     * Set cast name for sortable.
-     *
-     * @return Column
-     */
-    public function cast($cast)
-    {
-        $this->cast = $cast;
-
-        return $this;
-    }
-
-    /**
      * Add a display callback.
      *
      * @param Closure $callback
@@ -553,14 +534,8 @@ class Column
             $icon .= "-amount-{$this->sort['type']}";
         }
 
-        // set sort value
-        $sort = ['column' => $this->name, 'type' => $type];
-        if (isset($this->cast)) {
-            $sort['cast'] = $this->cast;
-        }
-
         $query = app('request')->all();
-        $query = array_merge($query, [$this->grid->model()->getSortName() => $sort]);
+        $query = array_merge($query, [$this->grid->model()->getSortName() => ['column' => $this->name, 'type' => $type]]);
 
         $url = url()->current().'?'.http_build_query($query);
 
