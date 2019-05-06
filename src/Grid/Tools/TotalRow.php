@@ -39,7 +39,7 @@ class TotalRow extends AbstractTool
      *
      * @return mixed
      */
-    protected function total($column, $display = null)
+    protected function total($column, $display)
     {
         if (!is_callable($display) && !is_null($display)) {
             return $display;
@@ -64,11 +64,7 @@ class TotalRow extends AbstractTool
         $columns = $this->getGrid()->columns()->flatMap(function (Column $column) {
             $name = $column->getName();
 
-            $total = '';
-
-            if (Arr::has($this->columns, $name)) {
-                $total = $this->total($name, Arr::get($this->columns, $name));
-            }
+            $total = ($display = Arr::get($this->columns, $name)) ? $this->total($name, $display) : '';
 
             return [$name => $total];
         })->toArray();
