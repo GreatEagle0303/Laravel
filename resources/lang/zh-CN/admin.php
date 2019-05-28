@@ -98,6 +98,5 @@ return [
         'filter_clear'       => '显示全部',
         'filter_placeholder' => '过滤',
     ],
-    'grid_items_selected'    => '已选择 {n} 项',
     'menu_titles' => [],
 ];

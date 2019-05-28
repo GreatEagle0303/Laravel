@@ -116,40 +116,16 @@ class BatchActions extends AbstractTool
      */
     protected function script()
     {
-        $allName = $this->grid->getSelectAllName();
-        $rowName = $this->grid->getGridRowName();
-
-        $selected = trans('admin.grid_items_selected');
-
         return <<<EOT
 
-$('.{$allName}').iCheck({checkboxClass:'icheckbox_minimal-blue'});
+$('.{$this->grid->getSelectAllName()}').iCheck({checkboxClass:'icheckbox_minimal-blue'});
 
-$('.{$allName}').on('ifChanged', function(event) {
+$('.{$this->grid->getSelectAllName()}').on('ifChanged', function(event) {
     if (this.checked) {
-        $('.{$rowName}-checkbox').iCheck('check');
+        $('.{$this->grid->getGridRowName()}-checkbox').iCheck('check');
     } else {
-        $('.{$rowName}-checkbox').iCheck('uncheck');
+        $('.{$this->grid->getGridRowName()}-checkbox').iCheck('uncheck');
     }
-}).on('ifClicked', function () {
-    if (this.checked) {
-        $.admin.grid.selects = {};
-    } else {
-        $('.{$rowName}-checkbox').each(function () {
-            var id = $(this).data('id');
-            $.admin.grid.select(id);
-        });
-    }
-
-    var selected = $.admin.grid.selected().length;
-    
-    if (selected > 0) {
-        $('.{$allName}-btn').show();
-    } else {
-        $('.{$allName}-btn').hide();
-    }
-    
-    $('.{$allName}-btn .selected').html("{$selected}".replace('{n}', selected));
 });
 
 EOT;
