@@ -66,10 +66,10 @@ a.editable-empty {
     position: fixed;
     bottom: 40px;
     right: 20px;
-    z-index: 99999;
+    z-index: 99;
     outline: none;
-    background-color: rgb(34, 45, 50);
-    color: rgb(238, 238, 238);
+    background-color: #3c8dbc;
+    color: white;
     cursor: pointer;
     padding: 10px 15px;
     border-radius: 4px;
