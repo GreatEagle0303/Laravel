@@ -20,14 +20,6 @@ class SwitchField extends Field
         'off' => ['value' => 0, 'text' => 'OFF', 'color' => 'default'],
     ];
 
-    protected $size = 'small';
-
-    public function setSize($size)
-    {
-        $this->size = $size;
-        return $this;
-    }
-
     public function states($states = [])
     {
         foreach (Arr::dot($states) as $key => $state) {
@@ -58,7 +50,7 @@ class SwitchField extends Field
         $this->script = <<<EOT
 
 $('{$this->getElementClassSelector()}.la_checkbox').bootstrapSwitch({
-    size:'{$this->size}',
+    size:'small',
     onText: '{$this->states['on']['text']}',
     offText: '{$this->states['off']['text']}',
     onColor: '{$this->states['on']['color']}',
