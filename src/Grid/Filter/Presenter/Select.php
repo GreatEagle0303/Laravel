@@ -153,8 +153,7 @@ SCRIPT;
     protected function loadRemoteOptions($url, $parameters = [], $options = [])
     {
         $ajaxOptions = [
-            'url'  => $url,
-            'data' => $parameters,
+            'url' => $url.'?'.http_build_query($parameters),
         ];
         $configs = array_merge([
             'allowClear'         => true,
@@ -279,7 +278,7 @@ EOT;
 $(document).off('change', ".{$this->getClass($column)}");
 $(document).on('change', ".{$this->getClass($column)}", function () {
     var target = $(this).closest('form').find(".{$this->getClass($target)}");
-    $.get("$resourceUrl",{q : this.value}, function (data) {
+    $.get("$resourceUrl?q="+this.value, function (data) {
         target.find("option").remove();
         $.each(data, function (i, item) {
             $(target).append($('<option>', {
