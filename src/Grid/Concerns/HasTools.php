@@ -7,7 +7,7 @@ use Encore\Admin\Grid\Tools;
 
 trait HasTools
 {
-    use HasQuickSearch;
+    use HasSearchBar;
 
     /**
      * Header tools.

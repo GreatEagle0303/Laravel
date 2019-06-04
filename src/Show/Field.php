@@ -410,18 +410,6 @@ HTML;
     }
 
     /**
-     * Show readable filesize for giving integer size.
-     *
-     * @return Field
-     */
-    public function filesize()
-    {
-        return $this->as(function ($value) {
-            return file_size($value);
-        });
-    }
-
-    /**
      * Get file icon.
      *
      * @param string $file
