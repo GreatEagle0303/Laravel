@@ -92,7 +92,6 @@ trait UploadField
             'cancelLabel'          => trans('admin.cancel'),
             'showRemove'           => false,
             'showUpload'           => false,
-            'showCancel'           => false,
             'dropZoneEnabled'      => false,
             'deleteExtraData'      => [
                 $this->formatName($this->column) => static::FILE_DELETE_FLAG,

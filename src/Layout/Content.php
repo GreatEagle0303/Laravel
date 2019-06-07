@@ -167,7 +167,6 @@ class Content implements Renderable
 
     /**
      * @param $var
-     *
      * @return Content
      */
     public function dump($var)

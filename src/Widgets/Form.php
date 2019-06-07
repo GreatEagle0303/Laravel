@@ -100,11 +100,6 @@ class Form implements Renderable
     ];
 
     /**
-     * @var bool
-     */
-    public $inbox = true;
-
-    /**
      * Form constructor.
      *
      * @param array $data
@@ -438,7 +433,7 @@ class Form implements Renderable
     /**
      * Add a fieldset to form.
      *
-     * @param string  $title
+     * @param string $title
      * @param Closure $setCallback
      *
      * @return Field\Fieldset
@@ -456,29 +451,6 @@ class Form implements Renderable
         return $fieldset;
     }
 
-    public function unbox()
-    {
-        $this->inbox = false;
-
-        return $this;
-    }
-
-    protected function prepareForm()
-    {
-        if (method_exists($this, 'form')) {
-            $this->form();
-        }
-    }
-
-    protected function prepareHandle()
-    {
-        if (method_exists($this, 'handle')) {
-            $this->method('POST');
-            $this->action(route('admin.handle-form'));
-            $this->hidden('_form_')->default(get_called_class());
-        }
-    }
-
     /**
      * Render the form.
      *
@@ -486,17 +458,25 @@ class Form implements Renderable
      */
     public function render()
     {
-        $this->prepareForm();
+        if (method_exists($this, 'form')) {
+            $this->form();
+        }
 
-        $this->prepareHandle();
+        if (method_exists($this, 'handle')) {
+            $this->method('POST');
+            $this->action(route('admin.handle-form'));
+            $this->hidden('_form_')->default(get_called_class());
+        }
 
         $form = view('admin::widgets.form', $this->getVariables())->render();
 
-        if (!($title = $this->title()) || !$this->inbox) {
+        $title = $this->title();
+
+        if (!$title) {
             return $form;
         }
 
-        return (new Box($title, $form))->render();
+        return new Box($title, $form);
     }
 
     /**
@@ -515,10 +495,20 @@ class Form implements Renderable
 
         $class = BaseForm::$availableFields[$method];
 
-        $field = new $class(Arr::get($arguments, 0), array_slice($arguments, 1));
+        $field = new $class($arguments[0], array_slice($arguments, 1));
 
         return tap($field, function ($field) {
             $this->pushField($field);
         });
+    }
+
+    /**
+     * Output as string.
+     *
+     * @return string
+     */
+    public function __toString()
+    {
+        return $this->render();
     }
 }
