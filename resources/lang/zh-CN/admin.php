@@ -100,6 +100,4 @@ return [
     ],
     'grid_items_selected'    => '已选择 {n} 项',
     'menu_titles'            => [],
-    'prev'                   => '上一步',
-    'next'                   => '下一步',
 ];
