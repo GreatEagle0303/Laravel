@@ -91,12 +91,11 @@ class UserController extends AdminController
         $form = new Form(new $userModel());
 
         $userTable = config('admin.database.users_table');
-        $connection = config('admin.database.connection');
 
         $form->display('id', 'ID');
         $form->text('username', trans('admin.username'))
-            ->creationRules(['required', "unique:{$connection}.{$userTable}"])
-            ->updateRules(['required', "unique:{$connection}.{$userTable},username,{{id}}"]);
+            ->creationRules(['required', "unique:{$userTable}"])
+            ->updateRules(['required', "unique:{$userTable},username,{{id}}"]);
 
         $form->text('name', trans('admin.name'))->rules('required');
         $form->image('avatar', trans('admin.avatar'));
