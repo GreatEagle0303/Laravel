@@ -170,6 +170,10 @@ EOT;
             $this->actions->shift();
         }
 
+        if ($this->actions->isEmpty()) {
+            return '';
+        }
+
         $this->setUpScripts();
 
         $data = [
