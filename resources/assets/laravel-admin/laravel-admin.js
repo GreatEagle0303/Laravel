@@ -162,12 +162,10 @@ $('#totop').on('click', function (e) {
 
     $.admin.reload = function () {
         $.pjax.reload('#pjax-container');
-        $.admin.grid = new Grid();
     };
 
     $.admin.redirect = function (url) {
         $.pjax({container:'#pjax-container', url: url });
-        $.admin.grid = new Grid();
     };
 
     $.admin.getToken = function () {
