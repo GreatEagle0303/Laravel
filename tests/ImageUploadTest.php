@@ -137,7 +137,7 @@ class ImageUploadTest extends TestCase
         }
 
         $this->visit('admin/images')
-            ->seeInElement('td', 'svg');
+            ->dontSeeInElement('td', 1);
     }
 
     public function testBatchDelete()
@@ -162,7 +162,9 @@ class ImageUploadTest extends TestCase
         $this->assertEquals(Image::count(), 0);
 
         $this->visit('admin/images')
-            ->seeInElement('td', 'svg');
+            ->dontSeeInElement('td', 1)
+            ->dontSeeInElement('td', 2)
+            ->dontSeeInElement('td', 3);
 
         $this->assertEquals($this->fileCountInImageDir(), 0);
     }

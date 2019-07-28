@@ -2,12 +2,11 @@
 
 namespace Encore\Admin\Grid;
 
-use Encore\Admin\Actions\GridAction;
 use Encore\Admin\Grid;
 use Encore\Admin\Grid\Tools\AbstractTool;
 use Encore\Admin\Grid\Tools\BatchActions;
 use Encore\Admin\Grid\Tools\FilterButton;
-use Illuminate\Contracts\Support\Htmlable;
+use Encore\Admin\Grid\Tools\RefreshButton;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Support\Collection;
 
@@ -47,6 +46,7 @@ class Tools implements Renderable
     protected function appendDefaultTools()
     {
         $this->append(new BatchActions())
+            ->append(new RefreshButton())
             ->append(new FilterButton());
     }
 
@@ -59,10 +59,6 @@ class Tools implements Renderable
      */
     public function append($tool)
     {
-        if ($tool instanceof GridAction) {
-            $tool->setGrid($this->grid);
-        }
-
         $this->tools->push($tool);
 
         return $this;
@@ -102,12 +98,16 @@ class Tools implements Renderable
      * Disable refresh button.
      *
      * @return void
-     *
-     * @deprecated
      */
     public function disableRefreshButton(bool $disable = true)
     {
-        //
+        $this->tools = $this->tools->map(function (AbstractTool $tool) use ($disable) {
+            if ($tool instanceof RefreshButton) {
+                return $tool->disable($disable);
+            }
+
+            return $tool;
+        });
     }
 
     /**
@@ -150,14 +150,6 @@ class Tools implements Renderable
                 }
 
                 return $tool->setGrid($this->grid)->render();
-            }
-
-            if ($tool instanceof Renderable) {
-                return $tool->render();
-            }
-
-            if ($tool instanceof Htmlable) {
-                return $tool->toHtml();
             }
 
             return (string) $tool;

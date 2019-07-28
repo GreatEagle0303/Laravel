@@ -3,11 +3,9 @@
 namespace Encore\Admin\Show;
 
 use Encore\Admin\Show;
-use Encore\Admin\Widgets\Carousel;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
@@ -37,16 +35,6 @@ class Field implements Renderable
      * @var string
      */
     protected $label;
-
-    /**
-     * Width for label and field.
-     *
-     * @var array
-     */
-    protected $width = [
-        'label' => 2,
-        'field' => 8,
-    ];
 
     /**
      * Escape field value or not.
@@ -196,7 +184,7 @@ class Field implements Renderable
                 return $default;
             }
 
-            return Arr::get($values, $value, $default);
+            return array_get($values, $value, $default);
         });
     }
 
@@ -237,46 +225,6 @@ class Field implements Renderable
     }
 
     /**
-     * Show field as a carousel.
-     *
-     * @param int    $width
-     * @param int    $height
-     * @param string $server
-     *
-     * @return Field
-     */
-    public function carousel($width = 300, $height = 200, $server = '')
-    {
-        return $this->unescape()->as(function ($images) use ($server, $width, $height) {
-            $items = collect($images)->map(function ($path) use ($server, $width, $height) {
-                if (empty($path)) {
-                    return '';
-                }
-
-                if (url()->isValidUrl($path)) {
-                    $image = $path;
-                } elseif ($server) {
-                    $image = $server.$path;
-                } else {
-                    $disk = config('admin.upload.disk');
-
-                    if (config("filesystems.disks.{$disk}")) {
-                        $image = Storage::disk($disk)->url($path);
-                    } else {
-                        $image = '';
-                    }
-                }
-
-                $caption = '';
-
-                return compact('image', 'caption');
-            });
-
-            return (new Carousel($items))->width($width)->height($height);
-        });
-    }
-
-    /**
      * Show field as a file.
      *
      * @param string $server
@@ -311,8 +259,6 @@ class Field implements Renderable
                 return '';
             }
 
-            $download = $download ? "download='$name'" : '';
-
             return <<<HTML
 <ul class="mailbox-attachments clearfix">
     <li style="margin-bottom: 0;">
@@ -323,7 +269,7 @@ class Field implements Renderable
             </div>
             <span class="mailbox-attachment-size">
               {$size}&nbsp;
-              <a href="{$url}" class="btn btn-default btn-xs pull-right" target="_blank" $download><i class="fa fa-cloud-download"></i></a>
+              <a href="{$url}" class="btn btn-default btn-xs pull-right" target="_blank"><i class="fa fa-cloud-download"></i></a>
             </span>
       </div>
     </li>
@@ -412,18 +358,6 @@ HTML;
     }
 
     /**
-     * Show readable filesize for giving integer size.
-     *
-     * @return Field
-     */
-    public function filesize()
-    {
-        return $this->as(function ($value) {
-            return file_size($value);
-        });
-    }
-
-    /**
      * Get file icon.
      *
      * @param string $file
@@ -504,24 +438,6 @@ HTML;
     }
 
     /**
-     * Set width for field and label.
-     *
-     * @param int $field
-     * @param int $label
-     *
-     * @return $this
-     */
-    public function setWidth($field = 8, $label = 2)
-    {
-        $this->width = [
-            'label' => $label,
-            'field' => $field,
-        ];
-
-        return $this;
-    }
-
-    /**
      * Call extended field.
      *
      * @param string|AbstractField|\Closure $abstract
@@ -576,7 +492,7 @@ HTML;
      */
     public function __call($method, $arguments = [])
     {
-        if ($class = Arr::get(Show::$extendedFields, $method)) {
+        if ($class = array_get(Show::$extendedFields, $method)) {
             return $this->callExtendedField($class, $arguments);
         }
 
@@ -586,7 +502,7 @@ HTML;
 
         if ($this->relation) {
             $this->name = $method;
-            $this->label = $this->formatLabel(Arr::get($arguments, 0));
+            $this->label = $this->formatLabel(array_get($arguments, 0));
         }
 
         return $this;
@@ -604,7 +520,6 @@ HTML;
             'escape'    => $this->escape,
             'label'     => $this->getLabel(),
             'wrapped'   => $this->border,
-            'width'     => $this->width,
         ];
     }
 

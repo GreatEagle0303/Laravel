@@ -2,6 +2,7 @@
 
 namespace Encore\Admin\Console;
 
+use Encore\Admin\Admin;
 use Illuminate\Console\Command;
 
 class ExportSeedCommand extends Command

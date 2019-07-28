@@ -26,10 +26,6 @@ trait HasPermissions
      */
     public function can($ability, $arguments = []) : bool
     {
-        if (empty($ability)) {
-            return true;
-        }
-
         if ($this->isAdministrator()) {
             return true;
         }

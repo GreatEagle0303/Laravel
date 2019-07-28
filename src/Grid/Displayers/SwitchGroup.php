@@ -14,8 +14,8 @@ class SwitchGroup extends AbstractDisplayer
 
     protected function updateStates($states)
     {
-        foreach (Arr::dot($states) as $key => $state) {
-            Arr::set($this->states, $key, $state);
+        foreach (array_dot($states) as $key => $state) {
+            array_set($this->states, $key, $state);
         }
     }
 

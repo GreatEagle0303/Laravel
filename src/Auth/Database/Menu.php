@@ -68,13 +68,7 @@ class Menu extends Model
 
         $byOrder = $orderColumn.' = 0,'.$orderColumn;
 
-        $query = static::query();
-
-        if (config('admin.check_menu_roles') !== false) {
-            $query->with('roles');
-        }
-
-        return $query->orderByRaw($byOrder)->get()->toArray();
+        return static::with('roles')->orderByRaw($byOrder)->get()->toArray();
     }
 
     /**

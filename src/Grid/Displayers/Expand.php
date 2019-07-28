@@ -14,7 +14,7 @@ class Expand extends AbstractDisplayer
 
         $this->setupScript();
 
-        $key = $this->column->getName().'-'.$this->getKey();
+        $key = $this->getKey();
 
         return <<<EOT
 <span class="grid-expand" data-inserted="0" data-key="{$key}" data-toggle="collapse" data-target="#grid-collapse-{$key}">

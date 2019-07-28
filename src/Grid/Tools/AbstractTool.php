@@ -54,14 +54,6 @@ abstract class AbstractTool implements Renderable
     }
 
     /**
-     * @return Grid
-     */
-    public function getGrid()
-    {
-        return $this->grid;
-    }
-
-    /**
      * {@inheritdoc}
      */
     abstract public function render();

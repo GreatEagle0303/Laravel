@@ -82,12 +82,10 @@ class BatchActions extends AbstractTool
 
         if (func_num_args() == 1) {
             $action = $title;
-        } elseif (func_num_args() == 2) {
-            $action->setTitle($title);
-        }
-
-        if (method_exists($action, 'setId')) {
             $action->setId($id);
+        } elseif (func_num_args() == 2) {
+            $action->setId($id);
+            $action->setTitle($title);
         }
 
         $this->actions->push($action);
@@ -107,9 +105,7 @@ class BatchActions extends AbstractTool
         foreach ($this->actions as $action) {
             $action->setGrid($this->grid);
 
-            if (method_exists($action, 'script')) {
-                Admin::script($action->script());
-            }
+            Admin::script($action->script());
         }
     }
 
@@ -120,40 +116,16 @@ class BatchActions extends AbstractTool
      */
     protected function script()
     {
-        $allName = $this->grid->getSelectAllName();
-        $rowName = $this->grid->getGridRowName();
-
-        $selected = trans('admin.grid_items_selected');
-
         return <<<EOT
 
-$('.{$allName}').iCheck({checkboxClass:'icheckbox_minimal-blue'});
+$('.{$this->grid->getSelectAllName()}').iCheck({checkboxClass:'icheckbox_minimal-blue'});
 
-$('.{$allName}').on('ifChanged', function(event) {
+$('.{$this->grid->getSelectAllName()}').on('ifChanged', function(event) {
     if (this.checked) {
-        $('.{$rowName}-checkbox').iCheck('check');
+        $('.{$this->grid->getGridRowName()}-checkbox').iCheck('check');
     } else {
-        $('.{$rowName}-checkbox').iCheck('uncheck');
+        $('.{$this->grid->getGridRowName()}-checkbox').iCheck('uncheck');
     }
-}).on('ifClicked', function () {
-    if (this.checked) {
-        $.admin.grid.selects = {};
-    } else {
-        $('.{$rowName}-checkbox').each(function () {
-            var id = $(this).data('id');
-            $.admin.grid.select(id);
-        });
-    }
-
-    var selected = $.admin.grid.selected().length;
-    
-    if (selected > 0) {
-        $('.{$allName}-btn').show();
-    } else {
-        $('.{$allName}-btn').hide();
-    }
-    
-    $('.{$allName}-btn .selected').html("{$selected}".replace('{n}', selected));
 });
 
 EOT;
@@ -168,6 +140,10 @@ EOT;
     {
         if (!$this->enableDelete) {
             $this->actions->shift();
+        }
+
+        if ($this->actions->isEmpty()) {
+            return '';
         }
 
         $this->setUpScripts();

@@ -167,7 +167,7 @@ class Actions extends AbstractDisplayer
     protected function renderView()
     {
         return <<<EOT
-<a href="{$this->getResource()}/{$this->getRouteKey()}" class="{$this->grid->getGridRowName()}-view">
+<a href="{$this->getResource()}/{$this->getRouteKey()}">
     <i class="fa fa-eye"></i>
 </a>
 EOT;
@@ -181,7 +181,7 @@ EOT;
     protected function renderEdit()
     {
         return <<<EOT
-<a href="{$this->getResource()}/{$this->getRouteKey()}/edit" class="{$this->grid->getGridRowName()}-edit">
+<a href="{$this->getResource()}/{$this->getRouteKey()}/edit">
     <i class="fa fa-edit"></i>
 </a>
 EOT;
@@ -205,11 +205,9 @@ EOT;
 
     protected function setupDeleteScript()
     {
-        $trans = [
-            'delete_confirm' => trans('admin.delete_confirm'),
-            'confirm'        => trans('admin.confirm'),
-            'cancel'         => trans('admin.cancel'),
-        ];
+        $deleteConfirm = trans('admin.delete_confirm');
+        $confirm = trans('admin.confirm');
+        $cancel = trans('admin.cancel');
 
         $script = <<<SCRIPT
 
@@ -218,13 +216,13 @@ $('.{$this->grid->getGridRowName()}-delete').unbind('click').click(function() {
     var id = $(this).data('id');
 
     swal({
-        title: "{$trans['delete_confirm']}",
+        title: "$deleteConfirm",
         type: "warning",
         showCancelButton: true,
         confirmButtonColor: "#DD6B55",
-        confirmButtonText: "{$trans['confirm']}",
+        confirmButtonText: "$confirm",
         showLoaderOnConfirm: true,
-        cancelButtonText: "{$trans['cancel']}",
+        cancelButtonText: "$cancel",
         preConfirm: function() {
             return new Promise(function(resolve) {
                 $.ajax({

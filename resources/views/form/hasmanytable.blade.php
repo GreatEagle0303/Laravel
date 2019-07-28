@@ -1,8 +1,3 @@
-<style>
-    td .form-group {
-        margin-bottom: 0 !important;
-    }
-</style>
 
 <div class="row">
     <div class="{{$viewClass['label']}}"><h4 class="pull-right">{{ $label }}</h4></div>

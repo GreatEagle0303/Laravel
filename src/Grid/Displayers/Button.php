@@ -4,7 +4,7 @@ namespace Encore\Admin\Grid\Displayers;
 
 class Button extends AbstractDisplayer
 {
-    public function display($style = null)
+    public function display($style)
     {
         $style = collect((array) $style)->map(function ($style) {
             return 'btn-'.$style;

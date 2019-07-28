@@ -26,12 +26,7 @@
     <div class="tab-content">
         @foreach($tabs as $id => $tab)
         <div class="tab-pane {{ $id == $active ? 'active' : '' }}" id="tab_{{ $tab['id'] }}">
-            @php($content = \Illuminate\Support\Arr::get($tab, 'content'))
-                @if($content instanceof \Illuminate\Contracts\Support\Renderable)
-                    {!! $content->render() !!}
-                @else
-                    {!! $content !!}
-                @endif
+            {!! array_get($tab, 'content') !!}
         </div>
         @endforeach
 

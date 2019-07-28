@@ -2,19 +2,74 @@
 
 namespace DummyNamespace;
 
-use Encore\Admin\Controllers\AdminController;
+use App\Http\Controllers\Controller;
+use Encore\Admin\Controllers\HasResourceActions;
 use Encore\Admin\Form;
 use Encore\Admin\Grid;
+use Encore\Admin\Layout\Content;
 use Encore\Admin\Show;
 
-class ExampleController extends AdminController
+class ExampleController extends Controller
 {
+    use HasResourceActions;
+
     /**
-     * Title for current resource.
+     * Index interface.
      *
-     * @var string
+     * @param Content $content
+     * @return Content
      */
-    protected $title = 'Example controller';
+    public function index(Content $content)
+    {
+        return $content
+            ->header('Index')
+            ->description('description')
+            ->body($this->grid());
+    }
+
+    /**
+     * Show interface.
+     *
+     * @param mixed   $id
+     * @param Content $content
+     * @return Content
+     */
+    public function show($id, Content $content)
+    {
+        return $content
+            ->header('Detail')
+            ->description('description')
+            ->body($this->detail($id));
+    }
+
+    /**
+     * Edit interface.
+     *
+     * @param mixed   $id
+     * @param Content $content
+     * @return Content
+     */
+    public function edit($id, Content $content)
+    {
+        return $content
+            ->header('Edit')
+            ->description('description')
+            ->body($this->form()->edit($id));
+    }
+
+    /**
+     * Create interface.
+     *
+     * @param Content $content
+     * @return Content
+     */
+    public function create(Content $content)
+    {
+        return $content
+            ->header('Create')
+            ->description('description')
+            ->body($this->form());
+    }
 
     /**
      * Make a grid builder.
@@ -23,11 +78,11 @@ class ExampleController extends AdminController
      */
     protected function grid()
     {
-        $grid = new Grid(new ExampleModel);
+        $grid = new Grid(new YourModel);
 
-        $grid->column('id', __('ID'))->sortable();
-        $grid->column('created_at', __('Created at'));
-        $grid->column('updated_at', __('Updated at'));
+        $grid->id('ID')->sortable();
+        $grid->created_at('Created at');
+        $grid->updated_at('Updated at');
 
         return $grid;
     }
@@ -40,11 +95,11 @@ class ExampleController extends AdminController
      */
     protected function detail($id)
     {
-        $show = new Show(ExampleModel::findOrFail($id));
+        $show = new Show(YourModel::findOrFail($id));
 
-        $show->field('id', __('ID'));
-        $show->field('created_at', __('Created at'));
-        $show->field('updated_at', __('Updated at'));
+        $show->id('ID');
+        $show->created_at('Created at');
+        $show->updated_at('Updated at');
 
         return $show;
     }
@@ -56,11 +111,11 @@ class ExampleController extends AdminController
      */
     protected function form()
     {
-        $form = new Form(new ExampleModel);
+        $form = new Form(new YourModel);
 
-        $form->display('id', __('ID'));
-        $form->display('created_at', __('Created At'));
-        $form->display('updated_at', __('Updated At'));
+        $form->display('id', 'ID');
+        $form->display('created_at', 'Created At');
+        $form->display('updated_at', 'Updated At');
 
         return $form;
     }

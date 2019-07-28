@@ -35,10 +35,6 @@ class Image extends File
 
         $this->callInterventionMethods($image->getRealPath());
 
-        $path = $this->uploadAndDeleteOriginal($image);
-
-        $this->uploadAndDeleteOriginalThumbnail($image);
-
-        return $path;
+        return $this->uploadAndDeleteOriginal($image);
     }
 }

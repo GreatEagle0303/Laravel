@@ -3,7 +3,6 @@
 namespace Encore\Admin\Grid\Displayers;
 
 use Encore\Admin\Admin;
-use Illuminate\Support\Arr;
 
 class SwitchDisplay extends AbstractDisplayer
 {
@@ -14,8 +13,8 @@ class SwitchDisplay extends AbstractDisplayer
 
     protected function updateStates($states)
     {
-        foreach (Arr::dot($states) as $key => $state) {
-            Arr::set($this->states, $key, $state);
+        foreach (array_dot($states) as $key => $state) {
+            array_set($this->states, $key, $state);
         }
     }
 
@@ -50,30 +49,19 @@ $('.$class').bootstrapSwitch({
 
         var pk = $(this).data('key');
         var value = $(this).val();
-        var _status = true;
 
         $.ajax({
             url: "{$this->grid->resource()}/" + pk,
             type: "POST",
-            async:false,
             data: {
                 "$key": value,
                 _token: LA.token,
                 _method: 'PUT'
             },
             success: function (data) {
-                if (data.status)
-                    toastr.success(data.message);
-                else
-                    toastr.warning(data.message);
-            },
-            complete:function(xhr,status) {
-                if (status == 'success')
-                    _status = xhr.responseJSON.status;
+                toastr.success(data.message);
             }
         });
-        
-        return _status;
     }
 });
 

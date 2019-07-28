@@ -98,8 +98,5 @@ return [
         'filter_clear'       => '顯示全部',
         'filter_placeholder' => '過濾',
     ],
-    'menu_titles'            => [],
-    'prev'                   => '上一步',
-    'next'                   => '下一步',
-    'quick_create'           => '快速創建',
+    'menu_titles' => [],
 ];

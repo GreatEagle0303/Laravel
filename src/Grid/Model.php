@@ -103,15 +103,12 @@ class Model
      * Create a new grid model instance.
      *
      * @param EloquentModel $model
-     * @param Grid          $grid
      */
-    public function __construct(EloquentModel $model, Grid $grid = null)
+    public function __construct(EloquentModel $model)
     {
         $this->model = $model;
 
         $this->originalModel = $model;
-
-        $this->grid = $grid;
 
         $this->queries = collect();
 
@@ -130,14 +127,6 @@ class Model
         $class = get_class($model);
 
         $class::$snakeAttributes = false;
-    }
-
-    /**
-     * @return EloquentModel
-     */
-    public function getOriginalModel()
-    {
-        return $this->originalModel;
     }
 
     /**
@@ -180,32 +169,6 @@ class Model
     public function setPerPageName($name)
     {
         $this->perPageName = $name;
-
-        return $this;
-    }
-
-    /**
-     * Get per-page number.
-     *
-     * @return int
-     */
-    public function getPerPage()
-    {
-        return $this->perPage;
-    }
-
-    /**
-     * Set per-page number.
-     *
-     * @param int $perPage
-     *
-     * @return $this
-     */
-    public function setPerPage($perPage)
-    {
-        $this->perPage = $perPage;
-
-        $this->__call('paginate', [$perPage]);
 
         return $this;
     }
@@ -495,7 +458,7 @@ class Model
      */
     protected function resolvePerPage($paginate)
     {
-        if ($perPage = request($this->perPageName)) {
+        if ($perPage = app('request')->input($this->perPageName)) {
             if (is_array($paginate)) {
                 $paginate['arguments'][0] = (int) $perPage;
 
@@ -546,25 +509,14 @@ class Model
             return;
         }
 
-        if (Str::contains($this->sort['column'], '.')) {
+        if (str_contains($this->sort['column'], '.')) {
             $this->setRelationSort($this->sort['column']);
         } else {
             $this->resetOrderBy();
 
-            // get column. if contains "cast", set set column as cast
-            if (!empty($this->sort['cast'])) {
-                $column = "CAST({$this->sort['column']} AS {$this->sort['cast']}) {$this->sort['type']}";
-                $method = 'orderByRaw';
-                $arguments = [$column];
-            } else {
-                $column = $this->sort['column'];
-                $method = 'orderBy';
-                $arguments = [$column, $this->sort['type']];
-            }
-
             $this->queries->push([
-                'method'    => $method,
-                'arguments' => $arguments,
+                'method'    => 'orderBy',
+                'arguments' => [$this->sort['column'], $this->sort['type']],
             ]);
         }
     }

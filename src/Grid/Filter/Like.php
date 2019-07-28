@@ -2,8 +2,6 @@
 
 namespace Encore\Admin\Grid\Filter;
 
-use Illuminate\Support\Arr;
-
 class Like extends AbstractFilter
 {
     /**
@@ -25,7 +23,7 @@ class Like extends AbstractFilter
      */
     public function condition($inputs)
     {
-        $value = Arr::get($inputs, $this->column);
+        $value = array_get($inputs, $this->column);
 
         if (is_array($value)) {
             $value = array_filter($value);

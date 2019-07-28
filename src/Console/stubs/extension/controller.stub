@@ -10,7 +10,7 @@ class :class_nameController extends Controller
     public function index(Content $content)
     {
         return $content
-            ->title('Title')
+            ->header('Title')
             ->description('Description')
             ->body(view(':base_package::index'));
     }
