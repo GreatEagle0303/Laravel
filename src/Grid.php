@@ -742,7 +742,7 @@ class Grid
             return $this->resourcePath;
         }
 
-        return request()->getPathInfo();
+        return app('request')->getPathInfo();
     }
 
     /**
