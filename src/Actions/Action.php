@@ -141,7 +141,7 @@ abstract class Action implements Renderable
     public static function makeSelector($class, $prefix)
     {
         if (!isset(static::$selectors[$class])) {
-            static::$selectors[$class] = uniqid($prefix).mt_rand(1000, 9999);
+            static::$selectors[$class] = uniqid($prefix);
         }
 
         return static::$selectors[$class];
@@ -223,7 +223,7 @@ abstract class Action implements Renderable
      */
     public function getHandleRoute()
     {
-        return admin_url('_handle_action_');
+        return route('admin.handle-action');
     }
 
     /**

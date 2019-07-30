@@ -7,7 +7,7 @@ use Closure;
 use Encore\Admin\Grid;
 use Encore\Admin\Grid\Displayers\AbstractDisplayer;
 use Illuminate\Contracts\Support\Arrayable;
-use Illuminate\Database\Eloquent\Model as BaseModel;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -222,7 +222,7 @@ class Column
      */
     public function setModel($model)
     {
-        if (is_null(static::$model) && ($model instanceof BaseModel)) {
+        if (is_null(static::$model) && ($model instanceof Model)) {
             static::$model = $model->newInstance();
         }
     }
