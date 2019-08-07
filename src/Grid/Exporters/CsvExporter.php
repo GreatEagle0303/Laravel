@@ -3,7 +3,6 @@
 namespace Encore\Admin\Grid\Exporters;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
@@ -54,7 +53,7 @@ class CsvExporter extends AbstractExporter
      */
     public function getHeaderRowFromRecords(Collection $records): array
     {
-        $titles = collect(Arr::dot($records->first()->toArray()))->keys()->map(
+        $titles = collect(array_dot($records->first()->toArray()))->keys()->map(
             function ($key) {
                 $key = str_replace('.', ' ', $key);
 
@@ -72,6 +71,6 @@ class CsvExporter extends AbstractExporter
      */
     public function getFormattedRecord(Model $record)
     {
-        return Arr::dot($record->getAttributes());
+        return array_dot($record->getAttributes());
     }
 }

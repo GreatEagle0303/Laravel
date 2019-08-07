@@ -105,9 +105,8 @@ $grid->paginate(15);
 
 
 ```php
-use Illuminate\Support\Str;
 $grid->text()->display(function($text) {
-    return Str::limit($text, 30, '...');
+    return str_limit($text, 30, '...');
 });
 
 $grid->name()->display(function ($name) {

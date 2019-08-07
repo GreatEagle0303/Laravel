@@ -6,7 +6,6 @@ use Closure;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Contracts\Support\Jsonable;
 use Illuminate\Contracts\Support\Renderable;
-use Illuminate\Support\Arr;
 
 class Row
 {
@@ -32,21 +31,16 @@ class Row
     protected $attributes = [];
 
     /**
-     * @var string
-     */
-    protected $keyName;
-
-    /**
      * Constructor.
      *
      * @param $number
      * @param $data
      */
-    public function __construct($number, $data, $keyName)
+    public function __construct($number, $data)
     {
-        $this->data = $data;
         $this->number = $number;
-        $this->keyName = $keyName;
+
+        $this->data = $data;
     }
 
     /**
@@ -56,7 +50,7 @@ class Row
      */
     public function getKey()
     {
-        return Arr::get($this->data, $this->keyName);
+        return $this->model->getKey();
     }
 
     /**
@@ -78,7 +72,7 @@ class Row
      */
     public function getColumnAttributes($column)
     {
-        if ($attributes = Column::getAttributes($column, $this->getKey())) {
+        if ($attributes = Column::getAttributes($column)) {
             return $this->formatHtmlAttribute($attributes);
         }
 
@@ -149,7 +143,7 @@ class Row
      */
     public function __get($attr)
     {
-        return Arr::get($this->data, $attr);
+        return array_get($this->data, $attr);
     }
 
     /**
@@ -163,7 +157,7 @@ class Row
     public function column($name, $value = null)
     {
         if (is_null($value)) {
-            $column = Arr::get($this->data, $name);
+            $column = array_get($this->data, $name);
 
             return $this->output($column);
         }
@@ -172,7 +166,7 @@ class Row
             $value = $value->call($this, $this->column($name));
         }
 
-        Arr::set($this->data, $name, $value);
+        array_set($this->data, $name, $value);
 
         return $this;
     }

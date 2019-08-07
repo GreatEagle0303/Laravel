@@ -4,6 +4,7 @@ namespace Encore\Admin\Auth;
 
 use Encore\Admin\Facades\Admin;
 use Encore\Admin\Middleware\Pjax;
+use Illuminate\Support\Facades\Auth;
 
 class Permission
 {
@@ -22,13 +23,13 @@ class Permission
 
         if (is_array($permission)) {
             collect($permission)->each(function ($permission) {
-                call_user_func([self::class, 'check'], $permission);
+                call_user_func([Permission::class, 'check'], $permission);
             });
 
             return;
         }
 
-        if (Admin::user()->cannot($permission)) {
+        if (Auth::guard('admin')->user()->cannot($permission)) {
             static::error();
         }
     }
@@ -46,7 +47,7 @@ class Permission
             return true;
         }
 
-        if (!Admin::user()->inRoles($roles)) {
+        if (!Auth::guard('admin')->user()->inRoles($roles)) {
             static::error();
         }
     }
@@ -74,7 +75,7 @@ class Permission
             return true;
         }
 
-        if (Admin::user()->inRoles($roles)) {
+        if (Auth::guard('admin')->user()->inRoles($roles)) {
             static::error();
         }
     }
@@ -100,6 +101,6 @@ class Permission
      */
     public static function isAdministrator()
     {
-        return Admin::user()->isRole('administrator');
+        return Auth::guard('admin')->user()->isRole('administrator');
     }
 }

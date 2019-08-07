@@ -21,7 +21,6 @@ namespace App\Admin\Extensions;
 
 use Encore\Admin\Grid\Exporters\AbstractExporter;
 use Maatwebsite\Excel\Facades\Excel;
-use Illuminate\Support\Arr;
 
 class ExcelExpoter extends AbstractExporter
 {
@@ -33,7 +32,7 @@ class ExcelExpoter extends AbstractExporter
 
                 // This logic get the columns that need to be exported from the table data
                 $rows = collect($this->getData())->map(function ($item) {
-                    return Arr::only($item, ['id', 'title', 'content', 'rate', 'keywords']);
+                    return array_only($item, ['id', 'title', 'content', 'rate', 'keywords']);
                 });
 
                 $sheet->rows($rows);

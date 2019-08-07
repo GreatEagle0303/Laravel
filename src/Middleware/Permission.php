@@ -25,11 +25,7 @@ class Permission
      */
     public function handle(Request $request, \Closure $next, ...$args)
     {
-        if (config('admin.check_route_permission') === false) {
-            return $next($request);
-        }
-
-        if (!Admin::user() || !empty($args) || $this->shouldPassThrough($request)) {
+        if (!Admin::user() || !empty($args)) {
             return $next($request);
         }
 
@@ -73,30 +69,5 @@ class Permission
         call_user_func_array([Checker::class, $method], [$args]);
 
         return true;
-    }
-
-    /**
-     * Determine if the request has a URI that should pass through verification.
-     *
-     * @param \Illuminate\Http\Request $request
-     *
-     * @return bool
-     */
-    protected function shouldPassThrough($request)
-    {
-        $excepts = config('admin.auth.excepts', [
-            'auth/login',
-            'auth/logout',
-        ]);
-
-        return collect($excepts)
-            ->map('admin_base_path')
-            ->contains(function ($except) use ($request) {
-                if ($except !== '/') {
-                    $except = trim($except, '/');
-                }
-
-                return $request->is($except);
-            });
     }
 }

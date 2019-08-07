@@ -3,7 +3,8 @@
 namespace Encore\Admin\Middleware;
 
 use Closure;
-use Encore\Admin\Facades\Admin;
+use Encore\Admin\Admin;
+use Illuminate\Support\Facades\Auth;
 
 class Authenticate
 {
@@ -17,10 +18,8 @@ class Authenticate
      */
     public function handle($request, Closure $next)
     {
-        $redirectTo = admin_base_path(config('admin.auth.redirect_to', 'auth/login'));
-
-        if (Admin::guard()->guest() && !$this->shouldPassThrough($request)) {
-            return redirect()->guest($redirectTo);
+        if (Auth::guard('admin')->guest() && !$this->shouldPassThrough($request)) {
+            return redirect()->guest(admin_base_path('auth/login'));
         }
 
         return $next($request);
@@ -35,19 +34,21 @@ class Authenticate
      */
     protected function shouldPassThrough($request)
     {
-        $excepts = config('admin.auth.excepts', [
-            'auth/login',
-            'auth/logout',
-        ]);
+        $excepts = [
+            admin_base_path('auth/login'),
+            admin_base_path('auth/logout'),
+        ];
 
-        return collect($excepts)
-            ->map('admin_base_path')
-            ->contains(function ($except) use ($request) {
-                if ($except !== '/') {
-                    $except = trim($except, '/');
-                }
+        foreach ($excepts as $except) {
+            if ($except !== '/') {
+                $except = trim($except, '/');
+            }
 
-                return $request->is($except);
-            });
+            if ($request->is($except)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

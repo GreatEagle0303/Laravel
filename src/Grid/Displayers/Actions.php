@@ -57,27 +57,13 @@ class Actions extends AbstractDisplayer
     }
 
     /**
-     * Get route key name of current row.
-     *
-     * @return mixed
-     */
-    public function getRouteKey()
-    {
-        return $this->row->{$this->row->getRouteKeyName()};
-    }
-
-    /**
      * Disable view action.
      *
      * @return $this
      */
-    public function disableView(bool $disable = true)
+    public function disableView()
     {
-        if ($disable) {
-            array_delete($this->actions, 'view');
-        } elseif (!in_array('view', $this->actions)) {
-            array_push($this->actions, 'view');
-        }
+        array_delete($this->actions, 'view');
 
         return $this;
     }
@@ -87,13 +73,9 @@ class Actions extends AbstractDisplayer
      *
      * @return $this.
      */
-    public function disableDelete(bool $disable = true)
+    public function disableDelete()
     {
-        if ($disable) {
-            array_delete($this->actions, 'delete');
-        } elseif (!in_array('delete', $this->actions)) {
-            array_push($this->actions, 'delete');
-        }
+        array_delete($this->actions, 'delete');
 
         return $this;
     }
@@ -103,13 +85,9 @@ class Actions extends AbstractDisplayer
      *
      * @return $this.
      */
-    public function disableEdit(bool $disable = true)
+    public function disableEdit()
     {
-        if ($disable) {
-            array_delete($this->actions, 'edit');
-        } elseif (!in_array('edit', $this->actions)) {
-            array_push($this->actions, 'edit');
-        }
+        array_delete($this->actions, 'edit');
 
         return $this;
     }
@@ -167,7 +145,7 @@ class Actions extends AbstractDisplayer
     protected function renderView()
     {
         return <<<EOT
-<a href="{$this->getResource()}/{$this->getRouteKey()}" class="{$this->grid->getGridRowName()}-view">
+<a href="{$this->getResource()}/{$this->getKey()}">
     <i class="fa fa-eye"></i>
 </a>
 EOT;
@@ -181,7 +159,7 @@ EOT;
     protected function renderEdit()
     {
         return <<<EOT
-<a href="{$this->getResource()}/{$this->getRouteKey()}/edit" class="{$this->grid->getGridRowName()}-edit">
+<a href="{$this->getResource()}/{$this->getKey()}/edit">
     <i class="fa fa-edit"></i>
 </a>
 EOT;
@@ -194,22 +172,9 @@ EOT;
      */
     protected function renderDelete()
     {
-        $this->setupDeleteScript();
-
-        return <<<EOT
-<a href="javascript:void(0);" data-id="{$this->getKey()}" class="{$this->grid->getGridRowName()}-delete">
-    <i class="fa fa-trash"></i>
-</a>
-EOT;
-    }
-
-    protected function setupDeleteScript()
-    {
-        $trans = [
-            'delete_confirm' => trans('admin.delete_confirm'),
-            'confirm'        => trans('admin.confirm'),
-            'cancel'         => trans('admin.cancel'),
-        ];
+        $deleteConfirm = trans('admin.delete_confirm');
+        $confirm = trans('admin.confirm');
+        $cancel = trans('admin.cancel');
 
         $script = <<<SCRIPT
 
@@ -218,13 +183,13 @@ $('.{$this->grid->getGridRowName()}-delete').unbind('click').click(function() {
     var id = $(this).data('id');
 
     swal({
-        title: "{$trans['delete_confirm']}",
+        title: "$deleteConfirm",
         type: "warning",
         showCancelButton: true,
         confirmButtonColor: "#DD6B55",
-        confirmButtonText: "{$trans['confirm']}",
+        confirmButtonText: "$confirm",
         showLoaderOnConfirm: true,
-        cancelButtonText: "{$trans['cancel']}",
+        cancelButtonText: "$cancel",
         preConfirm: function() {
             return new Promise(function(resolve) {
                 $.ajax({
@@ -257,5 +222,11 @@ $('.{$this->grid->getGridRowName()}-delete').unbind('click').click(function() {
 SCRIPT;
 
         Admin::script($script);
+
+        return <<<EOT
+<a href="javascript:void(0);" data-id="{$this->getKey()}" class="{$this->grid->getGridRowName()}-delete">
+    <i class="fa fa-trash"></i>
+</a>
+EOT;
     }
 }

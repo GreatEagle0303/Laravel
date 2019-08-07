@@ -10,7 +10,6 @@ use Encore\Admin\Grid\Filter\Presenter\Presenter;
 use Encore\Admin\Grid\Filter\Presenter\Radio;
 use Encore\Admin\Grid\Filter\Presenter\Select;
 use Encore\Admin\Grid\Filter\Presenter\Text;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 
 /**
@@ -182,7 +181,7 @@ abstract class AbstractFilter
     public function siblings($index = null)
     {
         if (!is_null($index)) {
-            return Arr::get($this->parent->filters(), $index);
+            return array_get($this->parent->filters(), $index);
         }
 
         return $this->parent->filters();
@@ -225,7 +224,7 @@ abstract class AbstractFilter
      */
     public function condition($inputs)
     {
-        $value = Arr::get($inputs, $this->column);
+        $value = array_get($inputs, $this->column);
 
         if (!isset($value)) {
             return;
@@ -239,7 +238,7 @@ abstract class AbstractFilter
     /**
      * Select filter.
      *
-     * @param array|\Illuminate\Support\Collection $options
+     * @param array $options
      *
      * @return Select
      */
@@ -249,7 +248,7 @@ abstract class AbstractFilter
     }
 
     /**
-     * @param array|\Illuminate\Support\Collection $options
+     * @param array $options
      *
      * @return MultipleSelect
      */
@@ -259,7 +258,7 @@ abstract class AbstractFilter
     }
 
     /**
-     * @param array|\Illuminate\Support\Collection $options
+     * @param array $options
      *
      * @return Radio
      */
@@ -269,7 +268,7 @@ abstract class AbstractFilter
     }
 
     /**
-     * @param array|\Illuminate\Support\Collection $options
+     * @param array $options
      *
      * @return Checkbox
      */
@@ -281,7 +280,7 @@ abstract class AbstractFilter
     /**
      * Datetime filter.
      *
-     * @param array|\Illuminate\Support\Collection $options
+     * @param array $options
      *
      * @return DateTime
      */
@@ -411,9 +410,9 @@ abstract class AbstractFilter
      */
     public function getColumn()
     {
-        $parentName = $this->parent->getName();
+        $parenName = $this->parent->getName();
 
-        return $parentName ? "{$parentName}_{$this->column}" : $this->column;
+        return $parenName ? "{$parenName}_{$this->column}" : $this->column;
     }
 
     /**

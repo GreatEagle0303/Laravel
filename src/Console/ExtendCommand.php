@@ -4,7 +4,6 @@ namespace Encore\Admin\Console;
 
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
-use Illuminate\Support\Str;
 
 class ExtendCommand extends Command
 {
@@ -157,7 +156,7 @@ TREE;
         // make class
         $classContents = str_replace(
             [':namespace', ':class_name', ':title', ':path', ':base_package'],
-            [$this->namespace, $this->className, Str::title($this->className), basename($this->package), basename($this->package)],
+            [$this->namespace, $this->className, title_case($this->className), basename($this->package), basename($this->package)],
             file_get_contents(__DIR__.'/stubs/extension/extension.stub')
         );
         $this->putFile("src/{$this->className}.php", $classContents);
@@ -197,7 +196,7 @@ TREE;
         if (!$namespace = $this->option('namespace')) {
             list($vendor, $name) = explode('/', $this->package);
 
-            $default = str_replace(['-', '-'], '', Str::title($vendor).'\\'.Str::title($name));
+            $default = str_replace(['-', '-'], '', title_case($vendor).'\\'.title_case($name));
 
             $namespace = $this->ask('Root namespace', $default);
         }

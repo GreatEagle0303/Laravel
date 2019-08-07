@@ -21,7 +21,6 @@ namespace App\Admin\Extensions;
 
 use Encore\Admin\Grid\Exporters\AbstractExporter;
 use Maatwebsite\Excel\Facades\Excel;
-use Illuminate\Support\Arr;
 
 class ExcelExpoter extends AbstractExporter
 {
@@ -33,7 +32,7 @@ class ExcelExpoter extends AbstractExporter
 
                 // 这段逻辑是从表格数据中取出需要导出的字段
                 $rows = collect($this->getData())->map(function ($item) {
-                    return Arr::only($item, ['id', 'title', 'content', 'rate', 'keywords']);
+                    return array_only($item, ['id', 'title', 'content', 'rate', 'keywords']);
                 });
 
                 $sheet->rows($rows);

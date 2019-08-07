@@ -80,13 +80,9 @@ class Tools implements Renderable
      *
      * @return $this
      */
-    public function disableList(bool $disable = true)
+    public function disableList()
     {
-        if ($disable) {
-            array_delete($this->tools, 'list');
-        } elseif (!in_array('list', $this->tools)) {
-            array_push($this->tools, 'list');
-        }
+        array_delete($this->tools, 'list');
 
         return $this;
     }
@@ -96,13 +92,9 @@ class Tools implements Renderable
      *
      * @return $this
      */
-    public function disableDelete(bool $disable = true)
+    public function disableDelete()
     {
-        if ($disable) {
-            array_delete($this->tools, 'delete');
-        } elseif (!in_array('delete', $this->tools)) {
-            array_push($this->tools, 'delete');
-        }
+        array_delete($this->tools, 'delete');
 
         return $this;
     }
@@ -112,13 +104,9 @@ class Tools implements Renderable
      *
      * @return $this
      */
-    public function disableView(bool $disable = true)
+    public function disableView()
     {
-        if ($disable) {
-            array_delete($this->tools, 'view');
-        } elseif (!in_array('view', $this->tools)) {
-            array_push($this->tools, 'view');
-        }
+        array_delete($this->tools, 'view');
 
         return $this;
     }
@@ -210,12 +198,9 @@ HTML;
      */
     protected function renderDelete()
     {
-        $trans = [
-            'delete_confirm' => trans('admin.delete_confirm'),
-            'confirm'        => trans('admin.confirm'),
-            'cancel'         => trans('admin.cancel'),
-            'delete'         => trans('admin.delete'),
-        ];
+        $deleteConfirm = trans('admin.delete_confirm');
+        $confirm = trans('admin.confirm');
+        $cancel = trans('admin.cancel');
 
         $class = uniqid();
 
@@ -224,13 +209,13 @@ HTML;
 $('.{$class}-delete').unbind('click').click(function() {
 
     swal({
-        title: "{$trans['delete_confirm']}",
+        title: "$deleteConfirm",
         type: "warning",
         showCancelButton: true,
         confirmButtonColor: "#DD6B55",
-        confirmButtonText: "{$trans['confirm']}",
+        confirmButtonText: "$confirm",
         showLoaderOnConfirm: true,
-        cancelButtonText: "{$trans['cancel']}",
+        cancelButtonText: "$cancel",
         preConfirm: function() {
             return new Promise(function(resolve) {
                 $.ajax({
@@ -262,12 +247,14 @@ $('.{$class}-delete').unbind('click').click(function() {
 
 SCRIPT;
 
+        $delete = trans('admin.delete');
+
         Admin::script($script);
 
         return <<<HTML
 <div class="btn-group pull-right" style="margin-right: 5px">
-    <a href="javascript:void(0);" class="btn btn-sm btn-danger {$class}-delete" title="{$trans['delete']}">
-        <i class="fa fa-trash"></i><span class="hidden-xs">  {$trans['delete']}</span>
+    <a href="javascript:void(0);" class="btn btn-sm btn-danger {$class}-delete" title="{$delete}">
+        <i class="fa fa-trash"></i><span class="hidden-xs">  {$delete}</span>
     </a>
 </div>
 HTML;

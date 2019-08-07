@@ -28,6 +28,7 @@
             "providers": [
                 ":namespace:class_nameServiceProvider"
             ]
+
         }
     }
 }

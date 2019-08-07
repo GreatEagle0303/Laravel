@@ -8,7 +8,7 @@ use Encore\Admin\Form\Field;
 use Encore\Admin\Form\NestedForm;
 use Illuminate\Database\Eloquent\Relations\HasMany as Relation;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
-use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 
 /**
@@ -94,7 +94,7 @@ class HasMany extends Field
      *
      * @param array $input
      *
-     * @return bool|\Illuminate\Contracts\Validation\Validator
+     * @return bool|Validator
      */
     public function getValidator(array $input)
     {
@@ -102,7 +102,7 @@ class HasMany extends Field
             return false;
         }
 
-        $input = Arr::only($input, $this->column);
+        $input = array_only($input, $this->column);
 
         $form = $this->buildNestedForm($this->column, $this->builder);
 
@@ -132,7 +132,7 @@ class HasMany extends Field
             );
         }
 
-        Arr::forget($rules, NestedForm::REMOVE_FLAG_NAME);
+        array_forget($rules, NestedForm::REMOVE_FLAG_NAME);
 
         if (empty($rules)) {
             return false;
@@ -157,7 +157,7 @@ class HasMany extends Field
             $newInput = $input;
         }
 
-        return \validator($newInput, $newRules, $this->getValidationMessages(), $attributes);
+        return Validator::make($newInput, $newRules, $this->validationMessages, $attributes);
     }
 
     /**
@@ -179,7 +179,7 @@ class HasMany extends Field
             }
         }
 
-        foreach (array_keys(Arr::dot($input)) as $key) {
+        foreach (array_keys(array_dot($input)) as $key) {
             if (is_string($column)) {
                 if (Str::endsWith($key, ".$column")) {
                     $attributes[$key] = $label;
@@ -251,11 +251,11 @@ class HasMany extends Field
                 /*
                  * set new key
                  */
-                Arr::set($input, "{$this->column}.$index.$newKey", $value);
+                array_set($input, "{$this->column}.$index.$newKey", $value);
                 /*
                  * forget the old key and value
                  */
-                Arr::forget($input, "{$this->column}.$index.$name");
+                array_forget($input, "{$this->column}.$index.$name");
             }
         }
     }
@@ -279,13 +279,13 @@ class HasMany extends Field
      *
      * @param string   $column
      * @param \Closure $builder
-     * @param null     $model
+     * @param null     $key
      *
      * @return NestedForm
      */
-    protected function buildNestedForm($column, \Closure $builder, $model = null)
+    protected function buildNestedForm($column, \Closure $builder, $key = null)
     {
-        $form = new Form\NestedForm($column, $model);
+        $form = new Form\NestedForm($column, $key);
 
         $form->setForm($this->form);
 
@@ -384,22 +384,14 @@ class HasMany extends Field
                     continue;
                 }
 
-                $model = $relation->getRelated()->replicate()->forceFill($data);
-
-                $forms[$key] = $this->buildNestedForm($this->column, $this->builder, $model)
+                $forms[$key] = $this->buildNestedForm($this->column, $this->builder, $key)
                     ->fill($data);
             }
         } else {
-            if (empty($this->value)) {
-                return [];
-            }
-
             foreach ($this->value as $data) {
-                $key = Arr::get($data, $relation->getRelated()->getKeyName());
+                $key = array_get($data, $relation->getRelated()->getKeyName());
 
-                $model = $relation->getRelated()->replicate()->forceFill($data);
-
-                $forms[$key] = $this->buildNestedForm($this->column, $this->builder, $model)
+                $forms[$key] = $this->buildNestedForm($this->column, $this->builder, $key)
                     ->fill($data);
             }
         }
@@ -442,7 +434,7 @@ class HasMany extends Field
          */
         $script = <<<EOT
 var index = 0;
-$('#has-many-{$this->column}').off('click', '.add').on('click', '.add', function () {
+$('#has-many-{$this->column}').on('click', '.add', function () {
 
     var tpl = $('template.{$this->column}-tpl');
 
@@ -451,13 +443,11 @@ $('#has-many-{$this->column}').off('click', '.add').on('click', '.add', function
     var template = tpl.html().replace(/{$defaultKey}/g, index);
     $('.has-many-{$this->column}-forms').append(template);
     {$templateScript}
-    return false;
 });
 
-$('#has-many-{$this->column}').off('click', '.remove').on('click', '.remove', function () {
+$('#has-many-{$this->column}').on('click', '.remove', function () {
     $(this).closest('.has-many-{$this->column}-form').hide();
     $(this).closest('.has-many-{$this->column}-form').find('.$removeClass').val(1);
-    return false;
 });
 
 EOT;
@@ -550,13 +540,11 @@ $('#has-many-{$this->column}').on('click', '.add', function () {
     var template = tpl.html().replace(/{$defaultKey}/g, index);
     $('.has-many-{$this->column}-forms').append(template);
     {$templateScript}
-    return false;
 });
 
 $('#has-many-{$this->column}').on('click', '.remove', function () {
     $(this).closest('.has-many-{$this->column}-form').hide();
     $(this).closest('.has-many-{$this->column}-form').find('.$removeClass').val(1);
-    return false;
 });
 
 EOT;

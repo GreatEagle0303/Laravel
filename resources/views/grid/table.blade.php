@@ -5,49 +5,37 @@
     </div>
     @endif
 
-    @if ( $grid->showTools() || $grid->showExportBtn() || $grid->showCreateBtn() )
+    @if ( $grid->allowTools() || $grid->allowExport() || $grid->allowCreation() )
     <div class="box-header with-border">
         <div class="pull-right">
-            {!! $grid->renderColumnSelector() !!}
             {!! $grid->renderExportButton() !!}
             {!! $grid->renderCreateButton() !!}
         </div>
-        @if ( $grid->showTools() )
-        <div class="pull-left">
+        @if ( $grid->allowTools() )
+        <span>
             {!! $grid->renderHeaderTools() !!}
-        </div>
+        </span>
         @endif
     </div>
     @endif
 
     {!! $grid->renderFilter() !!}
 
-    {!! $grid->renderHeader() !!}
-
     <!-- /.box-header -->
     <div class="box-body table-responsive no-padding">
-        <table class="table table-hover" id="{{ $grid->tableID }}">
+        <table class="table table-hover">
             <thead>
                 <tr>
-                    @foreach($grid->visibleColumns() as $column)
-                    <th {!! $column->formatHtmlAttributes() !!}>{{$column->getLabel()}}{!! $column->renderHeader() !!}</th>
+                    @foreach($grid->columns() as $column)
+                    <th>{{$column->getLabel()}}{!! $column->sorter() !!}</th>
                     @endforeach
                 </tr>
             </thead>
 
-            @if ($grid->hasQuickCreate())
-                {!! $grid->renderQuickCreate() !!}
-            @endif
-
             <tbody>
-
-                @if($grid->rows()->isEmpty())
-                    @include('admin::grid.empty-grid')
-                @endif
-
                 @foreach($grid->rows() as $row)
                 <tr {!! $row->getRowAttributes() !!}>
-                    @foreach($grid->visibleColumnNames() as $name)
+                    @foreach($grid->columnNames as $name)
                     <td {!! $row->getColumnAttributes($name) !!}>
                         {!! $row->column($name) !!}
                     </td>
@@ -55,9 +43,6 @@
                 </tr>
                 @endforeach
             </tbody>
-
-            {!! $grid->renderTotalRow() !!}
-
         </table>
 
     </div>

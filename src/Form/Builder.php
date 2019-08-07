@@ -5,7 +5,6 @@ namespace Encore\Admin\Form;
 use Encore\Admin\Admin;
 use Encore\Admin\Form;
 use Encore\Admin\Form\Field\Hidden;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
@@ -404,7 +403,7 @@ class Builder
     public function option($option, $value = null)
     {
         if (func_num_args() == 1) {
-            return Arr::get($this->options, $option);
+            return array_get($this->options, $option);
         }
 
         $this->options[$option] = $value;
@@ -484,10 +483,10 @@ class Builder
         $this->addRedirectUrlField();
 
         $attributes['action'] = $this->getAction();
-        $attributes['method'] = Arr::get($options, 'method', 'post');
+        $attributes['method'] = array_get($options, 'method', 'post');
         $attributes['accept-charset'] = 'UTF-8';
 
-        $attributes['class'] = Arr::get($options, 'class');
+        $attributes['class'] = array_get($options, 'class');
 
         if ($this->hasFile()) {
             $attributes['enctype'] = 'multipart/form-data';

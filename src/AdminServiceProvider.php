@@ -2,7 +2,6 @@
 
 namespace Encore\Admin;
 
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 
@@ -23,10 +22,6 @@ class AdminServiceProvider extends ServiceProvider
         Console\ResetPasswordCommand::class,
         Console\ExtendCommand::class,
         Console\ExportSeedCommand::class,
-        Console\MinifyCommand::class,
-        Console\FormCommand::class,
-        Console\PermissionCommand::class,
-        Console\ActionCommand::class,
     ];
 
     /**
@@ -40,7 +35,6 @@ class AdminServiceProvider extends ServiceProvider
         'admin.log'        => Middleware\LogOperation::class,
         'admin.permission' => Middleware\Permission::class,
         'admin.bootstrap'  => Middleware\Bootstrap::class,
-        'admin.session'    => Middleware\Session::class,
     ];
 
     /**
@@ -55,7 +49,6 @@ class AdminServiceProvider extends ServiceProvider
             'admin.log',
             'admin.bootstrap',
             'admin.permission',
-//            'admin.session',
         ],
     ];
 
@@ -68,55 +61,26 @@ class AdminServiceProvider extends ServiceProvider
     {
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'admin');
 
-        $this->ensureHttps();
+        if (config('admin.https') || config('admin.secure')) {
+            \URL::forceScheme('https');
+            $this->app['request']->server->set('HTTPS', true);
+        }
 
         if (file_exists($routes = admin_path('routes.php'))) {
             $this->loadRoutesFrom($routes);
         }
 
-        $this->registerPublishing();
-
-        $this->compatibleBlade();
-    }
-
-    /**
-     * Force to set https scheme if https enabled.
-     *
-     * @return void
-     */
-    protected function ensureHttps()
-    {
-        if (config('admin.https') || config('admin.secure')) {
-            url()->forceScheme('https');
-            $this->app['request']->server->set('HTTPS', true);
-        }
-    }
-
-    /**
-     * Register the package's publishable resources.
-     *
-     * @return void
-     */
-    protected function registerPublishing()
-    {
         if ($this->app->runningInConsole()) {
             $this->publishes([__DIR__.'/../config' => config_path()], 'laravel-admin-config');
             $this->publishes([__DIR__.'/../resources/lang' => resource_path('lang')], 'laravel-admin-lang');
+//            $this->publishes([__DIR__.'/../resources/views' => resource_path('views/vendor/admin')],           'laravel-admin-views');
             $this->publishes([__DIR__.'/../database/migrations' => database_path('migrations')], 'laravel-admin-migrations');
             $this->publishes([__DIR__.'/../resources/assets' => public_path('vendor/laravel-admin')], 'laravel-admin-assets');
         }
-    }
 
-    /**
-     * Remove default feature of double encoding enable in laravel 5.6 or later.
-     *
-     * @return void
-     */
-    protected function compatibleBlade()
-    {
-        $reflectionClass = new \ReflectionClass('\Illuminate\View\Compilers\BladeCompiler');
-
-        if ($reflectionClass->hasMethod('withoutDoubleEncoding')) {
+        //remove default feature of double encoding enable in laravel 5.6 or later.
+        $bladeReflectionClass = new \ReflectionClass('\Illuminate\View\Compilers\BladeCompiler');
+        if ($bladeReflectionClass->hasMethod('withoutDoubleEncoding')) {
             Blade::withoutDoubleEncoding();
         }
     }
@@ -142,7 +106,7 @@ class AdminServiceProvider extends ServiceProvider
      */
     protected function loadAdminAuthConfig()
     {
-        config(Arr::dot(config('admin.auth', []), 'auth.'));
+        config(array_dot(config('admin.auth', []), 'auth.'));
     }
 
     /**

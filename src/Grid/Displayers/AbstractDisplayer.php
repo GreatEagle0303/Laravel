@@ -4,7 +4,6 @@ namespace Encore\Admin\Grid\Displayers;
 
 use Encore\Admin\Grid;
 use Encore\Admin\Grid\Column;
-use Illuminate\Database\Eloquent\Model;
 
 abstract class AbstractDisplayer
 {
@@ -19,7 +18,7 @@ abstract class AbstractDisplayer
     protected $column;
 
     /**
-     * @var Model
+     * @var \stdClass
      */
     public $row;
 
@@ -42,30 +41,6 @@ abstract class AbstractDisplayer
         $this->grid = $grid;
         $this->column = $column;
         $this->row = $row;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getValue()
-    {
-        return $this->value;
-    }
-
-    /**
-     * @return Grid
-     */
-    public function getGrid()
-    {
-        return $this->grid;
-    }
-
-    /**
-     * @return Column
-     */
-    public function getColumn()
-    {
-        return $this->column;
     }
 
     /**

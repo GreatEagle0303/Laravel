@@ -2,8 +2,6 @@
 
 namespace Encore\Admin\Grid\Filter;
 
-use Illuminate\Support\Arr;
-
 class Lt extends AbstractFilter
 {
     /**
@@ -20,7 +18,7 @@ class Lt extends AbstractFilter
      */
     public function condition($inputs)
     {
-        $value = Arr::get($inputs, $this->column);
+        $value = array_get($inputs, $this->column);
 
         if (is_null($value)) {
             return;

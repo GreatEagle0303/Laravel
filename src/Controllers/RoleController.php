@@ -4,16 +4,74 @@ namespace Encore\Admin\Controllers;
 
 use Encore\Admin\Form;
 use Encore\Admin\Grid;
+use Encore\Admin\Layout\Content;
 use Encore\Admin\Show;
+use Illuminate\Routing\Controller;
 
-class RoleController extends AdminController
+class RoleController extends Controller
 {
+    use HasResourceActions;
+
     /**
-     * {@inheritdoc}
+     * Index interface.
+     *
+     * @param Content $content
+     *
+     * @return Content
      */
-    protected function title()
+    public function index(Content $content)
     {
-        return trans('admin.roles');
+        return $content
+            ->header(trans('admin.roles'))
+            ->description(trans('admin.list'))
+            ->body($this->grid()->render());
+    }
+
+    /**
+     * Show interface.
+     *
+     * @param mixed   $id
+     * @param Content $content
+     *
+     * @return Content
+     */
+    public function show($id, Content $content)
+    {
+        return $content
+            ->header(trans('admin.roles'))
+            ->description(trans('admin.detail'))
+            ->body($this->detail($id));
+    }
+
+    /**
+     * Edit interface.
+     *
+     * @param mixed   $id
+     * @param Content $content
+     *
+     * @return Content
+     */
+    public function edit($id, Content $content)
+    {
+        return $content
+            ->header(trans('admin.roles'))
+            ->description(trans('admin.edit'))
+            ->body($this->form()->edit($id));
+    }
+
+    /**
+     * Create interface.
+     *
+     * @param Content $content
+     *
+     * @return Content
+     */
+    public function create(Content $content)
+    {
+        return $content
+            ->header(trans('admin.roles'))
+            ->description(trans('admin.create'))
+            ->body($this->form());
     }
 
     /**
@@ -27,14 +85,14 @@ class RoleController extends AdminController
 
         $grid = new Grid(new $roleModel());
 
-        $grid->column('id', 'ID')->sortable();
-        $grid->column('slug', trans('admin.slug'));
-        $grid->column('name', trans('admin.name'));
+        $grid->id('ID')->sortable();
+        $grid->slug(trans('admin.slug'));
+        $grid->name(trans('admin.name'));
 
-        $grid->column('permissions', trans('admin.permission'))->pluck('name')->label();
+        $grid->permissions(trans('admin.permission'))->pluck('name')->label();
 
-        $grid->column('created_at', trans('admin.created_at'));
-        $grid->column('updated_at', trans('admin.updated_at'));
+        $grid->created_at(trans('admin.created_at'));
+        $grid->updated_at(trans('admin.updated_at'));
 
         $grid->actions(function (Grid\Displayers\Actions $actions) {
             if ($actions->row->slug == 'administrator') {
@@ -64,14 +122,14 @@ class RoleController extends AdminController
 
         $show = new Show($roleModel::findOrFail($id));
 
-        $show->field('id', 'ID');
-        $show->field('slug', trans('admin.slug'));
-        $show->field('name', trans('admin.name'));
-        $show->field('permissions', trans('admin.permissions'))->as(function ($permission) {
+        $show->id('ID');
+        $show->slug(trans('admin.slug'));
+        $show->name(trans('admin.name'));
+        $show->permissions(trans('admin.permissions'))->as(function ($permission) {
             return $permission->pluck('name');
         })->label();
-        $show->field('created_at', trans('admin.created_at'));
-        $show->field('updated_at', trans('admin.updated_at'));
+        $show->created_at(trans('admin.created_at'));
+        $show->updated_at(trans('admin.updated_at'));
 
         return $show;
     }
