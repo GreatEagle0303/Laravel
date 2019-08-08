@@ -874,7 +874,7 @@ class Form implements Renderable
                     $parent->save();
 
                     // When in creating, associate two models
-                    $foreignKeyMethod = (app()->version() < '5.8.0') ? 'getForeignKey' : 'getForeignKeyName';
+                    $foreignKeyMethod = version_compare(app()->version(), '5.8.0', '<') ? 'getForeignKey' : 'getForeignKeyName';
                     if (!$this->model->{$relation->{$foreignKeyMethod}()}) {
                         $this->model->{$relation->{$foreignKeyMethod}()} = $parent->getKey();
 
@@ -1470,7 +1470,7 @@ class Form implements Renderable
      */
     public function resource($slice = -2)
     {
-        $segments = explode('/', trim(app('request')->getUri(), '/'));
+        $segments = explode('/', trim(\request()->getUri(), '/'));
 
         if ($slice != 0) {
             $segments = array_slice($segments, 0, $slice);
