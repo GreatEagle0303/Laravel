@@ -164,10 +164,6 @@ trait UploadField
             $extra['filetype'] = "video/{$ext}";
         }
 
-        if ($filetype == 'audio') {
-            $extra['filetype'] = "audio/{$ext}";
-        }
-
         if ($this->downloadable) {
             $extra['downloadUrl'] = $this->objectUrl($file);
         }
