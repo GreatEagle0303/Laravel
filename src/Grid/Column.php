@@ -467,7 +467,7 @@ class Column
     /**
      * Set column filter.
      *
-     * @param mixed|null $builder
+     * @param null $builder
      *
      * @return $this
      */
