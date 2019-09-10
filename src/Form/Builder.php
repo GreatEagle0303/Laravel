@@ -521,7 +521,7 @@ class Builder
      */
     protected function removeReservedFields()
     {
-        if (!$this->isCreating()) {
+        if (!$this->isMode(static::MODE_CREATE)) {
             return;
         }
 
@@ -530,8 +530,6 @@ class Builder
             $this->form->model()->getCreatedAtColumn(),
             $this->form->model()->getUpdatedAtColumn(),
         ];
-
-        $this->form->getLayout()->removeReservedFields($reservedColumns);
 
         $this->fields = $this->fields()->reject(function (Field $field) use ($reservedColumns) {
             return in_array($field->column(), $reservedColumns);
