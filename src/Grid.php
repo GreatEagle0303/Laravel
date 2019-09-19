@@ -40,7 +40,7 @@ class Grid
     /**
      * The grid data model instance.
      *
-     * @var \Encore\Admin\Grid\Model|\Illuminate\Database\Eloquent\Builder
+     * @var \Encore\Admin\Grid\Model
      */
     protected $model;
 
@@ -429,7 +429,7 @@ class Grid
     /**
      * Get Grid model.
      *
-     * @return Model|\Illuminate\Database\Eloquent\Builder
+     * @return Model
      */
     public function model()
     {
