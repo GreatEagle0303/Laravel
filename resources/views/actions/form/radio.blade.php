@@ -9,5 +9,4 @@
         </span>
     @endforeach
     </div>
-    @include('admin::actions.form.help-block')
 </div>
