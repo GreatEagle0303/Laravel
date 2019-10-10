@@ -99,7 +99,4 @@ return [
         'filter_placeholder' => 'تنقية',
     ],
     'menu_titles'           => [],
-    'prev'                   => 'السابق',
-    'next'                   => 'التالي',
-    'quick_create'           => 'إضافة سريعة',
 ];
