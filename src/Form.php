@@ -242,7 +242,7 @@ class Form implements Renderable
             $callback($this);
         }
 
-        $this->isSoftDeletes = in_array(SoftDeletes::class, class_uses_deep($this->model), true);
+        $this->isSoftDeletes = in_array(SoftDeletes::class, class_uses_deep($this->model));
 
         $this->callInitCallbacks();
     }
@@ -267,7 +267,7 @@ class Form implements Renderable
         }
 
         foreach (static::$initCallbacks as $callback) {
-            $callback($this);
+            call_user_func($callback, $this);
         }
     }
 
@@ -276,7 +276,7 @@ class Form implements Renderable
      *
      * @return $this
      */
-    public function pushField(Field $field): self
+    public function pushField(Field $field)
     {
         $field->setForm($this);
 
@@ -292,7 +292,7 @@ class Form implements Renderable
     /**
      * @return Model
      */
-    public function model(): Model
+    public function model()
     {
         return $this->model;
     }
@@ -300,7 +300,7 @@ class Form implements Renderable
     /**
      * @return Builder
      */
-    public function builder(): Builder
+    public function builder()
     {
         return $this->builder;
     }
@@ -312,7 +312,7 @@ class Form implements Renderable
      *
      * @return $this
      */
-    public function edit($id): self
+    public function edit($id)
     {
         $this->builder->setMode(Builder::MODE_EDIT);
         $this->builder->setResourceId($id);
@@ -327,13 +327,12 @@ class Form implements Renderable
      *
      * @param string  $title
      * @param Closure $content
-     * @param bool    $active
      *
      * @return $this
      */
-    public function tab($title, Closure $content, bool $active = false): self
+    public function tab($title, Closure $content, $active = false)
     {
-        $this->setTab()->append($title, $content, $active);
+        $this->getTab()->append($title, $content, $active);
 
         return $this;
     }
@@ -345,17 +344,7 @@ class Form implements Renderable
      */
     public function getTab()
     {
-        return $this->tab;
-    }
-
-    /**
-     * Set Tab instance.
-     *
-     * @return Tab
-     */
-    public function setTab(): Tab
-    {
-        if ($this->tab === null) {
+        if (is_null($this->tab)) {
             $this->tab = new Tab($this);
         }
 
@@ -550,7 +539,7 @@ class Form implements Renderable
      *
      * @return array
      */
-    protected function removeIgnoredFields($input): array
+    protected function removeIgnoredFields($input)
     {
         Arr::forget($input, $this->ignored);
 
@@ -564,7 +553,7 @@ class Form implements Renderable
      *
      * @return array
      */
-    protected function getRelationInputs($inputs = []): array
+    protected function getRelationInputs($inputs = [])
     {
         $relations = [];
 
@@ -713,7 +702,7 @@ class Form implements Renderable
      *
      * @return bool
      */
-    protected function isEditable(array $input = []): bool
+    protected function isEditable(array $input = [])
     {
         return array_key_exists('_editable', $input);
     }
@@ -751,7 +740,7 @@ class Form implements Renderable
      *
      * @return array
      */
-    protected function handleEditable(array $input = []): array
+    protected function handleEditable(array $input = [])
     {
         if (array_key_exists('_editable', $input)) {
             $name = $input['name'];
@@ -769,7 +758,7 @@ class Form implements Renderable
      *
      * @return array
      */
-    protected function handleFileDelete(array $input = []): array
+    protected function handleFileDelete(array $input = [])
     {
         if (array_key_exists(Field::FILE_DELETE_FLAG, $input)) {
             $input[Field::FILE_DELETE_FLAG] = $input['key'];
@@ -786,7 +775,7 @@ class Form implements Renderable
      *
      * @return array
      */
-    protected function handleFileSort(array $input = []): array
+    protected function handleFileSort(array $input = [])
     {
         if (!array_key_exists(Field::FILE_SORT_FLAG, $input)) {
             return $input;
@@ -908,7 +897,7 @@ class Form implements Renderable
                     break;
                 case $relation instanceof Relations\MorphOne:
                     $related = $this->model->$name;
-                    if ($related === null) {
+                    if (is_null($related)) {
                         $related = $relation->make();
                     }
                     foreach ($prepared[$name] as $column => $value) {
@@ -953,7 +942,7 @@ class Form implements Renderable
      *
      * @return array
      */
-    protected function prepareUpdate(array $updates, $oneToOneRelation = false): array
+    protected function prepareUpdate(array $updates, $oneToOneRelation = false)
     {
         $prepared = [];
 
@@ -992,7 +981,7 @@ class Form implements Renderable
      *
      * @return bool
      */
-    protected function isInvalidColumn($columns, $containsDot = false): bool
+    protected function isInvalidColumn($columns, $containsDot = false)
     {
         foreach ((array) $columns as $column) {
             if ((!$containsDot && Str::contains($column, '.')) ||
@@ -1011,14 +1000,14 @@ class Form implements Renderable
      *
      * @return array
      */
-    protected function prepareInsert($inserts): array
+    protected function prepareInsert($inserts)
     {
         if ($this->isHasOneRelation($inserts)) {
             $inserts = Arr::dot($inserts);
         }
 
         foreach ($inserts as $column => $value) {
-            if (($field = $this->getFieldByColumn($column)) === null) {
+            if (is_null($field = $this->getFieldByColumn($column))) {
                 unset($inserts[$column]);
                 continue;
             }
@@ -1042,7 +1031,7 @@ class Form implements Renderable
      *
      * @return bool
      */
-    protected function isHasOneRelation($inserts): bool
+    protected function isHasOneRelation($inserts)
     {
         $first = current($inserts);
 
@@ -1064,7 +1053,7 @@ class Form implements Renderable
      *
      * @return $this
      */
-    public function ignore($fields): self
+    public function ignore($fields)
     {
         $this->ignored = array_merge($this->ignored, (array) $fields);
 
@@ -1158,7 +1147,7 @@ class Form implements Renderable
         $data = $this->model->toArray();
 
         $this->builder->fields()->each(function (Field $field) use ($data) {
-            if (!in_array($field->column(), $this->ignored, true)) {
+            if (!in_array($field->column(), $this->ignored)) {
                 $field->fill($data);
             }
         });
@@ -1233,7 +1222,7 @@ class Form implements Renderable
      *
      * @return MessageBag
      */
-    protected function mergeValidationMessages($validators): MessageBag
+    protected function mergeValidationMessages($validators)
     {
         $messageBag = new MessageBag();
 
@@ -1249,7 +1238,7 @@ class Form implements Renderable
      *
      * @return array
      */
-    public function getRelations(): array
+    public function getRelations()
     {
         $relations = $columns = [];
 
@@ -1284,7 +1273,7 @@ class Form implements Renderable
      *
      * @return $this
      */
-    public function setAction($action): self
+    public function setAction($action)
     {
         $this->builder()->setAction($action);
 
@@ -1299,7 +1288,7 @@ class Form implements Renderable
      *
      * @return $this
      */
-    public function setWidth($fieldWidth = 8, $labelWidth = 2): self
+    public function setWidth($fieldWidth = 8, $labelWidth = 2)
     {
         $this->builder()->fields()->each(function ($field) use ($fieldWidth, $labelWidth) {
             /* @var Field $field  */
@@ -1318,7 +1307,7 @@ class Form implements Renderable
      *
      * @return $this
      */
-    public function setView($view): self
+    public function setView($view)
     {
         $this->builder()->setView($view);
 
@@ -1332,7 +1321,7 @@ class Form implements Renderable
      *
      * @return $this
      */
-    public function setTitle($title = ''): self
+    public function setTitle($title = '')
     {
         $this->builder()->setTitle($title);
 
@@ -1346,7 +1335,7 @@ class Form implements Renderable
      *
      * @return $this
      */
-    public function row(Closure $callback): self
+    public function row(Closure $callback)
     {
         $this->rows[] = new Row($callback, $this);
 
@@ -1370,7 +1359,7 @@ class Form implements Renderable
      */
     public function header(Closure $callback = null)
     {
-        if (func_num_args() === 0) {
+        if (func_num_args() == 0) {
             return $this->builder->getTools();
         }
 
@@ -1382,7 +1371,7 @@ class Form implements Renderable
      *
      * @return bool
      */
-    public function isCreating(): bool
+    public function isCreating()
     {
         return Str::endsWith(\request()->route()->getName(), '.create');
     }
@@ -1392,7 +1381,7 @@ class Form implements Renderable
      *
      * @return bool
      */
-    public function isEditing(): bool
+    public function isEditing()
     {
         return Str::endsWith(\request()->route()->getName(), '.edit');
     }
@@ -1406,7 +1395,7 @@ class Form implements Renderable
      *
      * @deprecated
      */
-    public function disableSubmit(bool $disable = true): self
+    public function disableSubmit(bool $disable = true)
     {
         $this->builder()->getFooter()->disableSubmit($disable);
 
@@ -1422,7 +1411,7 @@ class Form implements Renderable
      *
      * @deprecated
      */
-    public function disableReset(bool $disable = true): self
+    public function disableReset(bool $disable = true)
     {
         $this->builder()->getFooter()->disableReset($disable);
 
@@ -1436,7 +1425,7 @@ class Form implements Renderable
      *
      * @return $this
      */
-    public function disableViewCheck(bool $disable = true): self
+    public function disableViewCheck(bool $disable = true)
     {
         $this->builder()->getFooter()->disableViewCheck($disable);
 
@@ -1450,7 +1439,7 @@ class Form implements Renderable
      *
      * @return $this
      */
-    public function disableEditingCheck(bool $disable = true): self
+    public function disableEditingCheck(bool $disable = true)
     {
         $this->builder()->getFooter()->disableEditingCheck($disable);
 
@@ -1464,7 +1453,7 @@ class Form implements Renderable
      *
      * @return $this
      */
-    public function disableCreatingCheck(bool $disable = true): self
+    public function disableCreatingCheck(bool $disable = true)
     {
         $this->builder()->getFooter()->disableCreatingCheck($disable);
 
@@ -1475,16 +1464,14 @@ class Form implements Renderable
      * Footer setting for form.
      *
      * @param Closure $callback
-     *
-     * @return \Encore\Admin\Form\Footer
      */
     public function footer(Closure $callback = null)
     {
-        if (func_num_args() === 0) {
+        if (func_num_args() == 0) {
             return $this->builder()->getFooter();
         }
 
-        $callback($this->builder()->getFooter());
+        call_user_func($callback, $this->builder()->getFooter());
     }
 
     /**
@@ -1494,11 +1481,11 @@ class Form implements Renderable
      *
      * @return string
      */
-    public function resource($slice = -2): string
+    public function resource($slice = -2)
     {
         $segments = explode('/', trim(\request()->getUri(), '/'));
 
-        if ($slice !== 0) {
+        if ($slice != 0) {
             $segments = array_slice($segments, 0, $slice);
         }
 
@@ -1529,7 +1516,7 @@ class Form implements Renderable
      */
     public function input($key, $value = null)
     {
-        if ($value === null) {
+        if (is_null($value)) {
             return Arr::get($this->inputs, $key);
         }
 
@@ -1600,7 +1587,7 @@ class Form implements Renderable
      *
      * @return array
      */
-    public static function collectFieldAssets(): array
+    public static function collectFieldAssets()
     {
         if (!empty(static::$collectedAssets)) {
             return static::$collectedAssets;
@@ -1634,7 +1621,7 @@ class Form implements Renderable
      *
      * @return $this
      */
-    public function column($width, \Closure $closure): self
+    public function column($width, \Closure $closure)
     {
         $width = $width < 1 ? round(12 * $width) : $width;
 
