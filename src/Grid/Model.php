@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Str;
 
@@ -536,7 +537,7 @@ class Model
      */
     protected function setSort()
     {
-        $this->sort = \request($this->sortName, []);
+        $this->sort = Input::get($this->sortName, []);
         if (!is_array($this->sort)) {
             return;
         }
@@ -634,7 +635,7 @@ class Model
         $relatedTable = $relation->getRelated()->getTable();
 
         if ($relation instanceof BelongsTo) {
-            $foreignKeyMethod = version_compare(app()->version(), '5.8.0', '<') ? 'getForeignKey' : 'getForeignKeyName';
+            $foreignKeyMethod = (app()->version() < '5.8.0') ? 'getForeignKey' : 'getForeignKeyName';
 
             return [
                 $relatedTable,

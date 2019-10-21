@@ -77,7 +77,7 @@ trait UploadField
      * @var array
      */
     protected $fileTypes = [
-        'image'  => '/^(gif|png|jpe?g|svg|webp)$/i',
+        'image'  => '/^(gif|png|jpe?g|svg)$/i',
         'html'   => '/^(htm|html)$/i',
         'office' => '/^(docx?|xlsx?|pptx?|pps|potx?)$/i',
         'gdocs'  => '/^(docx?|xlsx?|pptx?|pps|potx?|rtf|ods|odt|pages|ai|dxf|ttf|tiff?|wmf|e?ps)$/i',
@@ -162,10 +162,6 @@ trait UploadField
 
         if ($filetype == 'video') {
             $extra['filetype'] = "video/{$ext}";
-        }
-
-        if ($filetype == 'audio') {
-            $extra['filetype'] = "audio/{$ext}";
         }
 
         if ($this->downloadable) {

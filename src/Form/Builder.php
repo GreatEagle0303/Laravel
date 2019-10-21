@@ -155,7 +155,7 @@ class Builder
     /**
      * @return string
      */
-    public function getMode(): string
+    public function getMode()
     {
         return $this->mode;
     }
@@ -167,9 +167,9 @@ class Builder
      *
      * @return bool
      */
-    public function isMode($mode): bool
+    public function isMode($mode)
     {
-        return $this->mode === $mode;
+        return $this->mode == $mode;
     }
 
     /**
@@ -177,7 +177,7 @@ class Builder
      *
      * @return bool
      */
-    public function isCreating(): bool
+    public function isCreating()
     {
         return $this->isMode(static::MODE_CREATE);
     }
@@ -187,7 +187,7 @@ class Builder
      *
      * @return bool
      */
-    public function isEditing(): bool
+    public function isEditing()
     {
         return $this->isMode(static::MODE_EDIT);
     }
@@ -215,13 +215,11 @@ class Builder
     }
 
     /**
-     * @param int|null $slice
-     *
      * @return string
      */
-    public function getResource(int $slice = null): string
+    public function getResource($slice = null)
     {
-        if ($this->mode === self::MODE_CREATE) {
+        if ($this->mode == self::MODE_CREATE) {
             return $this->form->resource(-1);
         }
         if ($slice !== null) {
@@ -237,7 +235,7 @@ class Builder
      *
      * @return $this
      */
-    public function setWidth($field = 8, $label = 2): self
+    public function setWidth($field = 8, $label = 2)
     {
         $this->width = [
             'label' => $label,
@@ -252,7 +250,7 @@ class Builder
      *
      * @return array
      */
-    public function getWidth(): array
+    public function getWidth()
     {
         return $this->width;
     }
@@ -272,7 +270,7 @@ class Builder
      *
      * @return string
      */
-    public function getAction(): string
+    public function getAction()
     {
         if ($this->action) {
             return $this->action;
@@ -296,7 +294,7 @@ class Builder
      *
      * @return $this
      */
-    public function setView($view): self
+    public function setView($view)
     {
         $this->view = $view;
 
@@ -310,7 +308,7 @@ class Builder
      *
      * @return $this
      */
-    public function setTitle($title): self
+    public function setTitle($title)
     {
         $this->title = $title;
 
@@ -322,7 +320,7 @@ class Builder
      *
      * @return Collection
      */
-    public function fields(): Collection
+    public function fields()
     {
         return $this->fields;
     }
@@ -337,7 +335,7 @@ class Builder
     public function field($name)
     {
         return $this->fields()->first(function (Field $field) use ($name) {
-            return $field->column() === $name;
+            return $field->column() == $name;
         });
     }
 
@@ -346,7 +344,7 @@ class Builder
      *
      * @return bool
      */
-    public function hasRows(): bool
+    public function hasRows()
     {
         return !empty($this->form->rows);
     }
@@ -356,7 +354,7 @@ class Builder
      *
      * @return array
      */
-    public function getRows(): array
+    public function getRows()
     {
         return $this->form->rows;
     }
@@ -364,7 +362,7 @@ class Builder
     /**
      * @return array
      */
-    public function getHiddenFields(): array
+    public function getHiddenFields()
     {
         return $this->hiddenFields;
     }
@@ -405,7 +403,7 @@ class Builder
      */
     public function option($option, $value = null)
     {
-        if (func_num_args() === 1) {
+        if (func_num_args() == 1) {
             return Arr::get($this->options, $option);
         }
 
@@ -417,17 +415,17 @@ class Builder
     /**
      * @return string
      */
-    public function title(): string
+    public function title()
     {
         if ($this->title) {
             return $this->title;
         }
 
-        if ($this->mode === static::MODE_CREATE) {
+        if ($this->mode == static::MODE_CREATE) {
             return trans('admin.create');
         }
 
-        if ($this->mode === static::MODE_EDIT) {
+        if ($this->mode == static::MODE_EDIT) {
             return trans('admin.edit');
         }
 
@@ -439,7 +437,7 @@ class Builder
      *
      * @return bool
      */
-    public function hasFile(): bool
+    public function hasFile()
     {
         foreach ($this->fields() as $field) {
             if ($field instanceof Field\File) {
@@ -459,7 +457,7 @@ class Builder
     {
         $previous = URL::previous();
 
-        if (!$previous || $previous === URL::current()) {
+        if (!$previous || $previous == URL::current()) {
             return;
         }
 
@@ -475,7 +473,7 @@ class Builder
      *
      * @return string
      */
-    public function open($options = []): string
+    public function open($options = [])
     {
         $attributes = [];
 
@@ -508,7 +506,7 @@ class Builder
      *
      * @return string
      */
-    public function close(): string
+    public function close()
     {
         $this->form = null;
         $this->fields = null;
@@ -523,7 +521,7 @@ class Builder
      */
     protected function removeReservedFields()
     {
-        if (!$this->isCreating()) {
+        if (!$this->isMode(static::MODE_CREATE)) {
             return;
         }
 
@@ -533,10 +531,8 @@ class Builder
             $this->form->model()->getUpdatedAtColumn(),
         ];
 
-        $this->form->getLayout()->removeReservedFields($reservedColumns);
-
         $this->fields = $this->fields()->reject(function (Field $field) use ($reservedColumns) {
-            return in_array($field->column(), $reservedColumns, true);
+            return in_array($field->column(), $reservedColumns);
         });
     }
 
@@ -545,7 +541,7 @@ class Builder
      *
      * @return string
      */
-    public function renderTools(): string
+    public function renderTools()
     {
         return $this->tools->render();
     }
@@ -555,7 +551,7 @@ class Builder
      *
      * @return string
      */
-    public function renderFooter(): string
+    public function renderFooter()
     {
         return $this->footer->render();
     }
@@ -565,11 +561,11 @@ class Builder
      *
      * @return string
      */
-    public function render(): string
+    public function render()
     {
         $this->removeReservedFields();
 
-        $tabObj = $this->form->setTab();
+        $tabObj = $this->form->getTab();
 
         if (!$tabObj->isEmpty()) {
             $script = <<<'SCRIPT'
@@ -602,7 +598,6 @@ SCRIPT;
             'form'   => $this,
             'tabObj' => $tabObj,
             'width'  => $this->width,
-            'layout' => $this->form->getLayout(),
         ];
 
         return view($this->view, $data)->render();

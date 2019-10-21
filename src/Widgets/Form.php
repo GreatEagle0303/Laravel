@@ -357,7 +357,9 @@ class Form implements Renderable
      */
     protected function getVariables()
     {
-        collect($this->fields())->each->fill($this->data());
+        foreach ($this->fields as $field) {
+            $field->fill($this->data());
+        }
 
         return [
             'fields'     => $this->fields,
@@ -472,7 +474,7 @@ class Form implements Renderable
     {
         if (method_exists($this, 'handle')) {
             $this->method('POST');
-            $this->action(admin_url('_handle_form_'));
+            $this->action(route('admin.handle-form'));
             $this->hidden('_form_')->default(get_called_class());
         }
     }

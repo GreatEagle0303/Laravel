@@ -30,7 +30,7 @@ class Help implements Renderable
     {
         $data = [
             'toggle'    => 'tooltip',
-            'placement' => 'right',
+            'placement' => 'top',
             'title'     => $this->message,
         ];
 

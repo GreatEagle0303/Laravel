@@ -12,8 +12,7 @@ class ExportSeedCommand extends Command
      * @var string
      */
     protected $signature = 'admin:export-seed {classname=AdminTablesSeeder}
-                                              {--users : add to seed users tables}
-                                              {--except-fields=id,created_at,updated_at : except fields}';
+                                              {--users : add to seed users tables}';
 
     /**
      * The console command description.
@@ -30,7 +29,7 @@ class ExportSeedCommand extends Command
     public function handle()
     {
         $name = $this->argument('classname');
-        $exceptFields = explode(',', $this->option('except-fields'));
+        $exceptFields = [];
         $exportUsers = $this->option('users');
 
         $seedFile = $this->laravel->databasePath().'/seeds/'.$name.'.php';

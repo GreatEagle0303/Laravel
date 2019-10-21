@@ -15,6 +15,7 @@ use Encore\Admin\Grid\Tools;
 use Illuminate\Database\Eloquent\Model as Eloquent;
 use Illuminate\Database\Eloquent\Relations;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Macroable;
 use Jenssegers\Mongodb\Eloquent\Model as MongodbModel;
@@ -40,7 +41,7 @@ class Grid
     /**
      * The grid data model instance.
      *
-     * @var \Encore\Admin\Grid\Model|\Illuminate\Database\Eloquent\Builder
+     * @var \Encore\Admin\Grid\Model
      */
     protected $model;
 
@@ -154,7 +155,6 @@ class Grid
         'show_row_selector'      => true,
         'show_create_btn'        => true,
         'show_column_selector'   => true,
-        'show_define_empty_page' => true,
     ];
 
     /**
@@ -430,7 +430,7 @@ class Grid
     /**
      * Get Grid model.
      *
-     * @return Model|\Illuminate\Database\Eloquent\Builder
+     * @return Model
      */
     public function model()
     {
@@ -532,16 +532,6 @@ class Grid
     }
 
     /**
-     * Apply column search to grid query.
-     *
-     * @return void
-     */
-    protected function applyColumnSearch()
-    {
-        $this->columns->each->bindSearchQuery($this->model());
-    }
-
-    /**
      * @return array|Collection|mixed
      */
     protected function applyQuery()
@@ -549,8 +539,6 @@ class Grid
         $this->applyQuickSearch();
 
         $this->applyColumnFilter();
-
-        $this->applyColumnSearch();
 
         $this->applySelectorQuery();
 
@@ -657,7 +645,7 @@ class Grid
      */
     public function getExportUrl($scope = 1, $args = null)
     {
-        $input = array_merge(request()->all(), Exporter::formatExportQuery($scope, $args));
+        $input = array_merge(Input::all(), Exporter::formatExportQuery($scope, $args));
 
         if ($constraints = $this->model()->getConstraints()) {
             $input = array_merge($input, $constraints);
@@ -738,26 +726,6 @@ class Grid
     }
 
     /**
-     * Remove define empty page on grid.
-     *
-     * @return $this
-     */
-    public function disableDefineEmptyPage(bool $disable = true)
-    {
-        return $this->option('show_define_empty_page', !$disable);
-    }
-
-    /**
-     * If grid show define empty page on grid.
-     *
-     * @return bool
-     */
-    public function showDefineEmptyPage()
-    {
-        return $this->option('show_define_empty_page');
-    }
-
-    /**
      * If allow creation.
      *
      * @return bool
@@ -796,7 +764,7 @@ class Grid
             return $this->resourcePath;
         }
 
-        return url(app('request')->getPathInfo());
+        return url()->current();
     }
 
     /**
