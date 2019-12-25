@@ -807,9 +807,9 @@ class Field implements Renderable
      *
      * @param array $data
      *
-     * @return mixed
+     * @return $this
      */
-    public function data(array $data = null)
+    public function data(array $data = null): self
     {
         if ($data === null) {
             return $this->data;
