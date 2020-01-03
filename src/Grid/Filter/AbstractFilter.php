@@ -89,11 +89,6 @@ abstract class AbstractFilter
     public $group;
 
     /**
-     * @var bool
-     */
-    protected $ignore = false;
-
-    /**
      * AbstractFilter constructor.
      *
      * @param $column
@@ -230,10 +225,6 @@ abstract class AbstractFilter
      */
     public function condition($inputs)
     {
-        if ($this->ignore) {
-            return;
-        }
-
         $value = Arr::get($inputs, $this->column);
 
         if (!isset($value)) {
@@ -243,18 +234,6 @@ abstract class AbstractFilter
         $this->value = $value;
 
         return $this->buildCondition($this->column, $this->value);
-    }
-
-    /**
-     * Ignore this query filter.
-     *
-     * @return $this
-     */
-    public function ignore()
-    {
-        $this->ignore = true;
-
-        return $this;
     }
 
     /**

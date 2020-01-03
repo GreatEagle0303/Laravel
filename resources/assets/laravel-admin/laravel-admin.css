@@ -79,7 +79,3 @@ a.editable-empty {
 #totop:hover {
     opacity: 1;
 }
-
-.file-input .glyphicon-folder-open {
-    display: inline;
-}

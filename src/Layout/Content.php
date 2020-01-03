@@ -3,7 +3,6 @@
 namespace Encore\Admin\Layout;
 
 use Closure;
-use Encore\Admin\Facades\Admin;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Support\Arr;
 
@@ -34,11 +33,6 @@ class Content implements Renderable
      * @var Row[]
      */
     protected $rows = [];
-
-    /**
-     * @var array
-     */
-    protected $view;
 
     /**
      * Content constructor.
@@ -131,7 +125,7 @@ class Content implements Renderable
      *
      * @param mixed $content
      *
-     * @return $this
+     * @return Content
      */
     public function body($content)
     {
@@ -164,19 +158,17 @@ class Content implements Renderable
      * @param string $view
      * @param array  $data
      *
-     * @return $this
+     * @return Content
      */
-    public function view($view, $data = [])
+    public function view($view, $data)
     {
-        $this->view = compact('view', 'data');
-
-        return $this;
+        return $this->body(view($view, $data));
     }
 
     /**
      * @param $var
      *
-     * @return $this
+     * @return Content
      */
     public function dump($var)
     {
@@ -274,18 +266,6 @@ class Content implements Renderable
     }
 
     /**
-     * @return array
-     */
-    protected function getUserData()
-    {
-        if (!$user = Admin::user()) {
-            return [];
-        }
-
-        return Arr::only($user->toArray(), ['id', 'username', 'email', 'name', 'avatar']);
-    }
-
-    /**
      * Render this content.
      *
      * @return string
@@ -296,9 +276,7 @@ class Content implements Renderable
             'header'      => $this->title,
             'description' => $this->description,
             'breadcrumb'  => $this->breadcrumb,
-            '_content_'   => $this->build(),
-            '_view_'      => $this->view,
-            '_user_'      => $this->getUserData(),
+            'content'     => $this->build(),
         ];
 
         return view('admin::content', $items)->render();

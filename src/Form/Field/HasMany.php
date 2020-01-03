@@ -68,13 +68,6 @@ class HasMany extends Field
     ];
 
     /**
-     * Distinct fields.
-     *
-     * @var array
-     */
-    protected $distinctFields = [];
-
-    /**
      * Create a new HasMany field instance.
      *
      * @param $relationName
@@ -164,35 +157,7 @@ class HasMany extends Field
             $newInput = $input;
         }
 
-        $this->appendDistinctRules($newRules);
-
         return \validator($newInput, $newRules, $this->getValidationMessages(), $attributes);
-    }
-
-    /**
-     * Set distinct fields.
-     *
-     * @param array $fields
-     *
-     * @return $this
-     */
-    public function distinctFields(array $fields)
-    {
-        $this->distinctFields = $fields;
-
-        return $this;
-    }
-
-    /**
-     * Append distinct rules.
-     *
-     * @param array $rules
-     */
-    protected function appendDistinctRules(array &$rules)
-    {
-        foreach ($this->distinctFields as $field) {
-            $rules["{$this->column}.*.$field"] = 'distinct';
-        }
     }
 
     /**
@@ -589,14 +554,8 @@ $('#has-many-{$this->column}').on('click', '.add', function () {
 });
 
 $('#has-many-{$this->column}').on('click', '.remove', function () {
-    var first_input_name = $(this).closest('.has-many-{$this->column}-form').find('input:first').attr('name');
-    if (first_input_name.match('{$this->column}\\\[new_')) {
-        $(this).closest('.has-many-{$this->column}-form').remove();
-    } else {
-        $(this).closest('.has-many-{$this->column}-form').hide();
-        $(this).closest('.has-many-{$this->column}-form').find('.$removeClass').val(1);
-        $(this).closest('.has-many-{$this->column}-form').find('input').removeAttr('required');
-    }
+    $(this).closest('.has-many-{$this->column}-form').hide();
+    $(this).closest('.has-many-{$this->column}-form').find('.$removeClass').val(1);
     return false;
 });
 
