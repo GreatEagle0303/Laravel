@@ -12,10 +12,10 @@ use Encore\Admin\Grid\Exporters\AbstractExporter;
 use Encore\Admin\Grid\Model;
 use Encore\Admin\Grid\Row;
 use Encore\Admin\Grid\Tools;
+use Encore\Admin\Traits\ShouldSnakeAttributes;
 use Illuminate\Database\Eloquent\Model as Eloquent;
 use Illuminate\Database\Eloquent\Relations;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Macroable;
 use Jenssegers\Mongodb\Eloquent\Model as MongodbModel;
@@ -34,6 +34,7 @@ class Grid
         Concerns\HasSelector,
         Concerns\CanHidesColumns,
         Concerns\CanFixColumns,
+        ShouldSnakeAttributes,
         Macroable {
             __call as macroCall;
         }
@@ -41,7 +42,7 @@ class Grid
     /**
      * The grid data model instance.
      *
-     * @var \Encore\Admin\Grid\Model
+     * @var \Encore\Admin\Grid\Model|\Illuminate\Database\Eloquent\Builder
      */
     protected $model;
 
@@ -155,6 +156,7 @@ class Grid
         'show_row_selector'      => true,
         'show_create_btn'        => true,
         'show_column_selector'   => true,
+        'show_define_empty_page' => true,
     ];
 
     /**
@@ -385,7 +387,7 @@ class Grid
             return $this;
         }
 
-        $name = Str::snake($relation).'.'.$column;
+        $name = ($this->shouldSnakeAttributes() ? Str::snake($relation) : $relation).'.'.$column;
 
         $this->model()->with($relation);
 
@@ -430,7 +432,7 @@ class Grid
     /**
      * Get Grid model.
      *
-     * @return Model
+     * @return Model|\Illuminate\Database\Eloquent\Builder
      */
     public function model()
     {
@@ -532,6 +534,16 @@ class Grid
     }
 
     /**
+     * Apply column search to grid query.
+     *
+     * @return void
+     */
+    protected function applyColumnSearch()
+    {
+        $this->columns->each->bindSearchQuery($this->model());
+    }
+
+    /**
      * @return array|Collection|mixed
      */
     protected function applyQuery()
@@ -539,6 +551,8 @@ class Grid
         $this->applyQuickSearch();
 
         $this->applyColumnFilter();
+
+        $this->applyColumnSearch();
 
         $this->applySelectorQuery();
 
@@ -645,7 +659,7 @@ class Grid
      */
     public function getExportUrl($scope = 1, $args = null)
     {
-        $input = array_merge(Input::all(), Exporter::formatExportQuery($scope, $args));
+        $input = array_merge(request()->all(), Exporter::formatExportQuery($scope, $args));
 
         if ($constraints = $this->model()->getConstraints()) {
             $input = array_merge($input, $constraints);
@@ -723,6 +737,26 @@ class Grid
     public function disableCreateButton(bool $disable = true)
     {
         return $this->option('show_create_btn', !$disable);
+    }
+
+    /**
+     * Remove define empty page on grid.
+     *
+     * @return $this
+     */
+    public function disableDefineEmptyPage(bool $disable = true)
+    {
+        return $this->option('show_define_empty_page', !$disable);
+    }
+
+    /**
+     * If grid show define empty page on grid.
+     *
+     * @return bool
+     */
+    public function showDefineEmptyPage()
+    {
+        return $this->option('show_define_empty_page');
     }
 
     /**
@@ -810,7 +844,9 @@ class Grid
         ) {
             $this->model()->with($method);
 
-            return $this->addColumn($method, $label)->setRelation(Str::snake($method));
+            return $this->addColumn($method, $label)->setRelation(
+                $this->shouldSnakeAttributes() ? Str::snake($method) : $method
+            );
         }
 
         if ($relation instanceof Relations\HasMany
@@ -820,7 +856,7 @@ class Grid
         ) {
             $this->model()->with($method);
 
-            return $this->addColumn(Str::snake($method), $label);
+            return $this->addColumn($this->shouldSnakeAttributes() ? Str::snake($method) : $method, $label);
         }
 
         return false;

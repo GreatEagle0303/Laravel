@@ -12,7 +12,6 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Str;
 
@@ -114,22 +113,6 @@ class Model
         $this->grid = $grid;
 
         $this->queries = collect();
-
-//        static::doNotSnakeAttributes($this->model);
-    }
-
-    /**
-     * Don't snake case attributes.
-     *
-     * @param EloquentModel $model
-     *
-     * @return void
-     */
-    protected static function doNotSnakeAttributes(EloquentModel $model)
-    {
-        $class = get_class($model);
-
-        $class::$snakeAttributes = false;
     }
 
     /**
@@ -537,7 +520,7 @@ class Model
      */
     protected function setSort()
     {
-        $this->sort = Input::get($this->sortName, []);
+        $this->sort = \request($this->sortName, []);
         if (!is_array($this->sort)) {
             return;
         }

@@ -30,7 +30,7 @@
             <thead>
                 <tr>
                     @foreach($grid->visibleColumns() as $column)
-                    <th {!! $column->formatHtmlAttributes() !!}>{{$column->getLabel()}}{!! $column->renderHeader() !!}</th>
+                    <th {!! $column->formatHtmlAttributes() !!}>{!! $column->getLabel() !!}{!! $column->renderHeader() !!}</th>
                     @endforeach
                 </tr>
             </thead>
@@ -41,7 +41,7 @@
 
             <tbody>
 
-                @if($grid->rows()->isEmpty())
+                @if($grid->rows()->isEmpty() && $grid->showDefineEmptyPage())
                     @include('admin::grid.empty-grid')
                 @endif
 
