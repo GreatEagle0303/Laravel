@@ -275,8 +275,7 @@ trait HasAssets
         }
 
         static::$manifestData = json_decode(
-            file_get_contents(public_path(static::$manifest)),
-            true
+            file_get_contents(public_path(static::$manifest)), true
         );
 
         return static::$manifestData[$key];

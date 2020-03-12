@@ -13,8 +13,6 @@ class Text extends Field
      */
     protected $icon = 'fa-pencil';
 
-    protected $withoutIcon = false;
-
     /**
      * Set custom fa-icon.
      *
@@ -38,10 +36,8 @@ class Text extends Field
     {
         $this->initPlainInput();
 
-        if (!$this->withoutIcon) {
-            $this->prepend('<i class="fa '.$this->icon.' fa-fw"></i>');
-        }
-        $this->defaultAttribute('type', 'text')
+        $this->prepend('<i class="fa '.$this->icon.' fa-fw"></i>')
+            ->defaultAttribute('type', 'text')
             ->defaultAttribute('id', $this->id)
             ->defaultAttribute('name', $this->elementName ?: $this->formatName($this->column))
             ->defaultAttribute('value', old($this->elementName ?: $this->column, $this->value()))
@@ -90,17 +86,5 @@ class Text extends Field
         $datalist .= '</datalist>';
 
         return $this->append($datalist);
-    }
-
-    /**
-     * show no icon in font of input.
-     *
-     * @return $this
-     */
-    public function withoutIcon()
-    {
-        $this->withoutIcon = true;
-
-        return $this;
     }
 }

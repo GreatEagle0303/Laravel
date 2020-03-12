@@ -14,6 +14,7 @@ class QRCode extends AbstractDisplayer
         $script = <<<'SCRIPT'
 $('.grid-column-qrcode').popover({
     html: true,
+    container: 'body',
     trigger: 'focus'
 });
 SCRIPT;
@@ -33,11 +34,7 @@ SCRIPT;
 
         $img = sprintf(
             "<img src='https://api.qrserver.com/v1/create-qr-code/?size=%sx%s&data=%s' style='height:%spx;width:%spx;'/>",
-            $width,
-            $height,
-            $content,
-            $height,
-            $width
+            $width, $height, $content, $height, $width
         );
 
         return <<<HTML

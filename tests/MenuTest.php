@@ -5,7 +5,7 @@ use Encore\Admin\Auth\Database\Menu;
 
 class MenuTest extends TestCase
 {
-    protected function setUp(): void
+    public function setUp()
     {
         parent::setUp();
 

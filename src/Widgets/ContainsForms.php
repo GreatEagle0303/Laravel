@@ -4,17 +4,8 @@ namespace Encore\Admin\Widgets;
 
 trait ContainsForms
 {
-    /**
-     * @var string
-     */
     protected $activeName = 'active';
 
-    /**
-     * @param array $forms
-     * @param null  $active
-     *
-     * @return mixed
-     */
     public static function forms($forms, $active = null)
     {
         $tab = new static();
@@ -22,12 +13,6 @@ trait ContainsForms
         return $tab->buildTabbedForms($forms, $active);
     }
 
-    /**
-     * @param array $forms
-     * @param null  $active
-     *
-     * @return $this
-     */
     protected function buildTabbedForms($forms, $active = null)
     {
         $active = $active ?: request($this->activeName);
@@ -55,11 +40,6 @@ trait ContainsForms
         return $this;
     }
 
-    /**
-     * @param string $name
-     *
-     * @return string
-     */
     protected function getTabUrl($name)
     {
         $query = [$this->activeName => $name];

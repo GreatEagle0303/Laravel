@@ -794,7 +794,7 @@ class Column
             if (is_null($original)) {
                 $style = $default;
             } else {
-                $style = Arr::get($options, $original, $default);
+                $style = Arr::get($options, $original);
             }
 
             return "<span class=\"label-{$style}\" style='width: 8px;height: 8px;padding: 0;border-radius: 50%;display: inline-block;'></span>";

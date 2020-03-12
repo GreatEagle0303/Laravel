@@ -31,7 +31,7 @@ class TestCase extends BaseTestCase
         return $app;
     }
 
-    protected function setUp(): void
+    public function setUp()
     {
         parent::setUp();
 
@@ -65,13 +65,9 @@ class TestCase extends BaseTestCase
         require __DIR__.'/routes.php';
 
         require __DIR__.'/seeds/factory.php';
-
-//        \Encore\Admin\Admin::$css = [];
-//        \Encore\Admin\Admin::$js = [];
-//        \Encore\Admin\Admin::$script = [];
     }
 
-    protected function tearDown(): void
+    public function tearDown()
     {
         (new CreateAdminTables())->down();
 

@@ -6,7 +6,7 @@ use Tests\Models\User as UserModel;
 
 class UserGridTest extends TestCase
 {
-    protected function setUp(): void
+    public function setUp()
     {
         parent::setUp();
 
@@ -16,7 +16,7 @@ class UserGridTest extends TestCase
     public function testIndexPage()
     {
         $this->visit('admin/users')
-            ->see('Users')
+            ->see('All users')
             ->seeInElement('tr th', 'Username')
             ->seeInElement('tr th', 'Email')
             ->seeInElement('tr th', 'Mobile')
@@ -66,7 +66,7 @@ class UserGridTest extends TestCase
         $this->seedsTable();
 
         $this->visit('admin/users')
-            ->see('Users');
+            ->see('All users');
 
         $this->assertCount(100, UserModel::all());
         $this->assertCount(100, ProfileModel::all());
@@ -77,7 +77,7 @@ class UserGridTest extends TestCase
         $this->seedsTable(65);
 
         $this->visit('admin/users')
-            ->see('Users');
+            ->see('All users');
 
         $this->visit('admin/users?page=2');
         $this->assertCount(20, $this->crawler()->filter('td a i[class*=fa-edit]'));
@@ -114,7 +114,7 @@ class UserGridTest extends TestCase
         $this->seedsTable(50);
 
         $this->visit('admin/users')
-            ->see('Users');
+            ->see('All users');
 
         $this->assertCount(50, UserModel::all());
         $this->assertCount(50, ProfileModel::all());
@@ -142,7 +142,7 @@ class UserGridTest extends TestCase
         $this->seedsTable(50);
 
         $this->visit('admin/users')
-            ->see('Users');
+            ->see('All users');
 
         $this->assertCount(50, UserModel::all());
         $this->assertCount(50, ProfileModel::all());
