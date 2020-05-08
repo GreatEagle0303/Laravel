@@ -3,7 +3,6 @@
 namespace Encore\Admin\Widgets;
 
 use Closure;
-use Encore\Admin\Facades\Admin;
 use Encore\Admin\Form as BaseForm;
 use Encore\Admin\Form\Field;
 use Illuminate\Contracts\Support\Arrayable;
@@ -106,11 +105,6 @@ class Form implements Renderable
     public $inbox = true;
 
     /**
-     * @var string
-     */
-    public $confirm = '';
-
-    /**
      * Form constructor.
      *
      * @param array $data
@@ -127,7 +121,7 @@ class Form implements Renderable
      *
      * @return mixed
      */
-    public function title()
+    protected function title()
     {
         return $this->title;
     }
@@ -138,16 +132,6 @@ class Form implements Renderable
     public function data()
     {
         return $this->data;
-    }
-
-    /**
-     * @return array
-     */
-    public function confirm($message)
-    {
-        $this->confirm = $message;
-
-        return $this;
     }
 
     /**
@@ -188,7 +172,6 @@ class Form implements Renderable
     protected function initFormAttributes()
     {
         $this->attributes = [
-            'id'             => 'widget-form-'.uniqid(),
             'method'         => 'POST',
             'action'         => '',
             'class'          => 'form-horizontal',
@@ -471,9 +454,6 @@ class Form implements Renderable
         return $fieldset;
     }
 
-    /**
-     * @return $this
-     */
     public function unbox()
     {
         $this->inbox = false;
@@ -481,51 +461,10 @@ class Form implements Renderable
         return $this;
     }
 
-    protected function addConfirmScript()
-    {
-        $id = $this->attributes['id'];
-
-        $trans = [
-            'cancel' => trans('admin.cancel'),
-            'submit' => trans('admin.submit'),
-        ];
-
-        $settings = [
-            'type'                => 'question',
-            'showCancelButton'    => true,
-            'confirmButtonText'   => $trans['submit'],
-            'cancelButtonText'    => $trans['cancel'],
-            'title'               => $this->confirm,
-            'text'                => '',
-        ];
-
-        $settings = trim(json_encode($settings, JSON_PRETTY_PRINT));
-
-        $script = <<<SCRIPT
-
-$('form#{$id}').off('submit').on('submit', function (e) {
-    e.preventDefault();
-    var form = this;
-    $.admin.swal($settings).then(function (result) {
-        if (result.value == true) {
-            form.submit();
-        }
-    });
-    return false;
-});
-SCRIPT;
-
-        Admin::script($script);
-    }
-
     protected function prepareForm()
     {
         if (method_exists($this, 'form')) {
             $this->form();
-        }
-
-        if (!empty($this->confirm)) {
-            $this->addConfirmScript();
         }
     }
 

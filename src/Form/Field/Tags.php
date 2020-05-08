@@ -38,11 +38,6 @@ class Tags extends Field
     /**
      * @var array
      */
-    protected $separators = [',', ';', '，', '；', ' '];
-
-    /**
-     * @var array
-     */
     protected static $css = [
         '/vendor/laravel-admin/AdminLTE/plugins/select2/select2.min.css',
     ];
@@ -119,25 +114,6 @@ class Tags extends Field
     }
 
     /**
-     * Set Tag Separators.
-     *
-     * @param array $separators
-     *
-     * @return $this
-     */
-    public function separators($separators = [])
-    {
-        if ($separators instanceof Collection or $separators instanceof Arrayable) {
-            $separators = $separators->toArray();
-        }
-        if (!empty($separators)) {
-            $this->separators = $separators;
-        }
-
-        return $this;
-    }
-
-    /**
      * Set save Action.
      *
      * @param \Closure $saveAction
@@ -192,10 +168,6 @@ class Tags extends Field
      */
     public function render()
     {
-        if (!$this->shouldRender()) {
-            return '';
-        }
-
         $this->setupScript();
 
         if ($this->keyAsValue) {
@@ -212,15 +184,13 @@ class Tags extends Field
 
     protected function setupScript()
     {
-        $separators = json_encode($this->separators);
-        $separatorsStr = implode('', $this->separators);
         $this->script = <<<JS
 $("{$this->getElementClassSelector()}").select2({
     tags: true,
-    tokenSeparators: $separators,
+    tokenSeparators: [',', ';', '，', '；', ' '],
     createTag: function(params) {
-        if (/[$separatorsStr]/.test(params.term)) {
-            var str = params.term.trim().replace(/[$separatorsStr]*$/, '');
+        if (/[,;，； ]/.test(params.term)) {
+            var str = params.term.trim().replace(/[,;，；]*$/, '');
             return { id: str, text: str }
         } else {
             return null;
