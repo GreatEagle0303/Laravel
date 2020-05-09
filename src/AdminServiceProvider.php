@@ -27,6 +27,7 @@ class AdminServiceProvider extends ServiceProvider
         Console\FormCommand::class,
         Console\PermissionCommand::class,
         Console\ActionCommand::class,
+        Console\GenerateMenuCommand::class,
     ];
 
     /**
@@ -55,7 +56,7 @@ class AdminServiceProvider extends ServiceProvider
             'admin.log',
             'admin.bootstrap',
             'admin.permission',
-//            'admin.session',
+            //            'admin.session',
         ],
     ];
 
