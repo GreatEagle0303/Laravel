@@ -89,22 +89,6 @@ abstract class AbstractDisplayer
     }
 
     /**
-     * @return string
-     */
-    public function getName()
-    {
-        return $this->getColumn()->getName();
-    }
-
-    /**
-     * @return string
-     */
-    public function getClassName()
-    {
-        return $this->getColumn()->getClassName();
-    }
-
-    /**
      * Get translation.
      *
      * @param string $text

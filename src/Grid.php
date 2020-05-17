@@ -149,7 +149,6 @@ class Grid
         'show_create_btn'        => true,
         'show_column_selector'   => true,
         'show_define_empty_page' => true,
-        'show_perpage_selector'  => true,
     ];
 
     /**
@@ -381,7 +380,7 @@ class Grid
      *
      * @return Column
      */
-    public function prependColumn($column = '', $label = '')
+    protected function prependColumn($column = '', $label = '')
     {
         $column = new Column($column, $label);
         $column->setGrid($this);
@@ -406,15 +405,13 @@ class Grid
      *
      * @param int $perPage
      *
-     * @return $this
+     * @return void
      */
     public function paginate($perPage = 20)
     {
         $this->perPage = $perPage;
 
         $this->model()->setPerPage($perPage);
-
-        return $this;
     }
 
     /**
@@ -424,7 +421,7 @@ class Grid
      */
     public function paginator()
     {
-        return new Tools\Paginator($this, $this->options['show_perpage_selector']);
+        return new Tools\Paginator($this);
     }
 
     /**
@@ -457,15 +454,6 @@ class Grid
     public function perPages(array $perPages)
     {
         $this->perPages = $perPages;
-    }
-
-    /**
-     * @param bool $disable
-     * @return $this
-     */
-    public function disablePerPageSelector(bool $disable = true)
-    {
-        return $this->option('show_perpage_selector', !$disable);
     }
 
     /**

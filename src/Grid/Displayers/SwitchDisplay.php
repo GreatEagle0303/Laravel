@@ -53,7 +53,7 @@ $('.$class').bootstrapSwitch({
         var _status = true;
 
         $.ajax({
-            url: "{$this->getResource()}/" + pk,
+            url: "{$this->grid->resource()}/" + pk,
             type: "POST",
             async:false,
             data: {
@@ -72,7 +72,7 @@ $('.$class').bootstrapSwitch({
                     _status = xhr.responseJSON.status;
             }
         });
-
+        
         return _status;
     }
 });
