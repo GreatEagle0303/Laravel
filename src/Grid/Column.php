@@ -510,9 +510,11 @@ class Column
      */
     public function bindSearchQuery(Model $model)
     {
-        if ($this->searchable && ($value = request($this->getName())) != '') {
-            $model->where($this->getName(), $value);
+        if (!$this->searchable || !request()->has($this->getName())) {
+            return;
         }
+
+        $model->where($this->getName(), request($this->getName()));
     }
 
     /**
