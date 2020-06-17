@@ -143,11 +143,7 @@ $(document).on('change', "{$this->getElementClassSelector()}", function () {
                 d.text = d.$textField;
                 return d;
             })
-        });
-        if (target.data('value')) {
-            $(target).val(target.data('value'));
-        }
-        $(target).trigger('change');
+        }).trigger('change');
     });
 });
 EOT;
