@@ -1361,13 +1361,12 @@ class Field implements Renderable
 
     /**
      * @param array $labelClass
-     * @param bool $replace
      *
      * @return self
      */
-    public function setLabelClass(array $labelClass, $replace = false): self
+    public function setLabelClass(array $labelClass): self
     {
-        $this->labelClass = $replace ? $labelClass : array_merge($this->labelClass, $labelClass);
+        $this->labelClass = $labelClass;
 
         return $this;
     }
