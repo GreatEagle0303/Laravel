@@ -54,7 +54,7 @@
             url: "{{ $resource }}/" + $related.attr('key'),
             type: "POST",
             data: {
-                '{{ $name }}': selected.length ? selected : [''],
+                '{{ $name }}': selected,
                 _token: LA.token,
                 _method: 'PUT'
             },
