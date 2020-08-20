@@ -381,7 +381,7 @@ class Form implements Renderable
      */
     protected function ajaxResponse($message)
     {
-        $request = \request();
+        $request = Request::capture();
 
         // ajax but not pjax
         if ($request->ajax() && !$request->pjax()) {
@@ -622,7 +622,7 @@ class Form implements Renderable
      */
     protected function isEditable(array $input = []): bool
     {
-        return array_key_exists('_editable', $input) || array_key_exists('_edit_inline', $input);
+        return array_key_exists('_editable', $input);
     }
 
     /**
@@ -813,7 +813,9 @@ class Form implements Renderable
 
                         Arr::forget($related, static::REMOVE_FLAG_NAME);
 
-                        $child->fill($related);
+                        foreach ($related as $colum => $value) {
+                            $child->setAttribute($colum, $value);
+                        }
 
                         $child->save();
                     }

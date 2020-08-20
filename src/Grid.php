@@ -31,10 +31,8 @@ class Grid
         Concerns\HasActions,
         Concerns\HasSelector,
         Concerns\CanHidesColumns,
-        Concerns\CanFixHeader,
         Concerns\CanFixColumns,
         Concerns\CanExportGrid,
-        Concerns\CanDoubleClick,
         ShouldSnakeAttributes,
         Macroable {
             __call as macroCall;
@@ -933,8 +931,6 @@ class Grid
 
         $this->callRenderingCallback();
 
-        return Admin::component($this->view, $this->variables());
-
-        return view($this->view, $this->variables());
+        return view($this->view, $this->variables())->render();
     }
 }

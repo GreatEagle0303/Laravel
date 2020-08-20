@@ -27,10 +27,6 @@ class Image extends File
      */
     public function prepare($image)
     {
-        if ($this->picker) {
-            return parent::prepare($image);
-        }
-
         if (request()->has(static::FILE_DELETE_FLAG)) {
             return $this->destroy();
         }

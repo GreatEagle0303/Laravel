@@ -248,6 +248,6 @@ class Embeds extends Field
      */
     public function render()
     {
-        return parent::fieldRender(['form' => $this->buildEmbeddedForm()]);
+        return parent::render()->with(['form' => $this->buildEmbeddedForm()]);
     }
 }

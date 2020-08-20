@@ -1,6 +1,6 @@
 <?php
 
-namespace Encore\Admin\Form\Field;
+namespace Encore\Admin\Grid\Displayers;
 
 use Encore\Admin\Admin;
 use Encore\Admin\Grid\Selectable;
@@ -18,39 +18,9 @@ trait BelongsToRelation
     protected $selectable;
 
     /**
-     * BelongsToRelation constructor.
-     *
-     * @param string $column
-     * @param array  $arguments
+     * @var string
      */
-    public function __construct($column, $arguments = [])
-    {
-        $this->setSelectable($arguments[0]);
-
-        parent::__construct($column, array_slice($arguments, 1));
-    }
-
-    /**
-     * @param string $selectable
-     */
-    protected function setSelectable($selectable)
-    {
-        if (!class_exists($selectable) || !is_subclass_of($selectable, Selectable::class)) {
-            throw new \InvalidArgumentException(
-                "[Class [{$selectable}] must be a sub class of Encore\Admin\Grid\Selectable"
-            );
-        }
-
-        $this->selectable = $selectable;
-    }
-
-    /**
-     * @return string
-     */
-    public function getSelectable()
-    {
-        return $this->selectable;
-    }
+    protected $columnName = '';
 
     /**
      * @param int $multiple
@@ -86,8 +56,8 @@ trait BelongsToRelation
         <h4 class="modal-title">{$trans['choose']}</h4>
       </div>
       <div class="modal-body">
-      <div class="loading text-center">
-        <i class="fa fa-spinner fa-pulse fa-3x fa-fw"></i>
+        <div class="loading text-center">
+            <i class="fa fa-spinner fa-pulse fa-3x fa-fw"></i>
         </div>
       </div>
       <div class="modal-footer">
@@ -112,27 +82,14 @@ HTML;
 .belongsto.modal tr {
     cursor: pointer;
 }
+
 .belongsto.modal .box {
     border-top: none;
     margin-bottom: 0;
     box-shadow: none;
 }
-
 .belongsto.modal .loading {
     margin: 50px;
-}
-
-.belongsto.modal .grid-table .empty-grid {
-    padding: 20px !important;
-}
-
-.belongsto.modal .grid-table .empty-grid svg {
-    width: 60px !important;
-    height: 60px !important;
-}
-
-.belongsto.modal .grid-box .box-footer {
-    border-top: none !important;
 }
 STYLE;
 
@@ -142,32 +99,32 @@ STYLE;
     }
 
     /**
-     * @return \Encore\Admin\Grid
+     * @param string $selectable
+     * @param string $column
+     *
+     * @return string
      */
-    protected function makeGrid()
+    public function display($selectable = null, $column = '')
     {
-        /** @var Selectable $selectable */
-        $selectable = new $this->selectable();
+        if (!class_exists($selectable) || !is_subclass_of($selectable, Selectable::class)) {
+            throw new \InvalidArgumentException(
+                "[Class [{$selectable}] must be a sub class of Encore\Admin\Grid\Selectable"
+            );
+        }
 
-        return $selectable->renderFormGrid($this->value());
-    }
+        $this->columnName = $column ?: $this->getName();
+        $this->selectable = $selectable;
+        $this->modalID = sprintf('modal-grid-selector-%s', $this->getClassName());
 
-    /**
-     * {@inheritdoc}
-     */
-    public function render()
-    {
-        $this->modalID = sprintf('modal-selector-%s', $this->getElementClassString());
+        $this->addHtml()->addScript()->addStyle();
 
-        $this->addScript()->addHtml()->addStyle();
-
-        $this->addVariables([
-            'grid'    => $this->makeGrid(),
-            'options' => $this->getOptions(),
-        ]);
-
-        $this->addCascadeScript();
-
-        return parent::fieldRender();
+        return <<<HTML
+<span class="grid-selector" data-toggle="modal" data-target="#{$this->modalID}" key="{$this->getKey()}" data-val="{$this->getOriginalData()}">
+   <a href="javascript:void(0)" class="text-muted">
+       <i class="fa fa-check-square-o"></i>&nbsp;&nbsp;
+       <span class="text">{$this->value}</span>
+   </a>
+</span>
+HTML;
     }
 }

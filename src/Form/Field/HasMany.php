@@ -662,7 +662,7 @@ EOT;
 
         $this->setupScript($script);
 
-        return parent::fieldRender([
+        return parent::render()->with([
             'forms'        => $this->buildRelatedForms(),
             'template'     => $template,
             'relationName' => $this->relationName,
@@ -719,7 +719,7 @@ EOT;
         // specify a view to render.
         $this->view = $this->views[$this->viewMode];
 
-        return parent::fieldRender([
+        return parent::render()->with([
             'headers'      => $headers,
             'forms'        => $this->buildRelatedForms(),
             'template'     => $template,
