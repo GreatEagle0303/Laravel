@@ -88,7 +88,7 @@ SCRIPT;
 
         $this->addScript();
 
-        $value = array_merge(['start' => '', 'end' => ''], $this->getFilterValue([]));
+        $value = $this->getFilterValue(['start' => '', 'end' => '']);
         $active = empty(array_filter($value)) ? '' : 'text-yellow';
 
         return <<<EOT

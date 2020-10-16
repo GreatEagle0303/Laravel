@@ -17,12 +17,10 @@ class Authenticate
      */
     public function handle($request, Closure $next)
     {
-        \config(['auth.defaults.guard' => 'admin']);
-
         $redirectTo = admin_base_path(config('admin.auth.redirect_to', 'auth/login'));
 
         if (Admin::guard()->guest() && !$this->shouldPassThrough($request)) {
-            return redirect()->to($redirectTo);
+            return redirect()->guest($redirectTo);
         }
 
         return $next($request);

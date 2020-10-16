@@ -572,7 +572,7 @@ class Grid
             $this->columnNames[] = $column->getName();
         });
 
-        $this->buildRows($data, $collection);
+        $this->buildRows($data);
 
         $this->builded = true;
     }
@@ -581,14 +581,13 @@ class Grid
      * Build the grid rows.
      *
      * @param array $data
-     * @param Collection $collection
      *
      * @return void
      */
-    protected function buildRows(array $data, Collection $collection)
+    protected function buildRows(array $data)
     {
-        $this->rows = collect($data)->map(function ($model, $number) use ($collection) {
-            return new Row($number, $model, $collection->get($number)->getKey());
+        $this->rows = collect($data)->map(function ($model, $number) {
+            return new Row($number, $model, $this->keyName);
         });
 
         if ($this->rowsCallback) {
