@@ -9,7 +9,7 @@
         offColor: '{{ $states['off']['color'] }}',
         onSwitchChange: function(event, state){
 
-            $(this).val(state ? {{ $states['on']['value'] }} : {{ $states['off']['value'] }});
+            $(this).val(state ? 'on' : 'off');
 
             var key = $(this).data('key');
             var value = $(this).val();
