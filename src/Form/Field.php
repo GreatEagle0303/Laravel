@@ -392,13 +392,13 @@ class Field implements Renderable
 
         if (is_array($this->column)) {
             foreach ($this->column as $key => $column) {
-                $this->value[$key] = Arr::get($data, Str::snake($column));
+                $this->value[$key] = Arr::get($data, $column);
             }
 
             return;
         }
 
-        $this->value = Arr::get($data, Str::snake($this->column));
+        $this->value = Arr::get($data, $this->column);
 
         $this->formatValue();
     }
